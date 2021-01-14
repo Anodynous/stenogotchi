@@ -1,0 +1,147 @@
+# This is a TOML document
+# This is the default config template. To change the default values, please save your modifications to /etc/stenogotchi/config.toml
+
+# Main
+main.name = "Stenogotchi"
+main.lang = "en"
+main.confd = "/etc/stenogotchi/conf.d/"
+main.custom_plugins = ""
+
+# Filesystem
+fs.memory.enabled = false
+fs.memory.mounts.log.enabled = false
+fs.memory.mounts.log.mount = "/var/log"
+fs.memory.mounts.log.size = "50M"
+fs.memory.mounts.log.sync = 60
+fs.memory.mounts.log.zram = true
+fs.memory.mounts.log.rsync = true
+
+fs.memory.mounts.data.enabled = false
+fs.memory.mounts.data.mount = "/var/tmp/stenogotchi"
+fs.memory.mounts.data.size = "10M"
+fs.memory.mounts.data.sync = 3600
+fs.memory.mounts.data.zram = false
+fs.memory.mounts.data.rsync = true
+
+# UI
+# The lifespan of an eINK display depends on the cumulative amount of refreshes. To preserve your display
+# over time it is recommended to keep ui.fps value 0.0 so that refreshes only take place upon major updates.
+# Uptime, battery status, the blinking cursor and similar will not trigger a refresh
+
+ui.fps = 0.0
+ui.font.name = "DejaVuSansMono"
+ui.font.size_offset = 0             # added to the font size
+
+ui.faces.look_r = "( ⚆_⚆)"
+ui.faces.look_l = "(☉_☉ )"
+ui.faces.look_r_happy = "( ◕‿◕)"
+ui.faces.look_l_happy = "(◕‿◕ )"
+ui.faces.sleep = "(⇀‿‿↼)"
+ui.faces.sleep2 = "(≖‿‿≖)"
+ui.faces.awake = "(◕‿‿◕)"
+ui.faces.bored = "(-__-)"
+ui.faces.intense = "(°▃▃°)"
+ui.faces.cool = "(⌐■_■)"
+ui.faces.happy = "(•‿‿•)"
+ui.faces.excited = "(ᵔ◡◡ᵔ)"
+ui.faces.grateful = "(^‿‿^)"
+ui.faces.motivated = "(☼‿‿☼)"
+ui.faces.demotivated = "(≖__≖)"
+ui.faces.smart = "(✜‿‿✜)"
+ui.faces.lonely = "(ب__ب)"
+ui.faces.sad = "(╥☁╥ )"
+ui.faces.angry = "(-_-')"
+ui.faces.friend = "(♥‿‿♥)"
+ui.faces.broken = "(☓‿‿☓)"
+ui.faces.debug = "(#__#)"
+
+ui.web.enabled = true
+ui.web.address = "192.168.1.111"
+ui.web.username = "changeme"
+ui.web.password = "changeme"
+ui.web.origin = ""
+ui.web.port = 8080
+ui.web.on_frame = ""
+
+ui.display.enabled = true
+ui.display.rotation = 0
+ui.display.type = "waveshare_2"
+ui.display.color = "black"
+
+# Plugins
+main.plugins.plover_link.enabled = true
+
+main.plugins.evdevkb.enabled = false    # should not normally be enabled by default, rather toggled on/off with button to toggle qwerty/plover mode
+
+main.plugins.upslite.enabled = true
+
+main.plugins.memtemp.enabled = true
+main.plugins.memtemp.scale = "celsius"
+main.plugins.memtemp.orientation = "horizontal"
+
+main.plugins.led.enabled = false
+main.plugins.led.led = 0
+main.plugins.led.delay = 200
+main.plugins.led.patterns.loaded = "oo  oo  oo oo  oo  oo  oo"
+main.plugins.led.patterns.updating = "oo  oo  oo oo  oo  oo  oo"
+main.plugins.led.patterns.ready = "oo  oo  oo oo  oo  oo  oo"
+main.plugins.led.patterns.bored = "oo  oo  oo oo  oo  oo  oo"
+main.plugins.led.patterns.sad = "oo  oo  oo oo  oo  oo  oo"
+main.plugins.led.patterns.excited = "oo  oo  oo oo  oo  oo  oo"
+main.plugins.led.patterns.lonely = "oo  oo  oo oo  oo  oo  oo"
+main.plugins.led.patterns.rebooting = "oo  oo  oo oo  oo  oo  oo"
+main.plugins.led.patterns.wait = "oo  oo  oo oo  oo  oo  oo"
+main.plugins.led.patterns.sleep = "oo  oo  oo oo  oo  oo  oo"
+
+main.plugins.logtail.enabled = false
+main.plugins.logtail.max-lines = 10000
+
+main.plugins.session-stats.enabled = true
+main.plugins.session-stats.save_directory = "/var/tmp/stenogotchi/sessions/"
+
+main.plugins.buttonshim.enabled = true
+main.plugins.buttonshim.buttons.A.command = ""
+main.plugins.buttonshim.buttons.A.blink.enabled = false
+main.plugins.buttonshim.buttons.A.blink.red = 0
+main.plugins.buttonshim.buttons.A.blink.green = 0
+main.plugins.buttonshim.buttons.A.blink.blue = 0
+main.plugins.buttonshim.buttons.A.blink.on_time = 0
+main.plugins.buttonshim.buttons.A.blink.off_time = 0
+main.plugins.buttonshim.buttons.A.blink.blink_times = 0
+main.plugins.buttonshim.buttons.B.command = ""
+main.plugins.buttonshim.buttons.B.blink.enabled = false
+main.plugins.buttonshim.buttons.B.blink.red = 0
+main.plugins.buttonshim.buttons.B.blink.green = 0
+main.plugins.buttonshim.buttons.B.blink.blue = 0
+main.plugins.buttonshim.buttons.B.blink.on_time = 0
+main.plugins.buttonshim.buttons.B.blink.off_time = 0
+main.plugins.buttonshim.buttons.B.blink.blink_times = 0
+main.plugins.buttonshim.buttons.C.command = ""
+main.plugins.buttonshim.buttons.C.blink.enabled = false
+main.plugins.buttonshim.buttons.C.blink.red = 0
+main.plugins.buttonshim.buttons.C.blink.green = 0
+main.plugins.buttonshim.buttons.C.blink.blue = 0
+main.plugins.buttonshim.buttons.C.blink.on_time = 0
+main.plugins.buttonshim.buttons.C.blink.off_time = 0
+main.plugins.buttonshim.buttons.C.blink.blink_times = 0
+main.plugins.buttonshim.buttons.D.command = ""
+main.plugins.buttonshim.buttons.D.blink.enabled = false
+main.plugins.buttonshim.buttons.D.blink.red = 0
+main.plugins.buttonshim.buttons.D.blink.green = 0
+main.plugins.buttonshim.buttons.D.blink.blue = 0
+main.plugins.buttonshim.buttons.D.blink.on_time = 0
+main.plugins.buttonshim.buttons.D.blink.off_time = 0
+main.plugins.buttonshim.buttons.D.blink.blink_times = 0
+main.plugins.buttonshim.buttons.E.command = ""
+main.plugins.buttonshim.buttons.E.blink.enabled = false
+main.plugins.buttonshim.buttons.E.blink.red = 0
+main.plugins.buttonshim.buttons.E.blink.green = 0
+main.plugins.buttonshim.buttons.E.blink.blue = 0
+main.plugins.buttonshim.buttons.E.blink.on_time = 0
+main.plugins.buttonshim.buttons.E.blink.off_time = 0
+main.plugins.buttonshim.buttons.E.blink.blink_times = 0
+
+# Log
+main.log.path = "/var/log/stenogotchi.log"
+main.log.rotation.enabled = true
+main.log.rotation.size = "10M"
