@@ -18,6 +18,13 @@ Stenogotchi is based on the [pwnagotchi](https://github.com/evilsocket/pwnagotch
 | [UPS-Lite v1.2](https://hackaday.io/project/173847-ups-lite)                     | Optional     |
 
 ## Installation
+1. Setup and DietPi image
+2. Configure and install pre-requisites
+3. Build PyQt5 from source
+4. Install Plover
+5. Install stenogotchi link plugin for Plover
+    - `plover -s plover_plugins install ./plover_plugin/`
+6. Install Stenogotchi
 
 ## Configuration
 
