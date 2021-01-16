@@ -70,6 +70,7 @@ ui.display.color = "black"
 
 # Plugins
 main.plugins.plover_link.enabled = true
+main.plugins.plover_link.bt_autoconnect_mac = ''
 
 main.plugins.evdevkb.enabled = false    # should not normally be enabled by default, rather toggled on/off with button to toggle qwerty/plover mode
 

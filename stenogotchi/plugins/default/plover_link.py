@@ -139,8 +139,8 @@ class BTKbDevice:
         self.bthost_mac = None
         self.bthost_name = ""
         self._agent.set_bt_disconnected()
-        # Attempt to reconnect once, then go back to listening mode
-        self.reconnect()
+        # Attempt to auto_connect once, then go back to listening mode
+        self.auto_connect()
 
     @property
     def address(self):
@@ -269,27 +269,32 @@ class BTKbDevice:
 
         self._agent.set_bt_connected(self.bthost_name)
 
-    def reconnect(self):
-        logging.info('PloverLink: Trying to reconnect...')                                                                                                                                                                                  
-        try:
-            last_bthost = 'DE:AD:BE:EF'                       # Should make sure this gets set to the previous client per default
-            self.ccontrol = socket.socket(socket.AF_BLUETOOTH,
-                                    socket.SOCK_SEQPACKET,
-                                    socket.BTPROTO_L2CAP)
-            self.cinterrupt = socket.socket(socket.AF_BLUETOOTH,
-                                    socket.SOCK_SEQPACKET,
-                                    socket.BTPROTO_L2CAP)
-            self.ccontrol.connect((last_bthost, self.P_CTRL))
-            self.cinterrupt.connect((last_bthost, self.P_INTR))
-
-            logging.info('PloverLink: Reconnected to ' + last_bthost)
-            self.bthost_mac = last_bthost
-            self.bthost_name = self.get_connected_device_name()
-            self._agent.set_bt_connected(self.bthost_name)
-    
-        except Exception as ex:
-            logging.info('PloverLink: Failed to reconnect, falling back to listen mode to await new connection.' + str(ex))
+    def auto_connect(self):
+        bt_autoconnect_mac = plugins.loaded['plover_link']._agent._config['main']['plugins']['plover_link']['bt_autoconnect_mac']
+ 
+        if not bt_autoconnect_mac:
+            logging.info('PloverLink: No bt_autoconnect_mac set in config. Listening for incoming connections instead...')  
             self.listen()
+        else:
+            logging.info('PloverLink: Trying to auto connect to preferred BT host...')  
+            try:
+                self.ccontrol = socket.socket(socket.AF_BLUETOOTH,
+                                        socket.SOCK_SEQPACKET,
+                                        socket.BTPROTO_L2CAP)
+                self.cinterrupt = socket.socket(socket.AF_BLUETOOTH,
+                                        socket.SOCK_SEQPACKET,
+                                        socket.BTPROTO_L2CAP)
+                self.ccontrol.connect((bt_autoconnect_mac, self.P_CTRL))
+                self.cinterrupt.connect((bt_autoconnect_mac, self.P_INTR))
+
+                logging.info('PloverLink: Reconnected to ' + bt_autoconnect_mac)
+                self.bthost_mac = bt_autoconnect_mac
+                self.bthost_name = self.get_connected_device_name()
+                self._agent.set_bt_connected(self.bthost_name)
+    
+            except Exception as ex:
+                logging.info('PloverLink: Failed to auto_connect, falling back to listen mode to await new connection.' + str(ex))
+                self.listen()
 
 
     def get_connected_device_name(self):
@@ -330,7 +335,7 @@ class StenogotchiService(dbus.service.Object):
         
         self._agent = plugins.loaded['plover_link']._agent
         self.device = BTKbDevice()  # create and setup our BTKbDevice
-        self.device.reconnect()     # attemt to reconnect to previous BT host before falling back to listening for new incoming connection
+        self.device.auto_connect()     # attemt to auto connect to preferred BT host before falling back to listening for new incoming connection
 
     @dbus.service.method('com.github.stenogotchi', in_signature='ay')
     def send_keys(self, cmd):
