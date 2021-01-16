@@ -22,8 +22,9 @@ Stenogotchi is based on the [pwnagotchi](https://github.com/evilsocket/pwnagotch
 2. Configure and install pre-requisites
 3. Build PyQt5 from source
 4. Install Plover
-5. Install stenogotchi link plugin for Plover
+5. Install and enable stenogotchi_link plugin for Plover
     - `plover -s plover_plugins install ./plover_plugin/`
+    - `echo 'enabled_extensions = ["stenogotchi_link"]' >> ~/.config/plover/plover.cfg`
 6. Install Stenogotchi
 
 ## Configuration
