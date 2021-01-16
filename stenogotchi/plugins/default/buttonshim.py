@@ -10,14 +10,15 @@
 import logging
 import RPi.GPIO as GPIO
 import subprocess
-import stenogotchi                      # used for built in shutdown command
-import stenogotchi.plugins as plugins   # used to interact with evdevkb
 import signal
 import smbus
 import time
 from threading import Thread
 import atexit
 from colorsys import hsv_to_rgb
+
+import stenogotchi
+import stenogotchi.plugins as plugins
 
 try:
     import queue
@@ -443,23 +444,40 @@ def hold_handler(button):
     # Set button held status to prevent release_handler from triggering on release
     _button_was_held = True
 
+    # Blink in response to long hold event
+    red = 0
+    green = 70
+    blue = 70
+    on_time = 1
+    off_time = 0
+    blink_times = 1
+    thread = Thread(target=blink, args=(red, green, blue, on_time, off_time, blink_times))
+    thread.start()
+
     if NAMES[button] == 'A':
         try:
             plugins.loaded['evdevkb'].start_capture()
         except Exception as ex:
             logging.error(f"No plugin named 'evdevkb' is loaded, check config. Exception {str(ex)}")
-        #plugins.toggle_plugin('evdevkb', enable=True)
+    
     elif NAMES[button] == 'B':
         try:        
             plugins.loaded['evdevkb'].stop_capture()
         except Exception as ex:
             logging.error(f"No plugin named 'evdevkb' is loaded, check config. Exception {str(ex)}")
-        #plugins.toggle_plugin('evdevkb', enable=False)
+    
     elif NAMES[button] == 'C':
         print(f"long press detected from slot {button}, for button {NAMES[button]}")
+    
     elif NAMES[button] == 'D':
-        print(f"long press detected from slot {button}, for button {NAMES[button]}")
+        # Toggle wifi on/off
+        stenogotchi.set_wifi_onoff()
+        for i in range(5):
+            plugins.loaded['buttonshim']._agent._update_wifi()
+            time.sleep(2)
+        
     elif NAMES[button] == 'E':
+        # Initiate clean shutdown process
         stenogotchi.shutdown()
     
 def release_handler(button, pressed, plugin):
@@ -511,3 +529,6 @@ class Buttonshim(plugins.Plugin):
     def on_loaded(self):
         logging.info("[buttonshim] GPIO Button plugin loaded.")
         self.running = True
+
+    def on_ready(self, agent):
+        self._agent = agent

@@ -2,6 +2,7 @@ import os
 import logging
 import time
 import re
+import subprocess
 
 from stenogotchi._version import __version__
 
@@ -109,6 +110,7 @@ def get_wifi_status():
         return state, ip
     except:
         return None, None
+    
 
 def get_wifi_ssid():
     try:
@@ -116,6 +118,21 @@ def get_wifi_ssid():
         return ssid
     except:
         return ""
+
+def set_wifi_onoff():
+    wifi_updown = get_wifi_status()[0]
+    if wifi_updown == 'UP':
+        # switch wifi off
+        subprocess.call(['sudo', 'ip', 'link', 'set', 'dev', 'wlan0', 'down'])
+        subprocess.call(['sudo', 'dhclient', '-r', 'wlan0'])
+        subprocess.call(['sudo', 'rfkill', 'block', '0'])
+        return False
+    else:
+        # switch wifi on
+        subprocess.call(['sudo', 'rfkill', 'unblock', '0'])
+        subprocess.call(['sudo', 'dhclient', 'wlan0'])
+        subprocess.call(['sudo', 'ip', 'link', 'set', 'dev', 'wlan0', 'up'])
+        return True
 
 def shutdown():
     logging.warning("shutting down ...")

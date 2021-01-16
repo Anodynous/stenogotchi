@@ -62,12 +62,12 @@ class Agent(Automata):
             else:
                 if not ssid:
                     ssid = "[Searching]"
-                    ip = "the gost"
+                    ip = "the ghost"
                 if not ip:
-                    ip = "the gost"
+                    ip = "the ghost"
                 self._wifi_connected = False
             self.set_wifi_connected(ssid, ip)
-        elif status == 'DOWN':
+        elif status == 'DOWN' or not status:
             if not self._wifi_connected:
                 return
             self._wifi_connected = False
@@ -111,12 +111,12 @@ class Agent(Automata):
 
     def _fetch_stats(self):
         while True:
-            #s = self.session()    # this is just the request object for connection to bettercap
+            #s = self.session()    # this is just the request object for connection to bettercap -> to be used for fetching plover stats instead
             self._update_uptime()
-            self._update_wifi()     # should be changed to check more seldomly and trigger immediate update upon wifi button toggle
-            time.sleep(5)
+            self._update_wifi()
+            time.sleep(30)
 
-    async def _on_event(self, msg):    # no bettercap to produce events for us could perhaps be used 
+    async def _on_event(self, msg):    # no bettercap to produce events for us, to be used for plover events
         pass
 
     def _event_poller(self, loop):

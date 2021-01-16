@@ -296,7 +296,7 @@ class View(object):
 
     def on_wifi_disconnected(self):
         self.set('face', faces.LONELY)
-        self.set('status', 'I.. I just lost wifi!')
+        self.set('status', self._voice.on_wifi_disconnected())
         self.update()
 
     def update(self, force=False, new_data={}):

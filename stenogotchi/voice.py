@@ -148,6 +148,12 @@ class Voice:
     def on_last_session_tweet(self, last_session):
         pass
 
+    def on_wifi_disconnected(self):
+        return random.choice([
+            self._('I... I just lost WiFi'),
+            self._('I\'m feeling disconnected'),
+            self._('Dude! I was in the middle of a Netflix show!')])
+
     def on_plover_boot(self):
         return random.choice([
             self._('Just a few more minutes please...'),
