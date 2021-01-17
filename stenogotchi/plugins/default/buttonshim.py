@@ -470,7 +470,9 @@ def hold_handler(button):
         logging.debug(f"long press detected from slot {button}, for button {NAMES[button]}")
 
     elif NAMES[button] == 'C':
-        logging.debug(f"long press detected from slot {button}, for button {NAMES[button]}")
+        # Clean the screen (should not be needed on waveshare_2, but could be useful on other display modules)
+        loaded_plugins['buttonshim']._agent.view().init_display()
+        loaded_plugins['buttonshim']._agent.view().update(force=True)
     
     elif NAMES[button] == 'D':
         # Toggle wifi on/off
