@@ -16,6 +16,7 @@ Stenogotchi is based on the [pwnagotchi](https://github.com/evilsocket/pwnagotch
 | [Waveshare 2.13 v.2](https://www.waveshare.com/wiki/2.13inch_e-Paper_HAT)        | Recommended  |
 | [ButtonSHIM](https://shop.pimoroni.com/products/button-shim)                     | Recommended  |
 | [UPS-Lite v1.2](https://hackaday.io/project/173847-ups-lite)                     | Optional     |
+| MicroSD card                                                                     | Required     |
 
 ## Installation
 1. Setup and DietPi image
