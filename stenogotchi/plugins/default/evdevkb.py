@@ -6,19 +6,20 @@ Based on: https://gist.github.com/ukBaz/a47e71e7b87fbc851b27cde7d1c0fcf0#file-re
 Which in turn takes the original idea from: http://yetanotherpointlesstechblog.blogspot.com/2016/04/emulating-bluetooth-keyboard-with.html
 
 Tested on:
-    Python 3.7 -> requires 3.5+ to handle async/await keywords
+    Python 3.7
     BlueZ 5.5
 """
 
 import logging
-import dbus
 import evdev
+from select import select
 from time import sleep
 
 if not __name__ == '__main__':
     import stenogotchi.plugins as plugins
     ObjectClass = plugins.Plugin
 else:
+    import dbus
     ObjectClass = object
 
 HID_DBUS = 'com.github.stenogotchi'
@@ -205,7 +206,9 @@ class EvdevKbrd:
     Take the events from a physically attached keyboard and send the
     HID messages to the keyboard D-Bus server.
     """
-    def __init__(self):
+    def __init__(self, skip_dbus = False):
+        self._skip_dbus = skip_dbus
+        self.do_capture = False
         self.keytable = KEYTABLE
         self.modkeys = MODKEYS
         self.target_length = 6
@@ -213,13 +216,15 @@ class EvdevKbrd:
         self.pressed_keys = []
         self.have_kb = False
         self.dev = None
-        self.bus = dbus.SystemBus()
-        self.btkobject = self.bus.get_object(HID_DBUS,
-                                             HID_SRVC)
-        self.btk_service = dbus.Interface(self.btkobject,
-                                          HID_DBUS)
-        self.keep_running = False
-
+        if self._skip_dbus:
+            self.bus = None
+            self.btkobject = None
+            self.btk_service = None
+        else:
+            self.bus = dbus.SystemBus()
+            self.btkobject = self.bus.get_object(HID_DBUS, HID_SRVC)
+            self.btk_service = dbus.Interface(self.btkobject, HID_DBUS)
+        
     def convert(self, evdev_keycode):
         return self.keytable[evdev_keycode]
 
@@ -228,6 +233,9 @@ class EvdevKbrd:
             return self.modkeys[evdev_keycode]
         else:
             return -1  # Return an invalid array element
+    
+    def set_do_capture(self, toggle):
+        self.do_capture = toggle
 
     def grab(self):
         # Make input device unavailable for other applications
@@ -244,7 +252,6 @@ class EvdevKbrd:
         /dev/input/event
         :param event_id: Optional parameter if the keyboard is not event0
         """
-
         while not self.have_kb:
             try:
                 # try and get a keyboard - should always be event0 as
@@ -253,9 +260,9 @@ class EvdevKbrd:
                     event_id))
                 self.have_kb = True
             except OSError:
-                logging.info('Keyboard not found, waiting 3 seconds and retrying')
+                logging.debug('Keyboard not found, waiting 3 seconds and retrying')
                 sleep(3)
-            logging.info('found a keyboard')
+            logging.debug('found a keyboard')
 
     def update_mod_keys(self, mod_key, value):
         """
@@ -292,29 +299,48 @@ class EvdevKbrd:
         return [0xA1, 0x01, self.mod_keys, 0, *self.pressed_keys]
 
     def send_keys(self):
-        self.btk_service.send_keys(self.state)
+        # If we have self._skip_dbus, use plugin function directly
+        if self._skip_dbus:
+            plugins.loaded['plover_link']._stenogotchiservice.send_keys(self.state)
+        # If we lack self._skip_dbus assume we need to use dbus to access send_keys()
+        else:
+            self.btk_service.send_keys(self.state)
 
     def event_loop(self):
         """
         Loop to check for keyboard events and send HID message
-        over D-Bus keyboard service when they happen
+        over D-Bus keyboard service when they happen. Cannot be terminated.
         """
-        self.keep_running = True
-        while self.keep_running:
-            logging.info('Listening for evdev keypress events...')
-            for event in self.dev.read_loop():
-                # only bother if we hit a key and its an up or down event
-                if event.type == evdev.ecodes.EV_KEY and event.value < 2:
-                    key_str = evdev.ecodes.KEY[event.code]
-                    mod_key = self.modkey(key_str)
-                    if mod_key > -1:
-                        self.update_mod_keys(mod_key, event.value)
-                    else:
-                        self.update_keys(self.convert(key_str), event.value)
-                    self.send_keys()
-        logging.info('No longer listening for evdev keypress events...')
+        logging.debug('Listening for evdev keypress events...')
+        for event in self.dev.read_loop():
+            # only bother if we hit a key and its an up or down event
+            if event.type == evdev.ecodes.EV_KEY and event.value < 2:
+                key_str = evdev.ecodes.KEY[event.code]
+                mod_key = self.modkey(key_str)
+                if mod_key > -1:
+                    self.update_mod_keys(mod_key, event.value)
+                else:
+                    self.update_keys(self.convert(key_str), event.value)
+                self.send_keys()
 
-EVENT_ID = 0
+    def select_loop(self):
+        """
+        Separate implementation of event_loop(), which is possible to terminate.
+        Implements same functionality as dev.read_loop() utilizes.
+        """
+        r,w,x = None, None, None
+        while self.do_capture:
+            r,w,x = select([self.dev.fd], [], [], 0.01)  # 0.1 is default
+            if r:
+                for event in self.dev.read():
+                    if event.type == evdev.ecodes.EV_KEY and event.value < 2:
+                        key_str = evdev.ecodes.KEY[event.code]
+                        mod_key = self.modkey(key_str)
+                        if mod_key > -1:
+                            self.update_mod_keys(mod_key, event.value)
+                        else:
+                            self.update_keys(self.convert(key_str), event.value)
+                        self.send_keys()
 
 class EvdevKeyboard(ObjectClass):
     __autohor__ = 'Anodynous'
@@ -324,26 +350,27 @@ class EvdevKeyboard(ObjectClass):
 
     def __init__(self):
         self.evdevkb = None
-        self.loop = None
-        
-    def on_ready(self, ui):
-        sleep(5)        # Give plover_link time to start D-Bus server
-        self.evdevkb = EvdevKbrd()
+        self.do_capture = False
+     
+    def on_loaded(self):
+        self.evdevkb = EvdevKbrd(skip_dbus=True)
 
     def start_capture(self):
-        logging.info('Capturing evdev keypress events...')
-        self.evdevkb.wait_for_keyboard(EVENT_ID)
-        # Make device unavailable for Plover
-        #self.evdevkb.grab()
-        self.evdevkb.event_loop()
-
-
+        logging.debug('Capturing evdev keypress events...')
+        self.evdevkb.set_do_capture(True)
+        self.do_capture = True
+        self.evdevkb.wait_for_keyboard()
+        self.evdevkb.grab()
+        self.evdevkb.select_loop()
+        
     def stop_capture(self):
-        logging.info('Ignoring evdev keypress events...')
-        #self.evdevkb.dev.ungrab()
-        self.evdevkb.keep_running = False
-        self.evdevkb.dev = None
-
+        logging.debug('Ignoring evdev keypress events...')
+        self.evdevkb.dev.ungrab()
+        self.evdevkb.set_do_capture(False)
+        self.do_capture = False
+    
+    def get_capture_state(self):
+        return self.do_capture
 
 if __name__ == '__main__':
     print('Setting up keyboard')
