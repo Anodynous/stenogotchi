@@ -349,16 +349,25 @@ class EvdevKeyboard(ObjectClass):
     __description__ = 'This plugin enables connectivity to Plover through D-Bus. Note that it needs root permissions due to using sockets'
 
     def __init__(self):
+        self._agent = None
         self.evdevkb = None
         self.do_capture = False
      
     def on_loaded(self):
         self.evdevkb = EvdevKbrd(skip_dbus=True)
 
+    def on_ready(self, agent):
+        self._agent = agent
+
+    def trigger_ui_update(self, input_mode):
+        self._agent.view().set('mode', input_mode)
+        self._agent.view().update()
+
     def start_capture(self):
         logging.debug('Capturing evdev keypress events...')
         self.evdevkb.set_do_capture(True)
         self.do_capture = True
+        self.trigger_ui_update('QWERTY')
         self.evdevkb.wait_for_keyboard()
         self.evdevkb.grab()
         self.evdevkb.select_loop()
@@ -368,6 +377,7 @@ class EvdevKeyboard(ObjectClass):
         self.evdevkb.dev.ungrab()
         self.evdevkb.set_do_capture(False)
         self.do_capture = False
+        self.trigger_ui_update('STENO')
     
     def get_capture_state(self):
         return self.do_capture
