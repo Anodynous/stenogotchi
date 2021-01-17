@@ -40,7 +40,7 @@ Stenogotchi is based on the [pwnagotchi](https://github.com/evilsocket/pwnagotch
 - [x] Support for buttons for built-in and user customizable actions, [buttonSHIM](https://shop.pimoroni.com/products/button-shim)
 - [x] Support for external battery charge reading on UI, [UPS-Lite v1.2](https://hackaday.io/project/173847-ups-lite)
 - [x] Toggle to enable/disable WIFI
-- [ ] Toggle between STENO and QWERTY output mode
+- [x] Toggle between STENO and QWERTY output mode
 - [ ] WPM readings for both STENO and QWERTY modes
 - [ ] On-the-fly updating of plover dictionaries
 - [ ] Local-only-mode (no bluetooth output, records output to microSD card)
