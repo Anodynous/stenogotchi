@@ -262,7 +262,7 @@ def _write_byte(byte):
         byte <<= 1
 
 
-def on_hold(buttons, handler=None, hold_time=2):
+def on_hold(buttons, handler=None, hold_time=1):
     """Attach a hold handler to one or more buttons.
 
     This handler is fired when you hold a button for hold_time seconds.
