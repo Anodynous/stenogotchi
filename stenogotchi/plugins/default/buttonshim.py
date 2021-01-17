@@ -122,6 +122,7 @@ class Handler():
 
 _handlers = [None,None,None,None,None]
 _button_was_held = False
+loaded_plugins = {}
 
 def _run():
     global _running, _states
@@ -455,25 +456,27 @@ def hold_handler(button):
     thread.start()
 
     if NAMES[button] == 'A':
+        # Toggle QWERTY/STENO mode
         try:
-            plugins.loaded['evdevkb'].start_capture()
+            cap_state = loaded_plugins['evdevkb'].get_capture_state()
+            if not cap_state:
+                loaded_plugins['evdevkb'].start_capture()
+            else:
+                loaded_plugins['evdevkb'].stop_capture()
         except Exception as ex:
-            logging.error(f"No plugin named 'evdevkb' is loaded, check config. Exception {str(ex)}")
+            logging.error(f"BUTTONSHIM: Exception {str(ex)}")
     
     elif NAMES[button] == 'B':
-        try:        
-            plugins.loaded['evdevkb'].stop_capture()
-        except Exception as ex:
-            logging.error(f"No plugin named 'evdevkb' is loaded, check config. Exception {str(ex)}")
-    
+        logging.debug(f"long press detected from slot {button}, for button {NAMES[button]}")
+
     elif NAMES[button] == 'C':
-        print(f"long press detected from slot {button}, for button {NAMES[button]}")
+        logging.debug(f"long press detected from slot {button}, for button {NAMES[button]}")
     
     elif NAMES[button] == 'D':
         # Toggle wifi on/off
         stenogotchi.set_wifi_onoff()
         for i in range(5):
-            plugins.loaded['buttonshim']._agent._update_wifi()
+            loaded_plugins['buttonshim']._agent._update_wifi()
             time.sleep(2)
         
     elif NAMES[button] == 'E':
@@ -531,4 +534,6 @@ class Buttonshim(plugins.Plugin):
         self.running = True
 
     def on_ready(self, agent):
+        global loaded_plugins
         self._agent = agent
+        loaded_plugins = plugins.loaded
