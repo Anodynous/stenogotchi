@@ -341,6 +341,10 @@ class EvdevKbrd:
                         else:
                             self.update_keys(self.convert(key_str), event.value)
                         self.send_keys()
+        try:
+            self.dev.close()
+        except RuntimeError:
+            pass
 
 class EvdevKeyboard(ObjectClass):
     __autohor__ = 'Anodynous'
@@ -353,9 +357,6 @@ class EvdevKeyboard(ObjectClass):
         self.evdevkb = None
         self.do_capture = False
      
-    def on_loaded(self):
-        self.evdevkb = EvdevKbrd(skip_dbus=True)
-
     def on_ready(self, agent):
         self._agent = agent
 
@@ -365,9 +366,10 @@ class EvdevKeyboard(ObjectClass):
 
     def start_capture(self):
         logging.debug('Capturing evdev keypress events...')
+        self.trigger_ui_update('QWERTY')
+        self.evdevkb = EvdevKbrd(skip_dbus=True)
         self.evdevkb.set_do_capture(True)
         self.do_capture = True
-        self.trigger_ui_update('QWERTY')
         self.evdevkb.wait_for_keyboard()
         self.evdevkb.grab()
         self.evdevkb.select_loop()
@@ -377,6 +379,7 @@ class EvdevKeyboard(ObjectClass):
         self.evdevkb.dev.ungrab()
         self.evdevkb.set_do_capture(False)
         self.do_capture = False
+        self.evdevkb = None
         self.trigger_ui_update('STENO')
     
     def get_capture_state(self):
