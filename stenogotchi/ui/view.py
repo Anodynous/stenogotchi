@@ -281,12 +281,12 @@ class View(object):
 
     def on_bt_connected(self, bthost_name):
         self.set('face', faces.LOOK_L_HAPPY)
-        self.set('status', f'Latched bluetooth tentacle to {bthost_name}')
+        self.set('status', self._voice.on_bt_connected(bthost_name))
         self.update()
 
     def on_bt_disconnected(self):
         self.set('face', faces.INTENSE)
-        self.set('status', 'Lost bluetooth connection')
+        self.set('status', self._voice.on_bt_disconnected())
         self.update()
 
     def on_wifi_connected(self, ssid, ip):

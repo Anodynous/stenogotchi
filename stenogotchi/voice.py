@@ -148,6 +148,19 @@ class Voice:
     def on_last_session_tweet(self, last_session):
         pass
 
+    def on_bt_connected(self, bthost_name):
+        return random.choice([
+            self._(f'Grabbed hold of {bthost_name} with my bluetooth tentacle'),
+            self._(f'{bthost_name} is ready to receive'),
+            self._(f'Sinking my tooth into {bthost_name}'),
+            self._(f'Hi {bthost_name}, Let\'s team up!')])
+
+    def on_bt_disconnected(self):
+        return random.choice([
+            self._('Lost connection to bluetooth host'),
+            self._('Maybe it was a milk- and not bluetooth as it fell out...'),
+            self._('Need a new bluetooth connection buddy')])
+
     def on_wifi_disconnected(self):
         return random.choice([
             self._('I... I just lost WiFi'),
@@ -156,15 +169,17 @@ class Voice:
 
     def on_plover_boot(self):
         return random.choice([
-            self._('Just a few more minutes please...'),
-            self._('Loading dictionaries...'),
+            self._('Just waiting for Plover to pick up the phone now...'),
+            self._('Plover is loading dictionaries...'),
             self._('Waiting for Plover to wake up')])
 
     def on_plover_ready(self):
         return random.choice([
-            self._('My fingers are itching'),
-            self._('Throw some chords at me'),
-            self._('I\'m ready')])
+            self._('My fingers are itching, let\'s type'),
+            self._('Throw some chords at me bro'),
+            self._('Plover is ready'),
+            self._('Plover is finally dressed and ready to go'),
+            self._('We are ready to go')])
 
     def hhmmss(self, count, fmt):
         if count > 1:
