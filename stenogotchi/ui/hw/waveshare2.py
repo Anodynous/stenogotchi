@@ -81,6 +81,3 @@ class WaveshareV2(DisplayImpl):
 
     def clear(self):
         self._display.Clear(0xff)
-
-    def shutdown(self):
-        self._display.Dev_exit()

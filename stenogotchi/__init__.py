@@ -143,10 +143,6 @@ def shutdown():
         # give it some time to refresh the ui
         time.sleep(10)
 
-    # Properly shut down display. Only implemented and tested for Waveshare2.
-    if view.ROOT._config['ui']['display']['type'] == "waveshare_2":
-        view.ROOT._implementation.shutdown()
-
     logging.warning("syncing...")
 
     from stenogotchi import fs
