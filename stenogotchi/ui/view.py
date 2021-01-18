@@ -291,7 +291,7 @@ class View(object):
 
     def on_wifi_connected(self, ssid, ip):
         self.set('face', faces.COOL)
-        self.set('status', f'Found a town called {ssid}. I\'m gonna be known as {ip}')
+        self.set('status', self._voice.on_wifi_connected(ssid, ip))
         self.update()
 
     def on_wifi_disconnected(self):

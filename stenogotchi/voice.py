@@ -161,6 +161,14 @@ class Voice:
             self._('Maybe it was a milk- and not bluetooth as it fell out...'),
             self._('Need a new bluetooth connection buddy')])
 
+    def on_wifi_connected(self, ssid, ip):
+        return random.choice([
+            self._(f'Found a town called {ssid}. I\'m gonna be known as {ip}'),
+            self._(f'Connected to: {ssid} with ip: {ip}'),
+            self._(f'Infiltrated {ssid} under the alias {ip}'),
+            self._(f'Hit me up at {ssid} under {ip}')])
+
+    
     def on_wifi_disconnected(self):
         return random.choice([
             self._('I... I just lost WiFi'),
