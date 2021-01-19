@@ -66,7 +66,8 @@ class BTKbDevice:
     """
     create a bluetooth device to emulate a HID keyboard
     """
-    MY_DEV_NAME = 'BT_HID_Keyboard'
+    # Set default name to use for BT Keyboard
+    MY_DEV_NAME = 'Bluetooth Keyboard'
     # Service port - must match port configured in SDP record
     P_CTRL = 17
     # Service port - must match port configured in SDP record#Interrrupt port
