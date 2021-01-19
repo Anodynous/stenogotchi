@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 """
 Based on: https://github.com/linshuqin329/UPS-Lite
+Requires i2c to be enabled in dietpi-config (or raspi-config)
+
+Supports readings from the https://hackaday.io/project/173847-ups-lite platform for Raspberry Pi Zero W
 """
 
 import logging
@@ -48,7 +51,7 @@ class Upslite(ObjectClass):
         except:
             logging.error("Could not start UPS-Lite plugin")
 
-    # called when the ui is updated
+    # Called when the ui is updated
     def on_ui_update(self, ui):
         # update those elements
         self._read_charge()
@@ -108,7 +111,7 @@ class Upslite(ObjectClass):
 if __name__ == '__main__':
     ups = Upslite()
     ups.on_loaded()
-    time.sleep(1)       # needs a second to ensure non-zero values are returned
+    time.sleep(1)       # needs a second to ensure non-zero values are returned on initial read
     print("++++++++++++++++++++")
         
     while True:
