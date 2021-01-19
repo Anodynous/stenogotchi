@@ -15,6 +15,8 @@ from plover.formatting import _Action
 from plover.steno_dictionary import StenoDictionaryCollection
 
 from stenogotchi_link.clients import BTClient, StenogotchiClient
+from stenogotchi_link.wpm import PloverWpmMeter, PloverStrokesMeter
+
 
 ERROR_MISSING_ENGINE = 'Plover engine not provided'
 
@@ -29,6 +31,8 @@ class EngineServer():
         self._engine: StenoEngine = engine
         self._btclient = BTClient()
         self._stenogotchiclient = StenogotchiClient()
+        self._wpm_meter = None
+        self._strokes_meter = None
 
     # Started when user enables extension
     def start(self):
@@ -42,6 +46,14 @@ class EngineServer():
         """ Stops the server. """
         self._disconnect_hooks()
         self._stenogotchiclient.plover_is_running(False)
+
+    def start_wpm_meter(self, enable_wpm=True, enable_strokes=False, method='ncra'):
+        """ Starts WPM and/or Strokes meters
+        """
+        if enable_wpm:
+            self._wpm_meter = PloverWpmMeter(wpm_method=method)
+        if enable_strokes:
+            self._strokes_meter = PloverStrokesMeter(strokes_method=method)
 
     def get_server_status(self):
         """Gets the status of the server.
@@ -73,8 +85,8 @@ class EngineServer():
     
     def _on_stroked(self, stroke: Stroke):
         """ Broadcasts when a new stroke is performed. """
-
-        logging.debug(stroke)
+        
+        pass
 
     def _on_translated(self, old: List[_Action], new: List[_Action]):
         """Broadcasts when a new translation occurs.
@@ -82,17 +94,16 @@ class EngineServer():
             old: A list of the previous actions for the current translation.
             new: A list of the new actions for the current translation.
         """
+        
+        # Send to WPM meter if we have one
+        if self._wpm_meter:
+            self._wpm_meter.on_translation(old, new)
+        # Send to Strokes meter if we have one
+        if self._strokes_meter:
+            self._strokes_meter.on_translation(old, new)
 
-        old_json = jsonpickle.encode(old, unpicklable=False)
-        new_json = jsonpickle.encode(new, unpicklable=False)
-
-        data = {
-            'translated': {
-                'old': json.loads(old_json),
-                'new': json.loads(new_json)
-            }
-        }
-        logging.debug(data)
+        # print(self._wpm_meter.get_stats())
+        # print(self._strokes_meter.get_stats())
 
     def _on_machine_state_changed(self, machine_type: str, machine_state: str):
         """Broadcasts when the active machine state changes.
@@ -102,13 +113,6 @@ class EngineServer():
                 state constants listed in plover.machine.base.
         """
         
-        data = {
-            'machine_state_changed': {
-                'machine_type': machine_type,
-                'machine_state': machine_state
-            }
-        }
-        logging.debug(data)
         self._stenogotchiclient.plover_machine_state("machine_type: " + machine_type + " machine_state: " + machine_state)
 
     def _on_output_changed(self, enabled: bool):
@@ -140,9 +144,6 @@ class EngineServer():
             dictionaries: A collection of the dictionaries that loaded.
         """
 
-        #dictionaries_json = jsonpickle.encode(dictionaries, unpicklable=False)
-        #data = {'dictionaries_loaded': json.loads(dictionaries_json)}
-        #logging.debug(data)
         self._stenogotchiclient.plover_is_ready(True)
 
     def _on_send_string(self, text: str):
@@ -151,8 +152,6 @@ class EngineServer():
             text: The string that was output.
         """
 
-        data = {'send_string': text}
-        logging.debug(data)
         self._btclient.send_string(text)
 
     def _on_send_backspaces(self, count: int):
@@ -161,8 +160,6 @@ class EngineServer():
             count: The number of backspaces that were output.
         """
 
-        data = {'send_backspaces': count}
-        logging.debug(data)
         self._btclient.send_backspaces(count)
 
     def _on_send_key_combination(self, combination: str):
@@ -210,4 +207,4 @@ class EngineServer():
         self._stenogotchiclient.plover_is_running(False)
 
 if __name__ == '__main__':
-    print("Run as a Plover plugin to enable functionality.")
+    print("Please enable and run as Plover plugin")
