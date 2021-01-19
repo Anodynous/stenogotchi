@@ -12,6 +12,7 @@ import smbus
 import sys
 import time
 import RPi.GPIO as GPIO
+import stenogotchi
 
 if not __name__ == '__main__':
     import stenogotchi.plugins as plugins
@@ -57,10 +58,25 @@ class Upslite(ObjectClass):
         self._read_charge()
         self._check_plugged()
 
-        ui_string = str(self.charge) 
+        # Set battery reading
+        ui_string = str(self.charge)
         if self.is_plugged:
             ui_string += "+"
         ui.set('ups', ui_string)
+
+        # Check for critical level. Initiate shutdown if too low
+        if not self.is_plugged:
+            if self.charge <= self.options['shutdown_level']:
+                logging.info(f'[UPSLITE] Battery charge critical: {self.charge}')
+                ui.update(force=True, new_data={'status': 'Battery level critical. Shutting down in 1m unless connected to charger...'})
+                time.sleep(60)
+                self._check_plugged()
+                if not self.is_plugged:
+                    logging.info('[UPSLITE] Shutting down')
+                    stenogotchi.shutdown()
+                else:
+                    logging.info('[UPSLITE] Battery charging. Aborting shutdown process')
+                    ui.update(force=True, new_data={'status': 'Pheew... That was a close one! Feeling better already.'})
 
     def _read_voltage(self):
         """ Reads and sets as a float the voltage from the Raspi UPS Hat via the provided SMBus object"""

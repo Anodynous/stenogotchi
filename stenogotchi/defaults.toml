@@ -75,6 +75,7 @@ main.plugins.plover_link.bt_autoconnect_mac = ''
 main.plugins.evdevkb.enabled = true
 
 main.plugins.upslite.enabled = true
+main.plugins.upslite.shutdown_level = 4
 
 main.plugins.memtemp.enabled = true
 main.plugins.memtemp.scale = "celsius"
