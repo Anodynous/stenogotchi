@@ -17,7 +17,8 @@ class WaveshareV2(DisplayImpl):
             self._layout['face'] = (0, 40)
             self._layout['name'] = (5, 20)
             self._layout['ups'] = (0, 0)
-            self._layout['aps'] = (46, 0)
+            self._layout['wpm'] = (52, 0)
+            self._layout['strokes'] = (112, 0)
             self._layout['uptime'] = (185, 0)
             self._layout['line1'] = [0, 14, 250, 14]
             self._layout['line2'] = [0, 108, 250, 108]
@@ -44,7 +45,8 @@ class WaveshareV2(DisplayImpl):
             self._layout['face'] = (0, 26)
             self._layout['name'] = (5, 15)
             self._layout['ups'] = (0, 0)
-            self._layout['aps'] = (46, 0)
+            self._layout['wpm'] = (52, 0)
+            self._layout['strokes'] = (112, 0)
             self._layout['status'] = (91, 15)
             self._layout['uptime'] = (147, 0)
             self._layout['line1'] = [0, 12, 212, 12]

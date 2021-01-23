@@ -57,6 +57,10 @@ class Automata(object):
     def set_plover_ready(self):
         self._view.on_plover_ready()
         plugins.on('plover_ready', self)
+
+    def set_plover_quit(self):
+        self._view.on_plover_quit()
+        plugins.on('plover_quit', self)
         
     def set_bt_connected(self, bthost_name):
         self._view.set('bthost', bthost_name)
@@ -77,4 +81,12 @@ class Automata(object):
         self._view.set('wifi', ssid)
         self._view.on_wifi_disconnected()
         plugins.on('wifi_disconnected', self)
+
+    def set_wpm_stats(self, stats):
+        self._view.on_set_wpm(stats)
+        plugins.on('wpm_set', self)
+
+    def set_strokes_stats(self, stats):
+        self._view.on_set_strokes(stats)
+        plugins.on('strokes_set', self)
 

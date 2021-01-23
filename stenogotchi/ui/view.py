@@ -43,7 +43,11 @@ class View(object):
             'ups': LabeledValue(color=BLACK, label='BAT', value='000', position=self._layout['ups'],
                                     label_font=fonts.Bold,
                                     text_font=fonts.Medium),
-            'aps': LabeledValue(color=BLACK, label='APS', value='0 (00)', position=self._layout['aps'],
+            'wpm': LabeledValue(color=BLACK, label='WPM', value='0 (00)', position=self._layout['wpm'],
+                                label_font=fonts.Bold,
+                                text_font=fonts.Medium),
+
+            'strokes': LabeledValue(color=BLACK, label='STRK', value='0.00', position=self._layout['strokes'],
                                 label_font=fonts.Bold,
                                 text_font=fonts.Medium),
 
@@ -277,6 +281,22 @@ class View(object):
     def on_plover_ready(self):
         self.set('face', faces.AWAKE)
         self.set('status', self._voice.on_plover_ready())
+        self.update()
+
+    def on_plover_quit(self):
+        self.set('face', faces.BROKEN)
+        self.set('status', 'Uh-oh... I think Plover just quit on us')
+        self.update()
+
+    def on_set_wpm(self, wpm):
+        # Implement check for strokes data and show in () after wpm. Or show top session wpm in this
+        # Add option to reset top session stat with button 
+        self.set('wpm', wpm)
+        # set face if new top wpm reached, with reaction text
+        self.update()
+
+    def on_set_strokes(self, strokes):
+        self.set('strokes', strokes)
         self.update()
 
     def on_bt_connected(self, bthost_name):

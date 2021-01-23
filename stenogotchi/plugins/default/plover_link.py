@@ -338,28 +338,40 @@ class StenogotchiService(dbus.service.Object):
         self.device = BTKbDevice()  # create and setup our BTKbDevice
         self.device.auto_connect()     # attemt to auto connect to preferred BT host before falling back to listening for new incoming connection
 
-    @dbus.service.method('com.github.stenogotchi', in_signature='ay')
+    @dbus.service.method('com.github.stenogotchi', in_signature='ay')   # bytearray
     def send_keys(self, cmd):
         self.device.send(cmd)
 
-    @dbus.service.method('com.github.stenogotchi', in_signature='b')
+    @dbus.service.method('com.github.stenogotchi', in_signature='b')    # boolean
     def plover_is_running(self, b):
         logging.info('PloverLink: plover_is_running = ' + str(b))
-        self._agent.set_plover_boot()
+        if b:
+            self._agent.set_plover_boot()
+        else:
+            self._agent.set_plover_quit()
 
-    @dbus.service.method('com.github.stenogotchi', in_signature='b')
+    @dbus.service.method('com.github.stenogotchi', in_signature='b')    # boolean
     def plover_is_ready(self, b):
         logging.info('PloverLink: plover_is_ready = ' + str(b))
         self._agent.set_plover_ready()
 
-    @dbus.service.method('com.github.stenogotchi', in_signature='s')
+    @dbus.service.method('com.github.stenogotchi', in_signature='s')    # string
     def plover_machine_state(self, s):
         logging.info('PloverLink: plover_machine_state = ' + s)
 
-    @dbus.service.method('com.github.stenogotchi', in_signature='b')
+    @dbus.service.method('com.github.stenogotchi', in_signature='b')    # boolean
     def plover_output_enabled(self, b):
         logging.info('PloverLink: plover_output_enabled = ' + str(b))
 
+    @dbus.service.method('com.github.stenogotchi', in_signature='s')    # string
+    def plover_wpm_stats(self, s):
+        logging.info('PloverLink: plover_wpm_stats = ' + s)
+        self._agent.set_wpm_stats(s)
+
+    @dbus.service.method('com.github.stenogotchi', in_signature='s')    # string
+    def plover_strokes_stats(self, s):
+        logging.info('PloverLink: plover_strokes_stats = ' + s)
+        self._agent.set_strokes_stats(s)
 
 class PloverLink(ObjectClass):
     __autohor__ = 'Anodynous'
