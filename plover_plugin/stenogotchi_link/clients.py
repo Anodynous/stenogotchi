@@ -34,6 +34,12 @@ class StenogotchiClient:
     def plover_output_enabled(self, b):
         self.stenogotchi_service.plover_output_enabled(b)
 
+    def plover_wpm_stats(self, s):
+        self.stenogotchi_service.plover_wpm_stats(s)
+
+    def plover_strokes_stats(self, s):
+        self.stenogotchi_service.plover_strokes_stats(s)
+
 
 class BTClient:
     """

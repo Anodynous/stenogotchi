@@ -47,8 +47,12 @@ class CaptureOutput(object):
 class BaseMeter():
   
     def __init__(self):
+        # Set timer to calculate wpm/strokes stats each second
         self._timer = RepeatTimer(1, self.on_timer)
         self._timer.start()
+        # Set timer to publish wpm/strokes stats each minute
+        self._event_timer = RepeatTimer(60, self.trigger_event_update)
+        self._event_timer.start()
         self.chars = []
 
     def on_translation(self, old, new):
@@ -59,6 +63,9 @@ class BaseMeter():
     def on_timer(self):
         raise NotImplementedError()
 
+    def trigger_event_update(self):
+        raise NotImplementedError()
+
 
 class PloverWpmMeter(BaseMeter):
 
@@ -67,8 +74,9 @@ class PloverWpmMeter(BaseMeter):
         "wpm60": 60,
     }
 
-    def __init__(self, wpm_method='ncra'):
+    def __init__(self, stenogotchi_link, wpm_method='ncra'):
         super().__init__()
+        self._stenogotchi_link = stenogotchi_link
         self.strokes = []
         self.wpm_methods = {
             'ncra': False,          # NCRA (by syllables)
@@ -98,6 +106,9 @@ class PloverWpmMeter(BaseMeter):
             wpm = _wpm_of_chars(chars, method=self.get_wpm_method())
             self.wpm_stats[name] = str(wpm)
 
+    def trigger_event_update(self):
+        self._stenogotchi_link._on_wpm_meter_update_wpm(stats=self.wpm_stats)
+        
 
 class PloverStrokesMeter(BaseMeter):
 
@@ -106,8 +117,9 @@ class PloverStrokesMeter(BaseMeter):
         "strokes60": 60,
     }
 
-    def __init__(self, strokes_method='ncra'):
+    def __init__(self, stenogotchi_link, strokes_method='ncra'):
         super().__init__()
+        self._stenogotchi_link = stenogotchi_link
         self.actions = []
         self.strokes_methods = {
             'ncra': False,          # NCRA (by syllables)
@@ -154,6 +166,8 @@ class PloverStrokesMeter(BaseMeter):
             )
             self.strokes_stats[name] = str("{:0.2f}".format(strokes_per_word))
 
+    def trigger_event_update(self):
+        self._stenogotchi_link._on_wpm_meter_update_strokes(stats=self.strokes_stats)
 
 def _timestamp_items(items):
     current_time = time.time()

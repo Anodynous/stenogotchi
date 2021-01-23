@@ -41,6 +41,8 @@ class EngineServer():
         logging.debug("Plover_link started")
         self._stenogotchiclient.plover_is_running(True)
 
+        self.start_wpm_meter(enable_wpm=True, enable_strokes=True)
+
     # Called when Plover exits or user disables the extension
     def stop(self):
         """ Stops the server. """
@@ -51,10 +53,22 @@ class EngineServer():
         """ Starts WPM and/or Strokes meters
         """
         if enable_wpm:
-            self._wpm_meter = PloverWpmMeter(wpm_method=method)
+            self._wpm_meter = PloverWpmMeter(stenogotchi_link=self, wpm_method=method)
         if enable_strokes:
-            self._strokes_meter = PloverStrokesMeter(strokes_method=method)
+            self._strokes_meter = PloverStrokesMeter(stenogotchi_link=self, strokes_method=method)
 
+    def stop_wpm_meter(self):
+        self._wpm_meter = None
+        self._strokes_meter = None
+
+    def _on_wpm_meter_update_strokes(self, stats):
+        """ Sends strokes stats from past 1 min to stenogotchi as a string """
+        self._stenogotchiclient.plover_strokes_stats(stats['strokes60'])
+
+    def _on_wpm_meter_update_wpm(self, stats):
+        """ Sends wpm stats from past 1 min to stenogotchi as a string """
+        self._stenogotchiclient.plover_wpm_stats(stats['wpm60'])
+    
     def get_server_status(self):
         """Gets the status of the server.
         Returns: 
@@ -205,6 +219,7 @@ class EngineServer():
         data = {'quit': True}
         logging.debug(data)
         self._stenogotchiclient.plover_is_running(False)
+
 
 if __name__ == '__main__':
     print("Please enable and run as Plover plugin")
