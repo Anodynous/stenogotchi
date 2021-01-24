@@ -66,6 +66,9 @@ class BaseMeter():
     def trigger_event_update(self):
         raise NotImplementedError()
 
+    def quit(self):
+        self._timer.cancel()
+        self._event_timer.cancel()
 
 class PloverWpmMeter(BaseMeter):
 
