@@ -73,9 +73,9 @@ class StenogotchiClient:
         self.stenogotchi_service.plover_strokes_stats(s)
 
     def stenogotchi_signal_handler(self, dict):
-        print(f"Caught signal from Stenogotchi: {str(dict)}")
         # Enable and disable wpm/strokes meters
         if 'start_wpm_meter' in dict:
+            logging.debug('Starting WPM meter')
             if dict['start_wpm_meter'] == 'wpm and strokes':
                 self._engineserver.start_wpm_meter(enable_wpm=True, enable_strokes=True)
             elif dict['start_wpm_meter'] == 'wpm':
@@ -83,6 +83,7 @@ class StenogotchiClient:
             elif dict['start_wpm_meter'] == 'strokes':
                 self._engineserver.start_wpm_meter(enable_wpm=False, enable_strokes=True)
         if 'stop_wpm_meter' in dict:
+            logging.debug('Stopping WPM meter')
             if dict['stop_wpm_meter'] == 'wpm and strokes':
                 self._engineserver.stop_wpm_meter(disable_wpm=True, disable_strokes=True)
             elif dict['stop_wpm_meter'] == 'wpm':
