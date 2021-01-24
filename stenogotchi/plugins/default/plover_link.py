@@ -373,6 +373,11 @@ class StenogotchiService(dbus.service.Object):
         logging.info('PloverLink: plover_strokes_stats = ' + s)
         self._agent.set_strokes_stats(s)
 
+    @dbus.service.signal('com.github.stenogotchi', signature='a{sv}')    # dictionary of strings to variants
+    def signal_to_plover(self, message):
+        # The signal is emitted when this method exits
+        pass
+
 class PloverLink(ObjectClass):
     __autohor__ = 'Anodynous'
     __version__ = '0.1'
@@ -400,6 +405,11 @@ class PloverLink(ObjectClass):
         except:
             logging.error("PloverLink: Could not start PloverLink")
                     
+    def on_unload(self, ui):
+        self.mainloop.quit()
+
+    def send_signal_to_plover(self, message):
+        self._stenogotchiservice.signal_to_plover(message)
 
 if __name__ == '__main__':
     # The sockets require root permission

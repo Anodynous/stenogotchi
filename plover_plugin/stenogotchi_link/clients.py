@@ -1,8 +1,14 @@
 #!/usr/bin/env python3
 
+
 import logging
-import dbus
+import dbus, dbus.exceptions
+from dbus.mainloop.glib import DBusGMainLoop
+
 from time import sleep
+from threading import Thread
+from gi.repository import GLib
+
 from plover.oslayer.xkeyboardcontrol import KeyboardEmulation, uchr_to_keysym, is_latin1, UCS_TO_KEYSYM
 from stenogotchi_link.keymap import plover_convert, plover_modkey
 
@@ -15,15 +21,41 @@ TIME_SLEEP = 0.001
 
 class StenogotchiClient:
     """ 
-    Transmits Plover event updates to Stenogotchi over D-Bus.
+    Transmits Plover event updates to, and listens for signals from, Stenogotchi over D-Bus.
     """
-    def __init__(self):
-        self.bus = dbus.SystemBus()
-        self.stenogotchiobject = self.bus.get_object(SERVER_DBUS, SERVER_SRVC)
-        self.stenogotchi_service = dbus.Interface(self.stenogotchiobject, SERVER_DBUS)
+    def __init__(self, engineserver):
+        self._engineserver = engineserver
+        self._setup_dbus_loop()
+        self._setup_object()
+    
+    def _setup_dbus_loop(self):
+        DBusGMainLoop(set_as_default=True)
+        self._mainloop = GLib.MainLoop()
+        self._thread = Thread(target=self._mainloop.run)
+        self._thread.start()
+
+    def _setup_object(self):
+        try:
+            self.bus = dbus.SystemBus()
+            self.stenogotchiobject = self.bus.get_object(SERVER_DBUS, SERVER_SRVC)
+            self.stenogotchi_service = dbus.Interface(self.stenogotchiobject, SERVER_DBUS)
+        
+            # Add signal receiver for incoming messages
+            self.stenogotchi_signal = self.bus.add_signal_receiver(path=SERVER_SRVC,
+                                                                handler_function=self.stenogotchi_signal_handler,
+                                                                dbus_interface=SERVER_DBUS,
+                                                                signal_name='signal_to_plover')
+        except dbus.exceptions.DBusException as e:
+            logging.error(f'Failed to initialize D-Bus object: {str(e)}')
+    
+    def _exit(self):
+        self._mainloop.quit()
 
     def plover_is_running(self, b):
         self.stenogotchi_service.plover_is_running(b)
+        # If plover is shutting down, quit mainloop
+        if not b:
+            self._exit()
 
     def plover_is_ready(self, b):
         self.stenogotchi_service.plover_is_ready(b)
@@ -39,6 +71,24 @@ class StenogotchiClient:
 
     def plover_strokes_stats(self, s):
         self.stenogotchi_service.plover_strokes_stats(s)
+
+    def stenogotchi_signal_handler(self, dict):
+        print(f"Caught signal from Stenogotchi: {str(dict)}")
+        # Enable and disable wpm/strokes meters
+        if 'start_wpm_meter' in dict:
+            if dict['start_wpm_meter'] == 'wpm and strokes':
+                self._engineserver.start_wpm_meter(enable_wpm=True, enable_strokes=True)
+            elif dict['start_wpm_meter'] == 'wpm':
+                self._engineserver.start_wpm_meter(enable_wpm=True, enable_strokes=False)
+            elif dict['start_wpm_meter'] == 'strokes':
+                self._engineserver.start_wpm_meter(enable_wpm=False, enable_strokes=True)
+        if 'stop_wpm_meter' in dict:
+            if dict['stop_wpm_meter'] == 'wpm and strokes':
+                self._engineserver.stop_wpm_meter(disable_wpm=True, disable_strokes=True)
+            elif dict['stop_wpm_meter'] == 'wpm':
+                self._engineserver.stop_wpm_meter(disable_wpm=True, disable_strokes=False)
+            elif dict['stop_wpm_meter'] == 'strokes':
+                self._engineserver.stop_wpm_meter(disable_wpm=False, disable_strokes=True)
 
 
 class BTClient:

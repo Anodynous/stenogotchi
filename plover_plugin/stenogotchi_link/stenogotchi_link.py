@@ -29,8 +29,8 @@ class EngineServer():
     # Called once to initialize an instance which lives until Plover exits
     def __init__(self, engine: StenoEngine) -> None:
         self._engine: StenoEngine = engine
+        self._stenogotchiclient = StenogotchiClient(self)
         self._btclient = BTClient()
-        self._stenogotchiclient = StenogotchiClient()
         self._wpm_meter = None
         self._strokes_meter = None
 
@@ -41,15 +41,13 @@ class EngineServer():
         logging.debug("Plover_link started")
         self._stenogotchiclient.plover_is_running(True)
 
-        self.start_wpm_meter(enable_wpm=True, enable_strokes=True)
-
     # Called when Plover exits or user disables the extension
     def stop(self):
         """ Stops the server. """
         self._disconnect_hooks()
         self._stenogotchiclient.plover_is_running(False)
 
-    def start_wpm_meter(self, enable_wpm=True, enable_strokes=False, method='ncra'):
+    def start_wpm_meter(self, enable_wpm=False, enable_strokes=False, method='ncra'):
         """ Starts WPM and/or Strokes meters
         """
         if enable_wpm:
@@ -57,9 +55,11 @@ class EngineServer():
         if enable_strokes:
             self._strokes_meter = PloverStrokesMeter(stenogotchi_link=self, strokes_method=method)
 
-    def stop_wpm_meter(self):
-        self._wpm_meter = None
-        self._strokes_meter = None
+    def stop_wpm_meter(self, disable_wpm=True, disable_strokes=True):
+        if disable_wpm:
+            self._wpm_meter = None
+        if disable_strokes:
+            self._strokes_meter = None
 
     def _on_wpm_meter_update_strokes(self, stats):
         """ Sends strokes stats from past 1 min to stenogotchi as a string """
