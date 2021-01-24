@@ -122,7 +122,7 @@ class Handler():
 
 _handlers = [None,None,None,None,None]
 _button_was_held = False
-loaded_plugins = {}
+_plover_wpm_meters_enabled = False
 
 def _run():
     global _running, _states
@@ -441,8 +441,8 @@ def press_handler(button, pressed, plugin):
 
 def hold_handler(button):
     """ On long press run built in internal Stenogotchi commands """
-    global _button_was_held
     # Set button held status to prevent release_handler from triggering on release
+    global _button_was_held
     _button_was_held = True
 
     # Blink in response to long hold event
@@ -455,30 +455,46 @@ def hold_handler(button):
     thread = Thread(target=blink, args=(red, green, blue, on_time, off_time, blink_times))
     thread.start()
 
+    def toggle_qwerty_steno():
+        try:
+            cap_state = plugins.loaded['evdevkb'].get_capture_state()
+            if not cap_state:
+                plugins.loaded['evdevkb'].start_capture()
+            else:
+                plugins.loaded['evdevkb'].stop_capture()
+        except Exception as ex:
+            logging.error(f"BUTTONSHIM: Check if evdevkb is loaded, exceptio: {str(ex)}")
+    
+    def toggle_wpm_meters():
+        global _plover_wpm_meters_enabled
+        command = {}
+
+        if _plover_wpm_meters_enabled:
+            command = {'stop_wpm_meter': 'wpm and strokes'}     # get these options from main config, add duration timing as well
+        elif not _plover_wpm_meters_enabled:
+            command = {'start_wpm_meter': 'wpm and strokes'}    # get these options from main config, add duration timing as well
+
+        _plover_wpm_meters_enabled = not _plover_wpm_meters_enabled
+        plugins.loaded['plover_link'].send_signal_to_plover(command)
+
     if NAMES[button] == 'A':
         # Toggle QWERTY/STENO mode
-        try:
-            cap_state = loaded_plugins['evdevkb'].get_capture_state()
-            if not cap_state:
-                loaded_plugins['evdevkb'].start_capture()
-            else:
-                loaded_plugins['evdevkb'].stop_capture()
-        except Exception as ex:
-            logging.error(f"BUTTONSHIM: Exception {str(ex)}")
+        toggle_qwerty_steno()
     
     elif NAMES[button] == 'B':
-        logging.debug(f"long press detected from slot {button}, for button {NAMES[button]}")
+        # Toggle WPM & strokes meters for Plover
+        toggle_wpm_meters()
 
     elif NAMES[button] == 'C':
         # Clean the screen (should not be needed on waveshare_2, but could be useful on other display modules)
-        loaded_plugins['buttonshim']._agent.view().init_display()
-        loaded_plugins['buttonshim']._agent.view().update(force=True)
+        plugins.loaded['buttonshim']._agent.view().init_display()
+        plugins.loaded['buttonshim']._agent.view().update(force=True)
     
     elif NAMES[button] == 'D':
         # Toggle wifi on/off
         stenogotchi.set_wifi_onoff()
         for i in range(5):
-            loaded_plugins['buttonshim']._agent._update_wifi()
+            plugins.loaded['buttonshim']._agent._update_wifi()
             time.sleep(2)
         
     elif NAMES[button] == 'E':
@@ -528,14 +544,13 @@ class Buttonshim(plugins.Plugin):
         global _handlers
         _handlers = [Handler(self) for x in range(NUM_BUTTONS)]
         on_press([BUTTON_A, BUTTON_B, BUTTON_C, BUTTON_D, BUTTON_E], press_handler)
-        on_release([BUTTON_A, BUTTON_B, BUTTON_C, BUTTON_D, BUTTON_E], release_handler)
         on_hold([BUTTON_A, BUTTON_B, BUTTON_C, BUTTON_D, BUTTON_E], hold_handler)
+        on_release([BUTTON_A, BUTTON_B, BUTTON_C, BUTTON_D, BUTTON_E], release_handler)
 
     def on_loaded(self):
         logging.info("[buttonshim] GPIO Button plugin loaded.")
         self.running = True
 
     def on_ready(self, agent):
-        global loaded_plugins
         self._agent = agent
-        loaded_plugins = plugins.loaded
+
