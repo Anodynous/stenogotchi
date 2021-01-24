@@ -57,8 +57,10 @@ class EngineServer():
 
     def stop_wpm_meter(self, disable_wpm=True, disable_strokes=True):
         if disable_wpm:
+            self._wpm_meter.quit()
             self._wpm_meter = None
         if disable_strokes:
+            self._strokes_meter.quit()
             self._strokes_meter = None
 
     def _on_wpm_meter_update_strokes(self, stats):
