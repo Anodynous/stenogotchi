@@ -41,11 +41,13 @@ Stenogotchi is based on the [pwnagotchi](https://github.com/evilsocket/pwnagotch
 - [x] Support for external battery charge reading on UI, [UPS-Lite v1.2](https://hackaday.io/project/173847-ups-lite)
 - [x] Toggle to enable/disable WIFI
 - [x] Toggle between STENO and QWERTY output mode
-- [ ] WPM readings for both STENO and QWERTY modes
+- [ ] WPM readings for:
+  - [x] STENO 
+  - [ ] QWERTY
 - [ ] On-the-fly updating of plover dictionaries
-- [ ] Local-only-mode (no bluetooth output, records output to microSD card)
 - [ ] Improved web-ui, including emulation of the buttonSHIM
 - [ ] Simple AI for shaping personality of the stenogotchi 
+- [ ] Local-only-mode (no bluetooth output, records output to microSD card)
 - [ ] Proper documentation
 - [ ] Support for other display modules
 - [ ] Fully automated build script for setting up Dietpi image with Plover and Stenogotchi installed and configured
