@@ -74,10 +74,10 @@ main.plugins.plover_link.bt_autoconnect_mac = ''
 
 main.plugins.evdevkb.enabled = true
 
-main.plugins.upslite.enabled = true
+main.plugins.upslite.enabled = false
 main.plugins.upslite.shutdown_level = 4
 
-main.plugins.memtemp.enabled = true
+main.plugins.memtemp.enabled = false
 main.plugins.memtemp.scale = "celsius"
 main.plugins.memtemp.orientation = "horizontal"
 
@@ -98,10 +98,10 @@ main.plugins.led.patterns.sleep = "oo  oo  oo oo  oo  oo  oo"
 main.plugins.logtail.enabled = false
 main.plugins.logtail.max-lines = 10000
 
-main.plugins.session-stats.enabled = true
+main.plugins.session-stats.enabled = false
 main.plugins.session-stats.save_directory = "/var/tmp/stenogotchi/sessions/"
 
-main.plugins.buttonshim.enabled = true
+main.plugins.buttonshim.enabled = false
 main.plugins.buttonshim.buttons.A.command = ""
 main.plugins.buttonshim.buttons.A.blink.enabled = false
 main.plugins.buttonshim.buttons.A.blink.red = 0
