@@ -83,7 +83,7 @@ def _cpu_stat():
 
 def cpu_load(s=0.1):
     """
-    Returns the current cpuload
+    Returns the average cpuload over a 's'-seconds period
     """
     parts0 = _cpu_stat()
     time.sleep(s)
