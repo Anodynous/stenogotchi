@@ -40,14 +40,14 @@ class View(object):
         self._width = self._layout['width']
         self._height = self._layout['height']
         self._state = State(state={
-            'ups': LabeledValue(color=BLACK, label='BAT', value='000', position=self._layout['ups'],
+            'ups': LabeledValue(color=BLACK, label='BAT', value='', position=self._layout['ups'],
                                     label_font=fonts.Bold,
                                     text_font=fonts.Medium),
-            'wpm': LabeledValue(color=BLACK, label='WPM', value='0 (00)', position=self._layout['wpm'],
+            'wpm': LabeledValue(color=BLACK, label='WPM', value='', position=self._layout['wpm'],
                                 label_font=fonts.Bold,
                                 text_font=fonts.Medium),
 
-            'strokes': LabeledValue(color=BLACK, label='STR', value='0.00', position=self._layout['strokes'],
+            'strokes': LabeledValue(color=BLACK, label='STR', value='', position=self._layout['strokes'],
                                 label_font=fonts.Bold,
                                 text_font=fonts.Medium),
 
