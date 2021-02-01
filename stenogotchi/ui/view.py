@@ -47,7 +47,7 @@ class View(object):
                                 label_font=fonts.Bold,
                                 text_font=fonts.Medium),
 
-            'strokes': LabeledValue(color=BLACK, label='STRK', value='0.00', position=self._layout['strokes'],
+            'strokes': LabeledValue(color=BLACK, label='STR', value='0.00', position=self._layout['strokes'],
                                 label_font=fonts.Bold,
                                 text_font=fonts.Medium),
 
