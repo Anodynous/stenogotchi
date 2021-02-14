@@ -1,4 +1,6 @@
 # Stenogotchi
+![stenogotchi](https://user-images.githubusercontent.com/17461433/107876588-8e52aa80-6ecf-11eb-81ba-14731c885ff1.jpeg)
+
 Aim of the project is to deliver a cheap and portable device for running [Plover](https://www.openstenoproject.org/ "Plover: Open Steno Project") where local installation on the host is impossible or simply not preferred. A stand-alone link enabling stenography using any input device supported by Plover on any device accepting bluetooth keyboards. 
 
 Likely use-cases include: 
@@ -57,7 +59,10 @@ Stenogotchi is built on top of [Pwnagotchi](https://github.com/evilsocket/pwnago
 - [ ] Fully automated build script for setting up Dietpi image with Plover and Stenogotchi installed and configured
 - [ ] Separate barebones version. Only including Plover plugin and BT HID emulation for piping steno output
 
-## Screenshots
+## Pictures
+![stenogotchi_2](https://user-images.githubusercontent.com/17461433/107877063-cb6c6c00-6ed2-11eb-9f92-9059acd9f66d.jpeg)
+![stenogotchi_3](https://user-images.githubusercontent.com/17461433/107876793-e3db8700-6ed0-11eb-83bb-648b08d1a315.jpeg)
+![stenogotchi_4](https://user-images.githubusercontent.com/17461433/107876790-e0480000-6ed0-11eb-820d-65188cd0a031.jpeg)
 
 ## License
 Released under the GPL3 license.
