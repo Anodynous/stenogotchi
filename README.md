@@ -1,5 +1,5 @@
 # Stenogotchi
-![stenogotchi](https://user-images.githubusercontent.com/17461433/107876588-8e52aa80-6ecf-11eb-81ba-14731c885ff1.jpeg)
+![stenogotchi_1](https://user-images.githubusercontent.com/17461433/107876588-8e52aa80-6ecf-11eb-81ba-14731c885ff1.jpeg)
 
 Aim of the project is to deliver a cheap and portable device for running [Plover](https://www.openstenoproject.org/ "Plover: Open Steno Project") where local installation on the host is impossible or simply not preferred. A stand-alone link enabling stenography using any input device supported by Plover on any device accepting bluetooth keyboards. 
 
@@ -35,6 +35,7 @@ Stenogotchi is built on top of [Pwnagotchi](https://github.com/evilsocket/pwnago
 - Create a file called config.toml with overrides to the defaults. Don't edit default.toml directly as it is overridden on version updates
 
 ## Usage
+![stenogotchi_2](https://user-images.githubusercontent.com/17461433/107883149-d5539680-6ef5-11eb-86fe-41f0b6293eed.jpg)
 
 ## Project roadmap
 - [x] POC: Headless RPI0W running Plover, emulating bluetooth HID device and seamlessly piping steno output over BT to host
@@ -60,9 +61,9 @@ Stenogotchi is built on top of [Pwnagotchi](https://github.com/evilsocket/pwnago
 - [ ] Separate barebones version. Only including Plover plugin and BT HID emulation for piping steno output
 
 ## Pictures
-![stenogotchi_2](https://user-images.githubusercontent.com/17461433/107877063-cb6c6c00-6ed2-11eb-9f92-9059acd9f66d.jpeg)
-![stenogotchi_3](https://user-images.githubusercontent.com/17461433/107876793-e3db8700-6ed0-11eb-83bb-648b08d1a315.jpeg)
-![stenogotchi_4](https://user-images.githubusercontent.com/17461433/107876790-e0480000-6ed0-11eb-820d-65188cd0a031.jpeg)
+![stenogotchi_3](https://user-images.githubusercontent.com/17461433/107877063-cb6c6c00-6ed2-11eb-9f92-9059acd9f66d.jpeg)
+![stenogotchi_4](https://user-images.githubusercontent.com/17461433/107876793-e3db8700-6ed0-11eb-83bb-648b08d1a315.jpeg)
+![stenogotchi_5](https://user-images.githubusercontent.com/17461433/107876790-e0480000-6ed0-11eb-820d-65188cd0a031.jpeg)
 
 ## License
 Released under the GPL3 license.
