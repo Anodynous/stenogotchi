@@ -90,7 +90,7 @@ Stenogotchi is built on top of [Pwnagotchi](https://github.com/evilsocket/pwnago
 
 9. Install Stenogotchi dependencies
 
-10. Configure Plover and Stenogotchi to start at boot
+10. Configure Plover and Stenogotchi to start at boot.
     * Using dietpi-config enable automatic login of root to the local terminal
     * Automatically start the Stenogotchi and X server at boot
 
@@ -122,7 +122,7 @@ Stenogotchi is built on top of [Pwnagotchi](https://github.com/evilsocket/pwnago
 ![stenogotchi_2](https://user-images.githubusercontent.com/17461433/107883149-d5539680-6ef5-11eb-86fe-41f0b6293eed.jpg)
 
 ## Project roadmap
-- [x] POC: Headless RPI0W running Plover, emulating bluetooth HID device and seamlessly piping steno output over BT to host
+- [x] Proof of concept. Headless RPI0W running Plover, emulating bluetooth HID device and seamlessly piping steno output over BT to host
 - [x] Create proper plugin for integration with Plover
 - [x] Integrate bluetooth HID server as Stenogotchi plugin
 - [x] Support for eINK display and web UI
@@ -131,18 +131,16 @@ Stenogotchi is built on top of [Pwnagotchi](https://github.com/evilsocket/pwnago
 - [x] Create Stenogotchi plugin to capture QWERTY input while blocking Plover
 - [x] ButtonSHIM toggle to enable/disable WIFI
 - [x] ButtonSHIM toggle between STENO and QWERTY output mode
-- [ ] WPM readings for:
-  - [x] STENO mode
-  - [ ] QWERTY mode
-- [ ] Full installation guide for Plover and Stenogotchi using DietPi as base image
-- [ ] On-the-fly updating of plover dictionaries
+- [x] WPM readings for STENO mode:
+- [ ] Improved installation guide for Plover and Stenogotchi using DietPi as base image
+- [ ] Clean up code, fix bugs and add test suite
+- [ ] On-the-fly updating and reloading of plover dictionaries
+- [ ] Dictionary lookup using eINK screen
 - [ ] Improved web-ui, including emulation of the buttonSHIM
 - [ ] Simple AI for shaping personality of the Stenogotchi
-- [ ] Proper documentation
-- [ ] Support for other display modules
-- [ ] Local-only-mode (no bluetooth output, records output to microSD card)
-- [ ] Fully automated build script for setting up Dietpi image with Plover and Stenogotchi installed and configured
-- [ ] Separate barebones version. Only including Plover plugin and BT HID emulation for piping steno output
+- [ ] Proper usage and configuration documentation
+- [ ] Support for other eINK display modules
+- [ ] Add launch option for barebones version. Intended to run on RPI0w without additional modules.
 
 ## Pictures
 ![stenogotchi_3](https://user-images.githubusercontent.com/17461433/107877063-cb6c6c00-6ed2-11eb-9f92-9059acd9f66d.jpeg)
