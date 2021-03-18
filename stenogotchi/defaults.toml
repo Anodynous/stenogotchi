@@ -55,7 +55,7 @@ ui.faces.friend = "(♥‿‿♥)"
 ui.faces.broken = "(☓‿‿☓)"
 ui.faces.debug = "(#__#)"
 
-ui.web.enabled = true
+ui.web.enabled = false
 ui.web.address = "192.168.1.111"
 ui.web.username = "changeme"
 ui.web.password = "changeme"
