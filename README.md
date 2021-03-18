@@ -18,101 +18,140 @@ Stenogotchi is built on top of [Pwnagotchi](https://github.com/evilsocket/pwnago
 | MicroSD card                                                                     | Required     |
 | [Waveshare 2.13 v.2](https://www.waveshare.com/wiki/2.13inch_e-Paper_HAT)        | Recommended  |
 | [ButtonSHIM](https://shop.pimoroni.com/products/button-shim)                     | Recommended  |
-| [UPS-Lite v1.2](https://hackaday.io/project/173847-ups-lite)                     | Optional     |
+| [UPS-Lite v1.2](https://hackaday.io/project/173847-ups-lite)                     | Recommended  |
 
 ## Installation
+All commands should be executed as root. The installation process can be completed headless.
 
-1. Flash and setup DietPi image, see https://dietpi.com/docs/install/
-    * Enable wifi, bluetooth and optionally set the boot boost to the max (60s)
-    * Reboot and let dietpi update
+1. [35min] Flash DietPi image, see https://dietpi.com/docs/install/
+    * Enable and connect onboard wifi and let dietpi update
+        * Can be done under dietpi-config > network options: adapters or using /boot/dietpi.txt and /boot/dietpi-wifi.txt. 
+    * Under dietpi-config > advanced options enable:
+        * Bluetooth
+        * SPI state (needed by eINK screen)
+        * I2C state (needed by Buttonshim and UPS-Lite power readings)
 
-2. Install the following through DietPi-Software
-    * LXDE (alternatively install and configure X.Org X Server as the window manager shouldn't be needed)
+2. [15min] Install the following through dietpi-software > software additional
+    * X Org X Server
     * Python 3 pip
-    * Build-Essentials
     * Git Client
 
-3. Manually install some additional dependencies
-    
-        >apt install python3-setuptools python3-pyqt5 qt5-default pyqt5-dev pyqt5-dev-tools screen -y
-        >pip3 install dbus-python python-xlib==0.29
+3. [5min] Install additional dependencies
 
-4. Clone the Plover repository and comment out dbus-python and PyQt5 from requirements_distribution
+        apt-get install xserver-xorg-video-fbdev libtiff5 libopenjp2-7 bluez python3-rpi.gpio python3-gi screen rfkill -y
+        pip3 install file_read_backwards flask flask-wtf flask-cors evdev python-xlib pillow spidev jsonpickle pydbus dbus-python
 
-        >cd ~ 
-        >git clone https://github.com/openstenoproject/plover.git
-        >cd plover
-        >nano requirements_distribution.txt
+4. Clone the Plover repository and comment out PyQt5 and SIP from requirements_distribution. They will fail to install and need to be compiled from source, an 8+ hour process on the rpi0, if you want access to the Plover GUI. Luckily, they are redundant in our setup as the Stenogotchi runs headless. 
+
+        git clone https://github.com/openstenoproject/plover.git
+        nano ./plover/requirements_distribution.txt
             ...
-            #dbus-python==1.2.4; "linux" in sys_platform
             #PyQt5-sip==4.19.13
             #PyQt5==5.11.3
             ...
 
-5. Install PyQt5 from source. (This step no longer seems to be required to run plover headless on dietpi. Leaving info up for now.)
-    * Note, this is a multi-hour process on the low powered raspberry pi zero
-
-          >wget https://www.riverbankcomputing.com/static/Downloads/sip/sip-5.5.1.dev2011271026.tar.gz
-          >wget https://www.riverbankcomputing.com/static/Downloads/PyQt5/PyQt5-5.15.3.dev2012241233.tar.gz
-          >tar -zxvf sip...
-          >tar -zxvf PyQt5...
-
-          >cd sipsip-5.5.1.dev2011271026
-          >sudo python3 setup.py build
-          >sudo python3 setup.py install
-          >cd ..
-
-          >cd PyQt5-5.15.3.dev2012241233
-          >sudo python3 configure.py
-          >sudo make
-          >sudo make install
-
-5. Install Plover and plover-plugins
+5. [5min] Install Plover and plover-plugins
         
-        >pip3 install --user -r requirements.txt
-        >pip3 install --user -e . -r requirements_plugins.txt --no-build-isolation
+        pip3 install --user -r ./plover/requirements.txt
+        pip3 install --user -e ./plover -r ./plover/requirements_plugins.txt --no-build-isolation
 
-6. Install and enable stenogotchi_link plugin for Plover 
-     
-        >plover -s plover_plugins install ./plover_plugin/
-        >echo 'enabled_extensions = ["stenogotchi_link"]' >> ~/.config/plover/plover.cfg
+6. Clone the Stenogotchi repository and install the stenogotchi_link plover plugin
 
-7. Clone the Stenogotchi repository
+        git clone https://github.com/Anodynous/stenogotchi.git
+        pip3 install ./stenogotchi/plover_plugin/
 
-        >cd ~ 
-        >git clone https://github.com/Anodynous/stenogotchi.git
-        >cd stenogotchi
+7. Add configuration file for the service used to communicate over D-Bus between Plover and Stenogotchi
+        
+        cp ./stenogotchi/plover_plugin/stenogotchi_link/com.github.stenogotchi.conf /etc/dbus-1/system.d/
 
-8. Install and enable the stenogotchi_link plover plugin
+8. Remove the input bluetooth plugin so that it does not grab the sockets we require access to. We make this the default behaviour by appending '-P input' to the pre-existing line in below service file.
+	
+        nano /lib/systemd/system/bluetooth.service
+        
+        #----------
+        ExecStart=/usr/lib/bluetooth/bluetoothd -P input
+        
 
-        >/root/.local/bin/plover -s plover_plugins install ./plover_plugin/
-        >echo 'enabled_extensions = ["stenogotchi_link"]' >> ~/.config/plover/plover.cfg
+9. Configure Plover and Stenogotchi to start at boot
+    * Using dietpi-autostart enable automatic login of root to the local terminal
+    * Automatically start Stenogotchi and X server at local terminal login
 
-9. Install Stenogotchi dependencies
-
-10. Configure Plover and Stenogotchi to start at boot.
-    * Using dietpi-config enable automatic login of root to the local terminal
-    * Automatically start the Stenogotchi and X server at boot
-
-          >nano ~/.bash_profile
+          nano ~/.bash_profile
     
-            if [[ -z $DISPLAY ]] && [[ $(tty) = /dev/tty1 ]]; then
-              screen -S stenogotchi -dm python3 /root/stenogotchi/stenogotchi.py --debug
-              xinit
-            fi
+          #----------
+          if [[ -z $DISPLAY ]] && [[ $(tty) = /dev/tty1 ]]; then
+            screen -S stenogotchi -dm python3 /root/stenogotchi/stenogotchi.py --debug
+            xinit
+          fi
 
     * Start Plover automatically at launch of X server
 
-          >nano ~/.xinitrc
+          nano ~/.xinitrc
           
-            screen -S plover /root/.local/bin/plover -l debug -g none
+          #----------
+          screen -S plover plover -g none -l debug
 
-11. Add the below along with suitable configuration for your keyboard/machine in /root/.config/plover/plover.cfg
+10. Configure Plover. Setup will ultimately depend on your own preferences and keyboard, but below is what I use. Make sure to include at least 'auto_start = True' and the '[Plugins]' section in your own config.
+
+        mkdir -p /root/.local/share/plover/
+        nano /root/.local/share/plover/plover.cfg
+        
+        #----------
+        [Output Configuration]
+        space_placement = After Output
+        start_attached = True
+        start_capitalize = False
+        undo_levels = 30
+
+        [Logging Configuration]
+        enable_stroke_logging = False
+        enable_translation_logging = False
 
         [Machine Configuration]
         auto_start = True
+        machine_type = Gemini PR
 
-12. Configure Stenogotchi and reboot
+        [Gemini PR]
+        baudrate = 9600
+        bytesize = 8
+        parity = N
+        port = /dev/ttyACM0
+        stopbits = 1
+        timeout = 2.0
+
+        [Plugins]
+        enabled_extensions = ["stenogotchi_link"]
+
+11. Significantly reduce boot time
+    * Set ARM initial turbo to the max (60s) under dietpi-config > performance options to reduce boot time. You can also play around with overclocking, throttling and cpu governor to find a suitable balance between performance and power draw.     
+    * Disable dietpi and apt update check at boot:
+          
+          nano /boot/dietpi.txt
+
+          #----------	
+          CONFIG_CHECK_DIETPI_UPDATES=0
+          CONFIG_CHECK_APT_UPDATES=0
+
+    * Disable waiting for network and time sync at boot (unless you always will have wifi available or need reliable timestamps in logs):
+                        
+          nano /boot/dietpi.txt
+          
+          #----------
+          CONFIG_BOOT_WAIT_FOR_NETWORK=0
+          CONFIG_NTP_MODE=0 
+
+12. Launch Stenogotchi once for initial setup (unless you already rebooted in previous step). Configure settings and reboot.
+
+        python3 ./stenogotchi/stenogotchi.py
+        nano /etc/stenogotchi/config.toml
+        
+        #----------modify the config as you see fit----------#
+        main.plugins.evdevkb.enabled = true
+        main.plugins.buttonshim.enabled = true
+        main.plugins.plover_link.bt_autoconnect_mac = 'DE:AD:BE:EF'
+        #----------
+
+        reboot
 
 ## Configuration
 - Configuration files are placed in /etc/stenogotchi/
@@ -120,6 +159,15 @@ Stenogotchi is built on top of [Pwnagotchi](https://github.com/evilsocket/pwnago
 
 ## Usage
 ![stenogotchi_2](https://user-images.githubusercontent.com/17461433/107883149-d5539680-6ef5-11eb-86fe-41f0b6293eed.jpg)
+
+### Buttonshim
+Below long-press (1s) actions are pre-defined. Short-press triggers user configurable terminal commands.
+
+* Button A - toggle QWERTY / STENO mode
+* Button B - toggle wpm readings (60s NCRA)
+* Button C - full refresh eINK
+* Button D - toggle wifi (reboot persistent)
+* Button E - shutdown
 
 ## Project roadmap
 - [x] Proof of concept. Headless RPI0W running Plover, emulating bluetooth HID device and seamlessly piping steno output over BT to host
@@ -129,18 +177,22 @@ Stenogotchi is built on top of [Pwnagotchi](https://github.com/evilsocket/pwnago
 - [x] Support for buttons for built-in and user customizable actions
 - [x] Support for external battery charge readings on UI
 - [x] Create Stenogotchi plugin to capture QWERTY input while blocking Plover
-- [x] ButtonSHIM toggle to enable/disable WIFI
+- [x] ButtonSHIM toggle to enable/disable WIFI, persisting reboot
 - [x] ButtonSHIM toggle between STENO and QWERTY output mode
-- [x] WPM readings for STENO mode:
-- [ ] Improved installation guide for Plover and Stenogotchi using DietPi as base image
-- [ ] Clean up code, fix bugs and add test suite
-- [ ] On-the-fly updating and reloading of plover dictionaries
+- [x] WPM readings for STENO mode
+- [x] Full installation guide for Plover and Stenogotchi using DietPi as base image
+- [ ] Decrease steno latency
+- [ ] Document configuration options and buttonSHIM functionality
+- [ ] Clean up and optimize code, fix bugs and add test suite
 - [ ] Dictionary lookup using eINK screen
-- [ ] Improved web-ui, including emulation of the buttonSHIM
+- [ ] Dictionary additions using eINK screen
+- [ ] Plover chords for triggering Stenogotchi actions
+- [ ] Expand Stenogotchi statuses, reactions and mood indicators
+- [ ] On-the-fly updating and reloading of Plover dictionaries
+- [ ] Improved web-ui, including buttonSHIM functionality
 - [ ] Simple AI for shaping personality of the Stenogotchi
 - [ ] Proper usage and configuration documentation
 - [ ] Support for other eINK display modules
-- [ ] Add launch option for barebones version. Intended to run on RPI0w without additional modules.
 
 ## Pictures
 ![stenogotchi_3](https://user-images.githubusercontent.com/17461433/107877063-cb6c6c00-6ed2-11eb-9f92-9059acd9f66d.jpeg)
