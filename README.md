@@ -122,7 +122,19 @@ All commands should be executed as root. The installation process can be complet
         [Plugins]
         enabled_extensions = ["stenogotchi_link"]
 
-11. Significantly reduce boot time
+11. Launch Stenogotchi manually for initial setup. Configure settings after reboot completes.
+
+        python3 ./stenogotchi/stenogotchi.py
+        nano /etc/stenogotchi/config.toml
+        
+        #----------modify the config as you see fit----------#
+        main.plugins.buttonshim.enabled = true
+        main.plugins.upslite.enabled = true
+        main.plugins.evdevkb.enabled = true
+        main.plugins.plover_link.bt_autoconnect_mac = 'DE:AD:BE:EF'
+        #----------
+
+12. Significantly reduce boot time
     * Set ARM initial turbo to the max (60s) under dietpi-config > performance options to reduce boot time. You can also play around with overclocking, throttling and cpu governor to find a suitable balance between performance and power draw.     
     * Disable dietpi and apt update check at boot:
           
@@ -140,22 +152,10 @@ All commands should be executed as root. The installation process can be complet
           CONFIG_BOOT_WAIT_FOR_NETWORK=0
           CONFIG_NTP_MODE=0 
 
-12. Launch Stenogotchi once for initial setup (unless you already rebooted in previous step). Configure settings and reboot.
-
-        python3 ./stenogotchi/stenogotchi.py
-        nano /etc/stenogotchi/config.toml
-        
-        #----------modify the config as you see fit----------#
-        main.plugins.evdevkb.enabled = true
-        main.plugins.buttonshim.enabled = true
-        main.plugins.plover_link.bt_autoconnect_mac = 'DE:AD:BE:EF'
-        #----------
-
-        reboot
 
 ## Configuration
 - Configuration files are placed in /etc/stenogotchi/
-- Create a file called config.toml with overrides to the defaults. Don't edit default.toml directly as it is overridden on version updates
+- Create a file called config.toml with overrides to the defaults. Don't edit default.toml directly as it is overwritten on version updates.
 
 ## Usage
 ![stenogotchi_2](https://user-images.githubusercontent.com/17461433/107883149-d5539680-6ef5-11eb-86fe-41f0b6293eed.jpg)
