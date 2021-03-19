@@ -40,7 +40,7 @@ def set_name(new_name):
             fp.write(patched)
 
         os.system("hostname '%s'" % new_name)
-        stenogotchi.reboot()
+        reboot()
 
 
 def name():
@@ -161,7 +161,6 @@ def restart(mode):
     else:
         os.system("touch /root/.stenogotchi-manual")
 
-    #os.system("service bettercap restart")
     #os.system("service stenogotchi restart")
 
 
