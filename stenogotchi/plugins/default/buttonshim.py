@@ -521,7 +521,7 @@ class Buttonshim(plugins.Plugin):
             
         elif NAMES[button] == 'E':
             # Initiate clean shutdown process
-            logging.info(f"[buttonshim] Initiated clean shutdow")
+            logging.info(f"[buttonshim] Initiated clean shutdown")
             stenogotchi.shutdown()
     
     def release_handler(self, button, pressed, plugin):
