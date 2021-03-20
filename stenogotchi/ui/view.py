@@ -281,11 +281,15 @@ class View(object):
     def on_plover_ready(self):
         self.set('face', faces.AWAKE)
         self.set('status', self._voice.on_plover_ready())
+        if self._state.get('mode') == 'NONE':
+            self.set('mode', 'STENO')
         self.update()
 
     def on_plover_quit(self):
         self.set('face', faces.BROKEN)
         self.set('status', 'Uh-oh... I think Plover just quit on us')
+        if self._state.get('mode') == 'STENO':
+            self.set('mode', 'NONE')
         self.update()
 
     def on_set_wpm(self, wpm):
