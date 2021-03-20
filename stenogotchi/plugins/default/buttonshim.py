@@ -511,15 +511,16 @@ class Buttonshim(plugins.Plugin):
 
         elif NAMES[button] == 'C':
             # Clean the screen (should not be needed on waveshare_2, but could be useful on other display modules)
-            plugins.loaded['buttonshim']._agent.view().init_display()
-            plugins.loaded['buttonshim']._agent.view().update(force=True)
+            self._agent.view().init_display()
+            self._agent.view().update(force=True)
             logging.info(f"[buttonshim] Initiated screen refresh")
         
         elif NAMES[button] == 'D':
             # Toggle wifi on/off
             stenogotchi.set_wifi_onoff()
+            # Check for changes in wifi status over a short while
             for i in range(5):
-                plugins.loaded['buttonshim']._agent._update_wifi()
+                self._agent._update_wifi()
                 time.sleep(2)
             logging.info(f"[buttonshim] Toggled wifi state")
             

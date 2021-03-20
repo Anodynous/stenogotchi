@@ -23,7 +23,7 @@ class Agent(Automata):
         self._view = view
         self._view.set_agent(self)
         self._web_ui = Server(self, config['ui'])
-        self._wifi_connected = False
+        self._wifi_connected = None
 
         self._history = {}
         #self.last_session = LastSession(self._config)
@@ -52,7 +52,7 @@ class Agent(Automata):
 
     def _update_wifi(self):
         status, ip = stenogotchi.get_wifi_status()
-    
+  
         if status == 'UP':
             if self._wifi_connected:
                 return
@@ -68,7 +68,7 @@ class Agent(Automata):
                 self._wifi_connected = False
             self.set_wifi_connected(ssid, ip)
         elif status == 'DOWN' or not status:
-            if not self._wifi_connected:
+            if self._wifi_connected == False:
                 return
             self._wifi_connected = False
             self.set_wifi_disconnected('[OFF]')
