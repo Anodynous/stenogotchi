@@ -492,7 +492,7 @@ class Buttonshim(plugins.Plugin):
                 self.set_ui_update('wpm', wpm_method)
                 self.set_ui_update('strokes', wpm_timeout)
                 self.trigger_ui_update()
-                logging.info(f"[buttonshim] Enabled WPM readings")
+                logging.info(f"[buttonshim] Enabled WPM readings using method {wpm_method} and timeout {wpm_timeout}")
 
             self._plover_wpm_meters_enabled = not self._plover_wpm_meters_enabled
             plugins.loaded['plover_link'].send_signal_to_plover(command)

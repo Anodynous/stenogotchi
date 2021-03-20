@@ -79,11 +79,11 @@ class StenogotchiClient:
             wpm_timeout = int(dict['wpm_timeout'])
             logging.debug('Starting WPM meter')
             if dict['start_wpm_meter'] == 'wpm and strokes':
-                self._engineserver.start_wpm_meter(enable_wpm=True, enable_strokes=True, method=wpm_method, timeout=wpm_timeout)
+                self._engineserver.start_wpm_meter(enable_wpm=True, enable_strokes=True, wpm_method=wpm_method, wpm_timeout=wpm_timeout)
             elif dict['start_wpm_meter'] == 'wpm':
-                self._engineserver.start_wpm_meter(enable_wpm=True, enable_strokes=False, method=wpm_method, timeout=wpm_timeout)
+                self._engineserver.start_wpm_meter(enable_wpm=True, enable_strokes=False, wpm_method=wpm_method, wpm_timeout=wpm_timeout)
             elif dict['start_wpm_meter'] == 'strokes':
-                self._engineserver.start_wpm_meter(enable_wpm=False, enable_strokes=True, method=wpm_method, timeout=wpm_timeout)
+                self._engineserver.start_wpm_meter(enable_wpm=False, enable_strokes=True, wpm_method=wpm_method, wpm_timeout=wpm_timeout)
         if 'stop_wpm_meter' in dict:
             logging.debug('Stopping WPM meter')
             if dict['stop_wpm_meter'] == 'wpm and strokes':
