@@ -142,12 +142,13 @@ def shutdown():
     if view.ROOT:
         view.ROOT.on_shutdown()
         # give it some time to refresh the ui
-        time.sleep(10)
+        time.sleep(5)
     
-    if config['ui']['display']['clear_at_shutdown']:
-        from stenogotchi.ui.display import Display
-        display = Display(config=config)
-        display.clear()
+    if view.ROOT._config['ui']['display']['clear_at_shutdown']:
+        view.ROOT._agent._view.init_display()
+        view.ROOT._agent._view.clear()
+        # give it some time to clear the ui
+        time.sleep(5)
 
     logging.warning("syncing...")
 
