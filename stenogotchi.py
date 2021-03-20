@@ -26,8 +26,7 @@ def do_manual_mode(agent):
     agent.mode = 'manual'
     agent.last_session.parse(agent.view(), args.skip_session)
     if not args.skip_session:
-        logging.info(
-            "the last session lasted %s" % (agent.last_session.duration_human))
+        logging.info("the last session lasted %s" % (agent.last_session.duration_human))
 
     while True:
         display.on_manual_mode(agent.last_session)

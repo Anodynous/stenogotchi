@@ -42,7 +42,7 @@ class MemTemp(plugins.Plugin):
         self.cpu_load_avg = 0
 
     def on_loaded(self):
-        logging.info("memtemp plugin loaded.")
+        logging.info("[memtemp] memtemp plugin loaded.")
         _thread.start_new_thread(self._cpu_poller(), ())
 
     def mem_usage(self):

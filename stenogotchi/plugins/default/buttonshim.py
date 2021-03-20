@@ -431,7 +431,7 @@ class Buttonshim(plugins.Plugin):
         self._enqueue()
 
     def blink(self, r, g, b, ontime, offtime, blinktimes):
-        logging.info("[buttonshim] Blink")
+        logging.debug("[buttonshim] Blink")
         for i in range(0, blinktimes):
             self.set_pixel(r, g, b)
             time.sleep(ontime)
@@ -467,7 +467,7 @@ class Buttonshim(plugins.Plugin):
                     plugins.loaded['evdevkb'].stop_capture()
                     logging.info(f"[buttonshim] Switched to STENO mode")
             except Exception as ex:
-                logging.error(f"BUTTONSHIM: Check if evdevkb is loaded, exception: {str(ex)}")
+                logging.exception(f"[buttonshim] Check if evdevkb is loaded, exception: {str(ex)}")
         
         def toggle_wpm_meters():
             command = {}
@@ -475,7 +475,7 @@ class Buttonshim(plugins.Plugin):
                 wpm_method = self._agent._config['main']['plugins']['plover_link']['wpm_method']
                 wpm_timeout = self._agent._config['main']['plugins']['plover_link']['wpm_timeout']
             except Exception as ex:
-                logging.error(f"BUTTONSHIM: Check that wpm_method and wpm_timeout is configured. Falling back to defaults. Exception: {str(ex)}")
+                logging.exception(f"[buttonshim] Check that wpm_method and wpm_timeout is configured. Falling back to defaults. Exception: {str(ex)}")
                 wpm_method = 'ncra'
                 wpm_timeout = '60'
 
@@ -534,7 +534,7 @@ class Buttonshim(plugins.Plugin):
             logging.info(f"[buttonshim] Button Pressed! Loading command from slot '{button}' for button '{NAMES[button]}'")
             bCfg = plugin.options['buttons'][NAMES[button]]
             blinkCfg = bCfg['blink']
-            logging.debug(self.blink)
+            logging.debug(f'[buttonshim] {self.blink}'')
             if blinkCfg['enabled'] == True:
                 logging.debug(f"[buttonshim] Blinking led")
                 red = int(blinkCfg['red'])
@@ -543,7 +543,7 @@ class Buttonshim(plugins.Plugin):
                 on_time = float(blinkCfg['on_time'])
                 off_time = float(blinkCfg['off_time'])
                 blink_times =  int(blinkCfg['blink_times'])
-                logging.debug(f"red {red} green {green} blue {blue} on_time {on_time} off_time {off_time} blink_times {blink_times}")
+                logging.debug(f"[buttonshim] red {red} green {green} blue {blue} on_time {on_time} off_time {off_time} blink_times {blink_times}")
                 thread = Thread(target=self.blink, args=(red, green, blue, on_time, off_time, blink_times))
                 thread.start()
                 logging.debug(f"[buttonshim] Blink thread started")

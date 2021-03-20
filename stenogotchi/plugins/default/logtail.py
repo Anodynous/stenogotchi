@@ -251,7 +251,7 @@ class Logtail(plugins.Plugin):
         """
         Gets called when the plugin gets loaded
         """
-        logging.info("Logtail plugin loaded.")
+        logging.info("[logtail] Logtail plugin loaded.")
 
 
     def on_webhook(self, path, request):

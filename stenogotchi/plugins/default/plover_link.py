@@ -37,25 +37,25 @@ class HumanInterfaceDeviceProfile(dbus.service.Object):
     @dbus.service.method('org.bluez.Profile1',
                          in_signature='', out_signature='')
     def Release(self):
-            logging.info('PloverLink: Release')
+            logging.info('[plover_link] PloverLink: Release')
             mainloop.quit()
 
     @dbus.service.method('org.bluez.Profile1',
                          in_signature='oha{sv}', out_signature='')
     def NewConnection(self, path, fd, properties):
             self.fd = fd.take()
-            logging.info('PloverLink: NewConnection({}, {})'.format(path, self.fd))
+            logging.info('[plover_link] NewConnection({}, {})'.format(path, self.fd))
             for key in properties.keys():
                     if key == 'Version' or key == 'Features':
-                            logging.info('PloverLink:  {} = 0x{:04x}'.format(key,
+                            logging.info('[plover_link] {} = 0x{:04x}'.format(key,
                                                            properties[key]))
                     else:
-                            logging.info('PloverLink:  {} = {}'.format(key, properties[key]))
+                            logging.info('[plover_link] {} = {}'.format(key, properties[key]))
 
     @dbus.service.method('org.bluez.Profile1',
                          in_signature='o', out_signature='')
     def RequestDisconnection(self, path):
-            logging.info('PloverLink: RequestDisconnection {}'.format(path))
+            logging.info('[plover_link] RequestDisconnection {}'.format(path))
 
             if self.fd > 0:
                     os.close(self.fd)
@@ -92,7 +92,7 @@ class BTKbDevice:
         self.sinterrupt = None
         self.cinterrupt = None  # Socket object for interrupt
         self.dev_path = '/org/bluez/hci{}'.format(hci)
-        logging.info('PloverLink: Setting up BT device')
+        logging.info('[plover_link] Setting up BT device')
         self.bus = dbus.SystemBus()
         self.adapter_methods = dbus.Interface(
             self.bus.get_object('org.bluez',
@@ -125,7 +125,7 @@ class BTKbDevice:
         self.bthost_mac = None
         self.bthost_name = ""
 
-        logging.info('PloverLink: Configured BT device with name {}'.format(self.alias))
+        logging.info('[plover_link] Configured BT device with name {}'.format(self.alias))
 
     def interfaces_added(self):
         pass
@@ -137,7 +137,7 @@ class BTKbDevice:
                     self.on_disconnect()
 
     def on_disconnect(self):
-        logging.info('PloverLink: The client has been disconnected')
+        logging.info('[plover_link] The client has been disconnected')
         self.bthost_mac = None
         self.bthost_name = ""
         self._agent.set_bt_disconnected()
@@ -201,7 +201,7 @@ class BTKbDevice:
         Setup and register HID Profile
         """
 
-        logging.info('PloverLink: Configuring Bluez Profile')
+        logging.info('[plover_link] Configuring Bluez Profile')
         service_record = self.read_sdp_service_record()
 
         opts = {
@@ -223,7 +223,7 @@ class BTKbDevice:
                                 BTKbDevice.UUID,
                                 opts)
 
-        logging.info('PloverLink: Profile registered ')
+        logging.info('[plover_link] Profile registered ')
 
     @staticmethod
     def read_sdp_service_record():
@@ -231,7 +231,7 @@ class BTKbDevice:
         Read and return SDP record from a file
         :return: (string) SDP record
         """
-        logging.info('PloverLink: Reading service record')
+        logging.info('[plover_link] Reading service record')
         try:
             fh = open(BTKbDevice.SDP_RECORD_PATH, 'r')
         except OSError:
@@ -244,7 +244,7 @@ class BTKbDevice:
         Listen for connections coming from HID client
         """
 
-        logging.info('PloverLink: Waiting for connections')
+        logging.info('[plover_link] Waiting for connections')
         self.scontrol = socket.socket(socket.AF_BLUETOOTH,
                                       socket.SOCK_SEQPACKET,
                                       socket.BTPROTO_L2CAP)
@@ -261,10 +261,10 @@ class BTKbDevice:
         self.sinterrupt.listen(1)
 
         self.ccontrol, cinfo = self.scontrol.accept()
-        logging.info('PloverLink: {} connected on the control socket'.format(cinfo[0]))
+        logging.info('[plover_link] {} connected on the control socket'.format(cinfo[0]))
 
         self.cinterrupt, cinfo = self.sinterrupt.accept()
-        logging.info('PloverLink: {} connected on the interrupt channel'.format(cinfo[0]))
+        logging.info('[plover_link] {} connected on the interrupt channel'.format(cinfo[0]))
         
         self.bthost_mac = cinfo[0]
         self.bthost_name = self.get_connected_device_name()
@@ -275,13 +275,13 @@ class BTKbDevice:
         bt_autoconnect_mac = plugins.loaded['plover_link']._agent._config['main']['plugins']['plover_link']['bt_autoconnect_mac']
  
         if not bt_autoconnect_mac:
-            logging.info('PloverLink: No bt_autoconnect_mac set in config. Listening for incoming connections instead...')  
+            logging.info('[plover_link] No bt_autoconnect_mac set in config. Listening for incoming connections instead...')  
             self.listen()
         else:
-            logging.info('PloverLink: Trying to auto connect to preferred BT host(s)...')  
+            logging.info('[plover_link] Trying to auto connect to preferred BT host(s)...')  
             bt_mac_array = bt_autoconnect_mac.split(',')
             for x in range (len(bt_mac_array)):
-                logging.info('PloverLink: Trying to auto connect to {}'.format(bt_mac_array[x]))
+                logging.info('[plover_link] Trying to auto connect to {}'.format(bt_mac_array[x]))
                 try:
                     self.ccontrol = socket.socket(socket.AF_BLUETOOTH,
                                             socket.SOCK_SEQPACKET,
@@ -292,7 +292,7 @@ class BTKbDevice:
                     self.ccontrol.connect((bt_mac_array[x], self.P_CTRL))
                     self.cinterrupt.connect((bt_mac_array[x], self.P_INTR))
 
-                    logging.info('PloverLink: Reconnected to ' + bt_mac_array[x])
+                    logging.info('[plover_link] Reconnected to ' + bt_mac_array[x])
                     self.bthost_mac = bt_mac_array[x]
                     self.bthost_name = self.get_connected_device_name()
                     self._agent.set_bt_connected(self.bthost_name)
@@ -300,9 +300,9 @@ class BTKbDevice:
                     break  # stop trying to auto connect upon success
 
                 except Exception as ex:
-                    logging.info('PloverLink: Failed to auto connect due to reason: {}'.format(str(ex)))
+                    logging.info('[plover_link] Failed to auto connect due to reason: {}'.format(str(ex)))
                     if x == len(bt_mac_array) - 1:
-                        logging.info('PloverLink: Unsuccessful auto connect attempt. Listening for incoming connections instead...')
+                        logging.info('[plover_link] Unsuccessful auto connect attempt. Listening for incoming connections instead...')
                         self.listen()
                 
 
@@ -318,7 +318,7 @@ class BTKbDevice:
             if con_state:
                 addr = mngd_objs[path].get('org.bluez.Device1', {}).get('Address')
                 name = mngd_objs[path].get('org.bluez.Device1', {}).get('Name')
-                logging.info(f'PloverLink: Device {name} [{addr}] is connected')
+                logging.info(f'[plover_link] Device {name} [{addr}] is connected')
 
         return name
 
@@ -337,7 +337,7 @@ class StenogotchiService(dbus.service.Object):
         HID messages from Stenogotchi evdevkb plugin
     """
     def __init__(self):
-        logging.info('PloverLink: Setting up Stenogotchi D-Bus service')
+        logging.info('[plover_link] Setting up Stenogotchi D-Bus service')
         bus_name = dbus.service.BusName('com.github.stenogotchi', bus=dbus.SystemBus())
         dbus.service.Object.__init__(self, bus_name, '/com/github/stenogotchi')
         
@@ -351,7 +351,7 @@ class StenogotchiService(dbus.service.Object):
 
     @dbus.service.method('com.github.stenogotchi', in_signature='b')    # boolean
     def plover_is_running(self, b):
-        logging.info('PloverLink: plover_is_running = ' + str(b))
+        logging.debug('[plover_link] plover_is_running = ' + str(b))
         if b:
             self._agent.set_plover_boot()
         else:
@@ -359,25 +359,25 @@ class StenogotchiService(dbus.service.Object):
 
     @dbus.service.method('com.github.stenogotchi', in_signature='b')    # boolean
     def plover_is_ready(self, b):
-        logging.info('PloverLink: plover_is_ready = ' + str(b))
+        logging.debug('[plover_link] plover_is_ready = ' + str(b))
         self._agent.set_plover_ready()
 
     @dbus.service.method('com.github.stenogotchi', in_signature='s')    # string
     def plover_machine_state(self, s):
-        logging.info('PloverLink: plover_machine_state = ' + s)
+        logging.debug('[plover_link] plover_machine_state = ' + s)
 
     @dbus.service.method('com.github.stenogotchi', in_signature='b')    # boolean
     def plover_output_enabled(self, b):
-        logging.info('PloverLink: plover_output_enabled = ' + str(b))
+        logging.debug('[plover_link] plover_output_enabled = ' + str(b))
 
     @dbus.service.method('com.github.stenogotchi', in_signature='s')    # string
     def plover_wpm_stats(self, s):
-        logging.info('PloverLink: plover_wpm_stats = ' + s)
+        logging.debug('[plover_link] plover_wpm_stats = ' + s)
         self._agent.set_wpm_stats(s)
 
     @dbus.service.method('com.github.stenogotchi', in_signature='s')    # string
     def plover_strokes_stats(self, s):
-        logging.info('PloverLink: plover_strokes_stats = ' + s)
+        logging.debug('[plover_link] plover_strokes_stats = ' + s)
         self._agent.set_strokes_stats(s)
 
     @dbus.service.signal('com.github.stenogotchi', signature='a{sv}')    # dictionary of strings to variants
@@ -408,9 +408,9 @@ class PloverLink(ObjectClass):
         try:
             self.mainloop.run()
             self.running = True
-            logging.info("PloverLink: PloverLink is up")
+            logging.info("[plover_link] PloverLink is up")
         except:
-            logging.error("PloverLink: Could not start PloverLink")
+            logging.error("[plover_link] Could not start PloverLink")
                     
     def on_unload(self, ui):
         self.mainloop.quit()

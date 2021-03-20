@@ -50,7 +50,7 @@ class Upslite(ObjectClass):
             self._power_on_reset()
             self._quickstart()
         except:
-            logging.error("Could not start UPS-Lite plugin")
+            logging.error("[upslite] Could not start UPS-Lite plugin")
 
     # Called when the ui is updated
     def on_ui_update(self, ui):
@@ -67,15 +67,15 @@ class Upslite(ObjectClass):
         # Check for critical level. Initiate shutdown if too low
         if not self.is_plugged:
             if self.charge <= self.options['shutdown_level']:
-                logging.info(f'[UPSLITE] Battery charge critical: {self.charge}')
+                logging.info(f'[upslite] Battery charge critical: {self.charge}')
                 ui.update(force=True, new_data={'status': 'Battery level critical. Shutting down in 1m unless connected to charger...'})
                 time.sleep(60)
                 self._check_plugged()
                 if not self.is_plugged:
-                    logging.info('[UPSLITE] Shutting down')
+                    logging.info('[upslite] Shutting down')
                     stenogotchi.shutdown()
                 else:
-                    logging.info('[UPSLITE] Battery charging. Aborting shutdown process')
+                    logging.info('[upslite] Battery charging. Aborting shutdown process')
                     ui.update(force=True, new_data={'status': 'Pheew... That was a close one! Feeling better already.'})
 
     def _read_voltage(self):
