@@ -213,7 +213,8 @@ class View(object):
         self.on_normal()
 
     def on_shutdown(self):
-        self.set('face', faces.SLEEP)
+        face = random.choice((faces.SLEEP, faces.SLEEP2))
+        self.set('face', face)
         self.set('status', self._voice.on_shutdown())
         self.update(force=True)
         self._frozen = True
@@ -274,19 +275,22 @@ class View(object):
         self.update()
     
     def on_plover_boot(self):
-        self.set('face', faces.SLEEP)
+        face = random.choice((faces.SLEEP, faces.SLEEP2, faces.BORED))
+        self.set('face', face)
         self.set('status', self._voice.on_plover_boot())
         self.update()
 
     def on_plover_ready(self):
-        self.set('face', faces.AWAKE)
+        face = random.choice((faces.AWAKE, faces.LOOK_R_HAPPY, faces.LOOK_L_HAPPY, faces.HAPPY, faces.EXCITED, faces.GRATEFUL))
+        self.set('face', face)
         self.set('status', self._voice.on_plover_ready())
         if self._state.get('mode') == 'NONE':
             self.set('mode', 'STENO')
         self.update()
 
     def on_plover_quit(self):
-        self.set('face', faces.BROKEN)
+        face = random.choice((faces.BROKEN, faces.DEBUG))
+        self.set('face', face)
         self.set('status', 'Uh-oh... I think Plover just quit on us')
         if self._state.get('mode') == 'STENO':
             self.set('mode', 'NONE')
