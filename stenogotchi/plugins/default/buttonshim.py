@@ -467,21 +467,30 @@ class Buttonshim(plugins.Plugin):
                     plugins.loaded['evdevkb'].stop_capture()
                     logging.info(f"[buttonshim] Switched to STENO mode")
             except Exception as ex:
-                logging.error(f"BUTTONSHIM: Check if evdevkb is loaded, exceptio: {str(ex)}")
+                logging.error(f"BUTTONSHIM: Check if evdevkb is loaded, exception: {str(ex)}")
         
         def toggle_wpm_meters():
             command = {}
+            try:
+                wpm_method = self._agent._config['main']['plugins']['plover_link']['wpm_method']
+                wpm_timeout = self._agent._config['main']['plugins']['plover_link']['wpm_timeout']
+            except Exception as ex:
+                logging.error(f"BUTTONSHIM: Check that wpm_method and wpm_timeout is configured. Falling back to defaults. Exception: {str(ex)}")
+                wpm_method = 'ncra'
+                wpm_timeout = '60'
 
             if self._plover_wpm_meters_enabled:
-                command = {'stop_wpm_meter': 'wpm and strokes'}     # get these options from main config, add duration timing as well
+                command = {'stop_wpm_meter': 'wpm and strokes'}
                 self.set_ui_update('wpm', '')
                 self.set_ui_update('strokes', '')
                 self.trigger_ui_update()
                 logging.info(f"[buttonshim] Disabled WPM readings")
             elif not self._plover_wpm_meters_enabled:
-                command = {'start_wpm_meter': 'wpm and strokes'}    # get these options from main config, add duration timing as well
-                self.set_ui_update('wpm', '0')
-                self.set_ui_update('strokes', '0.00')
+                command = {'stop_wpm_meter': 'wpm and strokes',
+                           'wpm_method' : wpm_method,
+                           'wpm_timeout' : wpm_timeout}
+                self.set_ui_update('wpm', wpm_method)
+                self.set_ui_update('strokes', wpm_timeout)
                 self.trigger_ui_update()
                 logging.info(f"[buttonshim] Enabled WPM readings")
 

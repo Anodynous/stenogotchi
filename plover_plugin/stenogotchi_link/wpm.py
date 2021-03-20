@@ -72,12 +72,7 @@ class BaseMeter():
 
 class PloverWpmMeter(BaseMeter):
 
-    _TIMEOUTS = {
-        "wpm10": 10,
-        "wpm60": 60,
-    }
-
-    def __init__(self, stenogotchi_link, wpm_method='ncra'):
+    def __init__(self, stenogotchi_link, wpm_method='ncra', timeout=60):
         super().__init__()
         self._stenogotchi_link = stenogotchi_link
         self.strokes = []
@@ -85,6 +80,10 @@ class PloverWpmMeter(BaseMeter):
             'ncra': False,          # NCRA (by syllables)
             'traditional': False,   # Traditional (by characters)
             'spaces': False,        # Spaces (by whitespace)
+        }
+        self._timeouts = {
+            "wpm10": 10,
+            "wpm_user": timeout,
         }
         self.set_wpm_method(wpm_method)
         self.wpm_stats = {}
@@ -102,9 +101,9 @@ class PloverWpmMeter(BaseMeter):
         return self.wpm_stats
 
     def on_timer(self):
-        max_timeout = max(self._TIMEOUTS.values())
+        max_timeout = max(self._timeouts.values())
         self.chars = _filter_old_items(self.chars, max_timeout)
-        for name, timeout in self._TIMEOUTS.items():
+        for name, timeout in self._timeouts.items():
             chars = _filter_old_items(self.chars, timeout)
             wpm = _wpm_of_chars(chars, method=self.get_wpm_method())
             self.wpm_stats[name] = str(wpm)
@@ -115,12 +114,7 @@ class PloverWpmMeter(BaseMeter):
 
 class PloverStrokesMeter(BaseMeter):
 
-    _TIMEOUTS = {
-        "strokes10": 10,
-        "strokes60": 60,
-    }
-
-    def __init__(self, stenogotchi_link, strokes_method='ncra'):
+    def __init__(self, stenogotchi_link, strokes_method='ncra', timeout=60):
         super().__init__()
         self._stenogotchi_link = stenogotchi_link
         self.actions = []
@@ -128,6 +122,10 @@ class PloverStrokesMeter(BaseMeter):
             'ncra': False,          # NCRA (by syllables)
             'traditional': False,   # Traditional (by characters)
             'spaces': False,        # Spaces (by whitespace)
+        }
+        self._timeouts = {
+            "wpm10": 10,
+            "wpm_user": timeout,
         }
         self.set_strokes_method(strokes_method)
         self.strokes_stats = {}
@@ -156,10 +154,10 @@ class PloverStrokesMeter(BaseMeter):
         self.actions += _timestamp_items(new)
 
     def on_timer(self):
-        max_timeout = max(self._TIMEOUTS.values())
+        max_timeout = max(self._timeouts.values())
         self.chars = _filter_old_items(self.chars, max_timeout)
         self.actions = _filter_old_items(self.actions, max_timeout)
-        for name, timeout in self._TIMEOUTS.items():
+        for name, timeout in self._timeouts.items():
             chars = _filter_old_items(self.chars, timeout)
             num_strokes = len(_filter_old_items(self.actions, timeout))
             strokes_per_word = _spw_of_chars(

@@ -47,13 +47,13 @@ class EngineServer():
         self._disconnect_hooks()
         self._stenogotchiclient.plover_is_running(False)
 
-    def start_wpm_meter(self, enable_wpm=False, enable_strokes=False, method='ncra'):
+    def start_wpm_meter(self, enable_wpm=False, enable_strokes=False, wpm_method='ncra', wpm_timeout=60):
         """ Starts WPM and/or Strokes meters
         """
         if enable_wpm:
-            self._wpm_meter = PloverWpmMeter(stenogotchi_link=self, wpm_method=method)
+            self._wpm_meter = PloverWpmMeter(stenogotchi_link=self, wpm_method=wpm_method, timeout=wpm_timeout)
         if enable_strokes:
-            self._strokes_meter = PloverStrokesMeter(stenogotchi_link=self, strokes_method=method)
+            self._strokes_meter = PloverStrokesMeter(stenogotchi_link=self, strokes_method=wpm_method, timeout=wpm_timeout)
 
     def stop_wpm_meter(self, disable_wpm=True, disable_strokes=True):
         if disable_wpm:
@@ -64,12 +64,12 @@ class EngineServer():
             self._strokes_meter = None
 
     def _on_wpm_meter_update_strokes(self, stats):
-        """ Sends strokes stats from past 1 min to stenogotchi as a string """
-        self._stenogotchiclient.plover_strokes_stats(stats['strokes60'])
+        """ Sends strokes stats to stenogotchi as a string """
+        self._stenogotchiclient.plover_strokes_stats(stats['strokes_user'])
 
     def _on_wpm_meter_update_wpm(self, stats):
-        """ Sends wpm stats from past 1 min to stenogotchi as a string """
-        self._stenogotchiclient.plover_wpm_stats(stats['wpm60'])
+        """ Sends wpm stats to stenogotchi as a string """
+        self._stenogotchiclient.plover_wpm_stats(stats['wpm_user'])
     
     def get_server_status(self):
         """Gets the status of the server.
