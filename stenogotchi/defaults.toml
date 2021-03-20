@@ -71,6 +71,7 @@ ui.display.color = "black"
 # Plugins
 main.plugins.plover_link.enabled = true
 main.plugins.plover_link.bt_autoconnect_mac = ''
+main.plugins.plover_link.bt_device_name = 'Stenogotchi'
 
 main.plugins.evdevkb.enabled = true
 

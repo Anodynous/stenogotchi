@@ -131,7 +131,7 @@ All commands should be executed as root. The installation process can be complet
         main.plugins.buttonshim.enabled = true
         main.plugins.upslite.enabled = true
         main.plugins.evdevkb.enabled = true
-        main.plugins.plover_link.bt_autoconnect_mac = 'DE:AD:BE:EF'
+        main.plugins.plover_link.bt_autoconnect_mac = '00:DE:AD:BE:EF:00,11:DE:AD:BE:EF:11'
         #----------
 
 12. Significantly reduce boot time
@@ -154,8 +154,17 @@ All commands should be executed as root. The installation process can be complet
 
 
 ## Configuration
-- Configuration files are placed in /etc/stenogotchi/
-- Create a file called config.toml with overrides to the defaults. Don't edit default.toml directly as it is overwritten on version updates.
+* Configuration files are placed in /etc/stenogotchi/
+  * Create a file called config.toml with overrides to the defaults. Don't edit default.toml directly as it is overwritten on version updates.
+* Define your bluetooth devices in main.plugins.plover_link.bt_autoconnect_mac for auto-connect upon boot. Multiple comma separated devices in order of preference can be given. If no connection attempts are successful, the device will fall back to listening for incoming connection attempts.
+  * Issues with pairing or connecting after changes in bluetooth configurations can usually be fixed by unpairing the devices and re-pairing. On the Stenogotchi this is handled through bluetoothctl.
+    
+        bluetoothctl
+        [bluetooth]# paired-devices
+        Device 00:DE:AD:BE:EF:00 Anodynous' Ipad
+        [bluetooth]# remove 00:DE:AD:BE:EF:00
+        [bluetooth]# exit
+
 
 ## Usage
 ![stenogotchi_2](https://user-images.githubusercontent.com/17461433/107883149-d5539680-6ef5-11eb-86fe-41f0b6293eed.jpg)

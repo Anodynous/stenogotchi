@@ -66,8 +66,6 @@ class BTKbDevice:
     """
     create a bluetooth device to emulate a HID keyboard
     """
-    # Set default name to use for BT Keyboard
-    MY_DEV_NAME = 'Bluetooth Keyboard'
     # Service port - must match port configured in SDP record
     P_CTRL = 17
     # Service port - must match port configured in SDP record#Interrrupt port
@@ -115,16 +113,19 @@ class BTKbDevice:
                                      arg0=self.DEVICE_INTERFACE,
                                      path_keyword='path')
 
-        logging.info('PloverLink: Configuring for name {}'.format(BTKbDevice.MY_DEV_NAME))
-
         self.config_hid_profile()
 
         # set the Bluetooth device configuration
-        self.alias = BTKbDevice.MY_DEV_NAME
+        try: 
+            self.alias = plugins.loaded['plover_link']._agent._config['main']['plugins']['plover_link']['bt_device_name']
+        except:
+            self.alias = 'Bluetooth Keyboard'
         self.discoverabletimeout = 0
         self.discoverable = True
         self.bthost_mac = None
         self.bthost_name = ""
+
+        logging.info('PloverLink: Configured BT device with name {}'.format(self.alias))
 
     def interfaces_added(self):
         pass
@@ -277,32 +278,38 @@ class BTKbDevice:
             logging.info('PloverLink: No bt_autoconnect_mac set in config. Listening for incoming connections instead...')  
             self.listen()
         else:
-            logging.info('PloverLink: Trying to auto connect to preferred BT host...')  
-            try:
-                self.ccontrol = socket.socket(socket.AF_BLUETOOTH,
-                                        socket.SOCK_SEQPACKET,
-                                        socket.BTPROTO_L2CAP)
-                self.cinterrupt = socket.socket(socket.AF_BLUETOOTH,
-                                        socket.SOCK_SEQPACKET,
-                                        socket.BTPROTO_L2CAP)
-                self.ccontrol.connect((bt_autoconnect_mac, self.P_CTRL))
-                self.cinterrupt.connect((bt_autoconnect_mac, self.P_INTR))
+            logging.info('PloverLink: Trying to auto connect to preferred BT host(s)...')  
+            bt_mac_array = bt_autoconnect_mac.split(',')
+            for x in range (len(bt_mac_array)):
+                logging.info('PloverLink: Trying to auto connect to {}'.format(bt_mac_array[x]))
+                try:
+                    self.ccontrol = socket.socket(socket.AF_BLUETOOTH,
+                                            socket.SOCK_SEQPACKET,
+                                            socket.BTPROTO_L2CAP)
+                    self.cinterrupt = socket.socket(socket.AF_BLUETOOTH,
+                                            socket.SOCK_SEQPACKET,
+                                            socket.BTPROTO_L2CAP)
+                    self.ccontrol.connect((bt_mac_array[x], self.P_CTRL))
+                    self.cinterrupt.connect((bt_mac_array[x], self.P_INTR))
 
-                logging.info('PloverLink: Reconnected to ' + bt_autoconnect_mac)
-                self.bthost_mac = bt_autoconnect_mac
-                self.bthost_name = self.get_connected_device_name()
-                self._agent.set_bt_connected(self.bthost_name)
+                    logging.info('PloverLink: Reconnected to ' + bt_mac_array[x])
+                    self.bthost_mac = bt_mac_array[x]
+                    self.bthost_name = self.get_connected_device_name()
+                    self._agent.set_bt_connected(self.bthost_name)
     
-            except Exception as ex:
-                logging.info('PloverLink: Failed to auto_connect, falling back to listen mode to await new connection.' + str(ex))
-                self.listen()
+                    break  # stop trying to auto connect upon success
 
+                except Exception as ex:
+                    logging.info('PloverLink: Failed to auto connect due to reason: {}'.format(str(ex)))
+                    if x == len(bt_mac_array) - 1:
+                        logging.info('PloverLink: Unsuccessful auto connect attempt. Listening for incoming connections instead...')
+                        self.listen()
+                
 
     def get_connected_device_name(self):
-        import pydbus               # No point using both dbus and pydbus, should fix the code here to work without pydbus
+        import pydbus               # TODO: See if dependency on pydbus can be removed
 
         bus = pydbus.SystemBus()
-        adapter = bus.get('org.bluez', self.dev_path)  # doesn't seem to do anything
         mngr = bus.get('org.bluez', '/')
         
         mngd_objs = mngr.GetManagedObjects()
@@ -336,7 +343,7 @@ class StenogotchiService(dbus.service.Object):
         
         self._agent = plugins.loaded['plover_link']._agent
         self.device = BTKbDevice()  # create and setup our BTKbDevice
-        self.device.auto_connect()     # attemt to auto connect to preferred BT host before falling back to listening for new incoming connection
+        self.device.auto_connect()  # connect to preferred bt_mac. If unspecified or unavailable fall back to awaiting incoming connections
 
     @dbus.service.method('com.github.stenogotchi', in_signature='ay')   # bytearray
     def send_keys(self, cmd):
@@ -380,7 +387,7 @@ class StenogotchiService(dbus.service.Object):
 
 class PloverLink(ObjectClass):
     __autohor__ = 'Anodynous'
-    __version__ = '0.1'
+    __version__ = '0.2'
     __license__ = 'MIT'
     __description__ = 'This plugin enables connectivity to Plover through D-Bus. Note that it needs root permissions due to using sockets'
 
