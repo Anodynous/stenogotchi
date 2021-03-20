@@ -201,7 +201,7 @@ class BTKbDevice:
         Setup and register HID Profile
         """
 
-        logging.info('[plover_link] Configuring Bluez Profile')
+        logging.debug('[plover_link] Configuring Bluez Profile')
         service_record = self.read_sdp_service_record()
 
         opts = {
@@ -223,7 +223,7 @@ class BTKbDevice:
                                 BTKbDevice.UUID,
                                 opts)
 
-        logging.info('[plover_link] Profile registered ')
+        logging.debug('[plover_link] Profile registered ')
 
     @staticmethod
     def read_sdp_service_record():
@@ -231,7 +231,7 @@ class BTKbDevice:
         Read and return SDP record from a file
         :return: (string) SDP record
         """
-        logging.info('[plover_link] Reading service record')
+        logging.debug('[plover_link] Reading service record')
         try:
             fh = open(BTKbDevice.SDP_RECORD_PATH, 'r')
         except OSError:
