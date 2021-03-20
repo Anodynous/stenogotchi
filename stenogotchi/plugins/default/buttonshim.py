@@ -489,9 +489,13 @@ class Buttonshim(plugins.Plugin):
                 command = {'start_wpm_meter': 'wpm and strokes',
                            'wpm_method' : wpm_method,
                            'wpm_timeout' : wpm_timeout}
-                self.set_ui_update('wpm', wpm_method)
-                self.set_ui_update('strokes', wpm_timeout)
+
+                wpm_method_ui = wpm_method[0:6]
+                wpm_timeout_ui = wpm_timeout + 's'
+                self.set_ui_update('wpm', wpm_method_ui)
+                self.set_ui_update('strokes', wpm_timeout_ui)
                 self.trigger_ui_update()
+
                 logging.info(f"[buttonshim] Enabled WPM readings using method {wpm_method} and timeout {wpm_timeout}")
 
             self._plover_wpm_meters_enabled = not self._plover_wpm_meters_enabled
