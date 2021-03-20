@@ -41,7 +41,7 @@ All commands should be executed as root. The installation process can be complet
         apt-get install xserver-xorg-video-fbdev libtiff5 libopenjp2-7 bluez python3-rpi.gpio python3-gi screen rfkill -y
         pip3 install file_read_backwards flask flask-wtf flask-cors evdev python-xlib pillow spidev jsonpickle pydbus dbus-python
 
-4. Clone the Plover repository and comment out PyQt5 and SIP from requirements_distribution. They will fail to install and need to be compiled from source, an 8+ hour process on the rpi0, if you want access to the Plover GUI. Luckily, they are redundant in our setup as the Stenogotchi runs headless. 
+4. Clone the Plover repository and comment out PyQt5 and SIP from requirements_distribution. They will fail to install and need to be compiled from source, an 8+ hour process on the RPI0w, if you want access to the Plover GUI. Luckily, they are redundant in our setup as the Stenogotchi runs headless. 
 
         git clone https://github.com/openstenoproject/plover.git
         nano ./plover/requirements_distribution.txt
@@ -144,7 +144,7 @@ All commands should be executed as root. The installation process can be complet
           CONFIG_CHECK_DIETPI_UPDATES=0
           CONFIG_CHECK_APT_UPDATES=0
 
-    * Disable waiting for network and time sync at boot (unless you always will have wifi available or need reliable timestamps in logs):
+    * Disable waiting for network and time sync at boot. Doing this you should be aware that the RPI0w does not have a hardware clock. It will lose track of real world time as soon it is powered off, making log timestamps or any time based action you may set up unreliable. None of this is important for the core functionality of the Stenogotchi and disabling time-sync at boot can shave up to a minute off the boot process. By adding a cheap I2C hardware clock you can completely remove the need for network sync. Many modules are small enough to fit in the empty space of the UPS-Lite or under the eINK screen [and are easy to wire](https://www.pishop.us/product/ds3231-real-time-clock-module-for-raspberry-pi/) and [set up](https://learn.adafruit.com/adding-a-real-time-clock-to-raspberry-pi/set-rtc-time). Just don't forget to isolate it with some tape.
                         
           nano /boot/dietpi.txt
           
