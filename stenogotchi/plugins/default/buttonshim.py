@@ -486,7 +486,7 @@ class Buttonshim(plugins.Plugin):
                 self.trigger_ui_update()
                 logging.info(f"[buttonshim] Disabled WPM readings")
             elif not self._plover_wpm_meters_enabled:
-                command = {'stop_wpm_meter': 'wpm and strokes',
+                command = {'start_wpm_meter': 'wpm and strokes',
                            'wpm_method' : wpm_method,
                            'wpm_timeout' : wpm_timeout}
                 self.set_ui_update('wpm', wpm_method)
