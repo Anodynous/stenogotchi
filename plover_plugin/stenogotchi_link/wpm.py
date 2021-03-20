@@ -124,8 +124,8 @@ class PloverStrokesMeter(BaseMeter):
             'spaces': False,        # Spaces (by whitespace)
         }
         self._timeouts = {
-            "wpm10": 10,
-            "wpm_user": timeout,
+            "strokes10": 10,
+            "strokes_user": timeout,
         }
         self.set_strokes_method(strokes_method)
         self.strokes_stats = {}
