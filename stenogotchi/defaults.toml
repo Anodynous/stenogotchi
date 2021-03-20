@@ -67,6 +67,7 @@ ui.display.enabled = true
 ui.display.rotation = 0
 ui.display.type = "waveshare_2"
 ui.display.color = "black"
+ui.display.clear_at_shutdown = false
 
 # Plugins
 main.plugins.plover_link.enabled = true

@@ -138,10 +138,16 @@ def shutdown():
     logging.warning("shutting down ...")
 
     from stenogotchi.ui import view
+    
     if view.ROOT:
         view.ROOT.on_shutdown()
         # give it some time to refresh the ui
         time.sleep(10)
+    
+    if config['ui']['display']['clear_at_shutdown']:
+        from stenogotchi.ui.display import Display
+        display = Display(config=config)
+        display.clear()
 
     logging.warning("syncing...")
 
