@@ -534,7 +534,7 @@ class Buttonshim(plugins.Plugin):
             logging.info(f"[buttonshim] Button Pressed! Loading command from slot '{button}' for button '{NAMES[button]}'")
             bCfg = plugin.options['buttons'][NAMES[button]]
             blinkCfg = bCfg['blink']
-            logging.debug(f'[buttonshim] {self.blink}'')
+            logging.debug(f'[buttonshim] {self.blink}')
             if blinkCfg['enabled'] == True:
                 logging.debug(f"[buttonshim] Blinking led")
                 red = int(blinkCfg['red'])
