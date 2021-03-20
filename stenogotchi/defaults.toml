@@ -81,7 +81,7 @@ main.plugins.plover_link.bt_device_name = 'Stenogotchi'
 ### specify either 'ncra', 'traditional' or 'spaces' as preferred method using main.plugins.plover_link.wpm_method
 ### specify in seconds moving time window for which wpm is calculated and updated using main.plugins.plover_link.wpm_timeout
 
-main.plugins.plover_link.wpm_method = 'ncra'
+main.plugins.plover_link.wpm_method = 'traditional'
 main.plugins.plover_link.wpm_timeout = '60'
 
 main.plugins.evdevkb.enabled = true
