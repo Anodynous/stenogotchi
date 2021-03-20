@@ -46,12 +46,12 @@ class CaptureOutput(object):
 
 class BaseMeter():
   
-    def __init__(self):
+    def __init__(self, timeout=60):
         # Set timer to calculate wpm/strokes stats each second
         self._timer = RepeatTimer(1, self.on_timer)
         self._timer.start()
         # Set timer to publish wpm/strokes stats each minute
-        self._event_timer = RepeatTimer(60, self.trigger_event_update)
+        self._event_timer = RepeatTimer(timeout, self.trigger_event_update)
         self._event_timer.start()
         self.chars = []
 
@@ -73,7 +73,7 @@ class BaseMeter():
 class PloverWpmMeter(BaseMeter):
 
     def __init__(self, stenogotchi_link, wpm_method='ncra', timeout=60):
-        super().__init__()
+        super().__init__(timeout)
         self._stenogotchi_link = stenogotchi_link
         self.strokes = []
         self.wpm_methods = {
@@ -115,7 +115,7 @@ class PloverWpmMeter(BaseMeter):
 class PloverStrokesMeter(BaseMeter):
 
     def __init__(self, stenogotchi_link, strokes_method='ncra', timeout=60):
-        super().__init__()
+        super().__init__(timeout)
         self._stenogotchi_link = stenogotchi_link
         self.actions = []
         self.strokes_methods = {
@@ -217,14 +217,6 @@ def _wpm_of_chars(chars, method):
     num_minutes = time_interval / 60
     num_words_per_minute = num_words / num_minutes
     return int(round(num_words_per_minute))
-
-
-def _spw_of_chars(num_strokes, chars, method):
-    num_words = _words_in_chars(chars, method)
-    if not num_words:
-        return 0
-
-    return num_strokes / num_words
 
 
 def _spw_of_chars(num_strokes, chars, method):
