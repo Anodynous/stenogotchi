@@ -281,7 +281,7 @@ class View(object):
         self.update()
 
     def on_plover_ready(self):
-        face = random.choice((faces.AWAKE, faces.LOOK_R_HAPPY, faces.LOOK_L_HAPPY, faces.HAPPY, faces.EXCITED, faces.GRATEFUL))
+        face = random.choice((faces.AWAKE, faces.LOOK_R_HAPPY, faces.HAPPY, faces.EXCITED, faces.GRATEFUL, faces.MOTIVATED))
         self.set('face', face)
         self.set('status', self._voice.on_plover_ready())
         if self._state.get('mode') == 'NONE':
