@@ -40,7 +40,7 @@ def set_name(new_name):
             fp.write(patched)
 
         os.system("hostname '%s'" % new_name)
-        stenogotchi.reboot()
+        reboot()
 
 
 def name():
@@ -138,10 +138,17 @@ def shutdown():
     logging.warning("shutting down ...")
 
     from stenogotchi.ui import view
+    
     if view.ROOT:
         view.ROOT.on_shutdown()
         # give it some time to refresh the ui
-        time.sleep(10)
+        time.sleep(5)
+    
+    if view.ROOT._config['ui']['display']['clear_at_shutdown']:
+        view.ROOT._agent._view.init_display()
+        view.ROOT._agent._view.clear()
+        # give it some time to clear the ui
+        time.sleep(5)
 
     logging.warning("syncing...")
 
@@ -161,7 +168,6 @@ def restart(mode):
     else:
         os.system("touch /root/.stenogotchi-manual")
 
-    #os.system("service bettercap restart")
     #os.system("service stenogotchi restart")
 
 

@@ -46,7 +46,7 @@ class StenogotchiClient:
                                                                 dbus_interface=SERVER_DBUS,
                                                                 signal_name='signal_to_plover')
         except dbus.exceptions.DBusException as e:
-            logging.error(f'Failed to initialize D-Bus object: {str(e)}')
+            logging.error(f'[stenogotchi_link] Failed to initialize D-Bus object: {str(e)}')
     
     def _exit(self):
         self._mainloop.quit()
@@ -75,15 +75,17 @@ class StenogotchiClient:
     def stenogotchi_signal_handler(self, dict):
         # Enable and disable wpm/strokes meters
         if 'start_wpm_meter' in dict:
-            logging.debug('Starting WPM meter')
+            wpm_method = dict['wpm_method']
+            wpm_timeout = int(dict['wpm_timeout'])
+            logging.info('[stenogotchi_link] Starting WPM meter')
             if dict['start_wpm_meter'] == 'wpm and strokes':
-                self._engineserver.start_wpm_meter(enable_wpm=True, enable_strokes=True)
+                self._engineserver.start_wpm_meter(enable_wpm=True, enable_strokes=True, wpm_method=wpm_method, wpm_timeout=wpm_timeout)
             elif dict['start_wpm_meter'] == 'wpm':
-                self._engineserver.start_wpm_meter(enable_wpm=True, enable_strokes=False)
+                self._engineserver.start_wpm_meter(enable_wpm=True, enable_strokes=False, wpm_method=wpm_method, wpm_timeout=wpm_timeout)
             elif dict['start_wpm_meter'] == 'strokes':
-                self._engineserver.start_wpm_meter(enable_wpm=False, enable_strokes=True)
+                self._engineserver.start_wpm_meter(enable_wpm=False, enable_strokes=True, wpm_method=wpm_method, wpm_timeout=wpm_timeout)
         if 'stop_wpm_meter' in dict:
-            logging.debug('Stopping WPM meter')
+            logging.info('[stenogotchi_link] Stopping WPM meter')
             if dict['stop_wpm_meter'] == 'wpm and strokes':
                 self._engineserver.stop_wpm_meter(disable_wpm=True, disable_strokes=True)
             elif dict['stop_wpm_meter'] == 'wpm':
@@ -170,7 +172,7 @@ class BTClient:
         #    if (modifiers & (1 << n))
         #]
         if modifiers > 1:
-            logging.debug("Modifier received: " + str(modifiers) +" keycode" + str(keycode))
+            logging.debug("[stenogotchi_link] Modifier received: " + str(modifiers) +" keycode" + str(keycode))
         # Update modifier keys
         #for mod_keycode in modifiers_list:
         #    self.update_mod_keys(plover_modkey(mod_keycode), 1)

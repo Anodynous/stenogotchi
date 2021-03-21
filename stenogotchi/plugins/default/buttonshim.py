@@ -1,8 +1,11 @@
 # ###############################################################
+# Updated 20-03-2021 by Anodynous
+# - Moved all functionality into class to remove dependency on global variables and improve integration with other plugins and core Stenogotchi functionality.
 #
 # Updated 13-01-2021 by Anodynous
 # - Added support for hold action in addition to press.
-#   Based on: https://github.com/pimoroni/button-shim/commit/143f35b4b56626bd7062bdff3245658af19822b4
+#   Based on: https://github.com/evilsocket/pwnagotchi-plugins-contrib/blob/master/buttonshim.py
+#       which in turn is based on https://github.com/pimoroni/button-shim/commit/143f35b4b56626bd7062bdff3245658af19822b4
 #
 ################################################################
 
@@ -26,22 +29,14 @@ except ImportError:
     import Queue as queue
 
 ADDR = 0x3f
-
-#adapted from version 0.0.2
-__version__ = '0.0.2x'
-
-_bus = None
-
 LED_DATA = 7
 LED_CLOCK = 6
-
 REG_INPUT = 0x00
 REG_OUTPUT = 0x01
 REG_POLARITY = 0x02
 REG_CONFIG = 0x03
 
 NUM_BUTTONS = 5
-
 BUTTON_A = 0
 """Button A"""
 BUTTON_B = 1
@@ -52,22 +47,15 @@ BUTTON_D = 3
 """Button D"""
 BUTTON_E = 4
 """Button E"""
-
 NAMES = ['A', 'B', 'C', 'D', 'E']
 """Sometimes you want to print the plain text name of the button that's triggered.
-
 You can use::
-
     buttonshim.NAMES[button_index]
-
 To accomplish this.
-
 """
 
 ERROR_LIMIT = 10
-
 FPS = 60
-
 LED_GAMMA = [
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2,
@@ -88,19 +76,7 @@ LED_GAMMA = [
 
 # The LED is an APA102 driven via the i2c IO expander.
 # We must set and clear the Clock and Data pins
-# Each byte in _reg_queue represents a snapshot of the pin state
-
-_reg_queue = []
-_update_queue = []
-_brightness = 0.5
-
-_led_queue = queue.Queue()
-
-_t_poll = None
-
-_running = False
-
-_states = 0b00011111
+# Each byte in self._reg_queue represents a snapshot of the pin state
 
 
 class Handler():
@@ -120,420 +96,10 @@ class Handler():
         self.hold_fired = False
         self.plugin = plugin
 
-_handlers = [None,None,None,None,None]
-_button_was_held = False
-_plover_wpm_meters_enabled = False
-
-def _run():
-    global _running, _states
-    _running = True
-    _last_states = 0b00011111
-    _errors = 0
-
-    while _running:
-        led_data = None
-
-        try:
-            led_data = _led_queue.get(False)
-            _led_queue.task_done()
-
-        except queue.Empty:
-            pass
-
-        try:
-            if led_data:
-                for chunk in _chunk(led_data, 32):
-                    _bus.write_i2c_block_data(ADDR, REG_OUTPUT, chunk)
-
-            _states = _bus.read_byte_data(ADDR, REG_INPUT)
-
-        except IOError:
-            _errors += 1
-            if _errors > ERROR_LIMIT:
-                _running = False
-                raise IOError("More than {} IO errors have occurred!".format(ERROR_LIMIT))
-
-        for x in range(NUM_BUTTONS):
-            last = (_last_states >> x) & 1
-            curr = (_states >> x) & 1
-            handler = _handlers[x]
-
-            # If last > curr then it's a transition from 1 to 0
-            # since the buttons are active low, that's a press event
-            if last > curr:
-                handler.t_pressed = time.time()
-                handler.hold_fired = False
-
-                if callable(handler.press):
-                    handler.t_repeat = time.time()
-                    Thread(target=handler.press, args=(x, True, handler.plugin)).start()
-
-                continue
-
-            if last < curr and callable(handler.release):
-                Thread(target=handler.release, args=(x, False, handler.plugin)).start()
-                continue
-
-            if curr == 0:
-                if callable(handler.hold) and not handler.hold_fired and (time.time() - handler.t_pressed) > handler.hold_time:
-                    Thread(target=handler.hold, args=(x,)).start()
-                    handler.hold_fired = True
-
-                if handler.repeat and callable(handler.press) and (time.time() - handler.t_repeat) > handler.repeat_time:
-                    _handlers[x].t_repeat = time.time()
-                    Thread(target=_handlers[x].press, args=(x, True, handler.plugin)).start()
-
-        _last_states = _states
-
-        time.sleep(1.0 / FPS)
-
-
-def _quit():
-    global _running
-
-    if _running:
-        _led_queue.join()
-        set_pixel(0, 0, 0)
-        _led_queue.join()
-
-    _running = False
-    _t_poll.join()
-
-
-def setup():
-    global _t_poll, _bus
-
-    if _bus is not None:
-        return
-
-    _bus = smbus.SMBus(1)
-
-    _bus.write_byte_data(ADDR, REG_CONFIG, 0b00011111)
-    _bus.write_byte_data(ADDR, REG_POLARITY, 0b00000000)
-    _bus.write_byte_data(ADDR, REG_OUTPUT, 0b00000000)
-
-    _t_poll = Thread(target=_run)
-    _t_poll.daemon = True
-    _t_poll.start()
-
-    set_pixel(0, 0, 0)
-
-    atexit.register(_quit)
-
-
-def _set_bit(pin, value):
-    global _reg_queue
-
-    if value:
-        _reg_queue[-1] |= (1 << pin)
-    else:
-        _reg_queue[-1] &= ~(1 << pin)
-
-
-def _next():
-    global _reg_queue
-
-    if len(_reg_queue) == 0:
-        _reg_queue = [0b00000000]
-    else:
-        _reg_queue.append(_reg_queue[-1])
-
-
-def _enqueue():
-    global _reg_queue
-
-    _led_queue.put(_reg_queue)
-
-    _reg_queue = []
-
-
-def _chunk(l, n):
-    for i in range(0, len(l)+1, n):
-        yield l[i:i + n]
-
-
-def _write_byte(byte):
-    for x in range(8):
-        _next()
-        _set_bit(LED_CLOCK, 0)
-        _set_bit(LED_DATA, byte & 0b10000000)
-        _next()
-        _set_bit(LED_CLOCK, 1)
-        byte <<= 1
-
-
-def on_hold(buttons, handler=None, hold_time=1):
-    """Attach a hold handler to one or more buttons.
-
-    This handler is fired when you hold a button for hold_time seconds.
-
-    When fired it will run in its own Thread.
-
-    It will be passed one argument, the button index::
-
-        @buttonshim.on_hold(buttonshim.BUTTON_A)
-        def handler(button):
-            # Your code here
-
-    :param buttons: A single button, or a list of buttons
-    :param handler: Optional: a function to bind as the handler
-    :param hold_time: Optional: the hold time in seconds (default 2)
-
-    """
-    setup()
-
-    if buttons is None:
-        buttons = [BUTTON_A, BUTTON_B, BUTTON_C, BUTTON_D, BUTTON_E]
-
-    if isinstance(buttons, int):
-        buttons = [buttons]
-
-    def attach_handler(handler):
-        for button in buttons:
-            _handlers[button].hold = handler
-            _handlers[button].hold_time = hold_time
-
-    if handler is not None:
-        attach_handler(handler)
-    else:
-        return attach_handler
-
-
-def on_press(buttons, handler=None, repeat=False, repeat_time=0.5):
-    """Attach a press handler to one or more buttons.
-
-    This handler is fired when you press a button.
-
-    When fired it will be run in its own Thread.
-
-    It will be passed two arguments, the button index and a
-    boolean indicating whether the button has been pressed/released::
-
-        @buttonshim.on_press(buttonshim.BUTTON_A)
-        def handler(button, pressed):
-            # Your code here
-
-    :param buttons: A single button, or a list of buttons
-    :param handler: Optional: a function to bind as the handler
-    :param repeat: Optional: Repeat the handler if the button is held
-    :param repeat_time: Optional: Time, in seconds, after which to repeat
-
-    """
-    setup()
-
-    if buttons is None:
-        buttons = [BUTTON_A, BUTTON_B, BUTTON_C, BUTTON_D, BUTTON_E]
-
-    if isinstance(buttons, int):
-        buttons = [buttons]
-
-    def attach_handler(handler):
-        for button in buttons:
-            _handlers[button].press = handler
-            _handlers[button].repeat = repeat
-            _handlers[button].repeat_time = repeat_time
-
-    if handler is not None:
-        attach_handler(handler)
-    else:
-        return attach_handler
-
-
-def on_release(buttons=None, handler=None):
-    """Attach a release handler to one or more buttons.
-
-    This handler is fired when you let go of a button.
-
-    When fired it will be run in its own Thread.
-
-    It will be passed two arguments, the button index and a
-    boolean indicating whether the button has been pressed/released::
-
-        @buttonshim.on_release(buttonshim.BUTTON_A)
-        def handler(button, pressed):
-            # Your code here
-
-    :param buttons: A single button, or a list of buttons
-    :param handler: Optional: a function to bind as the handler
-
-    """
-    setup()
-
-    if buttons is None:
-        buttons = [BUTTON_A, BUTTON_B, BUTTON_C, BUTTON_D, BUTTON_E]
-
-    if isinstance(buttons, int):
-        buttons = [buttons]
-
-    def attach_handler(handler):
-        for button in buttons:
-            _handlers[button].release = handler
-
-    if handler is not None:
-        attach_handler(handler)
-    else:
-        return attach_handler
-
-
-def set_brightness(brightness):
-    global _brightness
-
-    setup()
-
-    if not isinstance(brightness, int) and not isinstance(brightness, float):
-        raise ValueError("Brightness should be an int or float")
-
-    if brightness < 0.0 or brightness > 1.0:
-        raise ValueError("Brightness should be between 0.0 and 1.0")
-
-    _brightness = brightness
-
-
-def set_pixel(r, g, b):
-    """Set the Button SHIM RGB pixel
-
-    Display an RGB colour on the Button SHIM pixel.
-
-    :param r: Amount of red, from 0 to 255
-    :param g: Amount of green, from 0 to 255
-    :param b: Amount of blue, from 0 to 255
-
-    You can use HTML colours directly with hexadecimal notation in Python. EG::
-
-        buttonshim.set_pixel(0xFF, 0x00, 0xFF)
-
-    """
-    setup()
-
-    if not isinstance(r, int) or r < 0 or r > 255:
-        raise ValueError("Argument r should be an int from 0 to 255")
-
-    if not isinstance(g, int) or g < 0 or g > 255:
-        raise ValueError("Argument g should be an int from 0 to 255")
-
-    if not isinstance(b, int) or b < 0 or b > 255:
-        raise ValueError("Argument b should be an int from 0 to 255")
-
-    r, g, b = [int(x * _brightness) for x in (r, g, b)]
-
-    _write_byte(0)
-    _write_byte(0)
-    _write_byte(0b11101111)
-    _write_byte(LED_GAMMA[b & 0xff])
-    _write_byte(LED_GAMMA[g & 0xff])
-    _write_byte(LED_GAMMA[r & 0xff])
-    _write_byte(0)
-    _write_byte(0)
-    _enqueue()
-
-def blink(r, g, b, ontime, offtime, blinktimes):
-    logging.info("[buttonshim] Blink")
-    for i in range(0, blinktimes):
-        set_pixel(r, g, b)
-        time.sleep(ontime)
-        set_pixel(0, 0, 0)
-        time.sleep(offtime)
-
-def press_handler(button, pressed, plugin):
-    """ On press reset button held status """
-    global _button_was_held
-    _button_was_held = False
-
-def hold_handler(button):
-    """ On long press run built in internal Stenogotchi commands """
-    # Set button held status to prevent release_handler from triggering on release
-    global _button_was_held
-    _button_was_held = True
-
-    # Blink in response to long hold event
-    red = 0
-    green = 70
-    blue = 70
-    on_time = 1
-    off_time = 0
-    blink_times = 1
-    thread = Thread(target=blink, args=(red, green, blue, on_time, off_time, blink_times))
-    thread.start()
-
-    def toggle_qwerty_steno():
-        try:
-            cap_state = plugins.loaded['evdevkb'].get_capture_state()
-            if not cap_state:
-                plugins.loaded['evdevkb'].start_capture()
-            else:
-                plugins.loaded['evdevkb'].stop_capture()
-        except Exception as ex:
-            logging.error(f"BUTTONSHIM: Check if evdevkb is loaded, exceptio: {str(ex)}")
-    
-    def toggle_wpm_meters():
-        global _plover_wpm_meters_enabled
-        command = {}
-
-        if _plover_wpm_meters_enabled:
-            command = {'stop_wpm_meter': 'wpm and strokes'}     # get these options from main config, add duration timing as well
-        elif not _plover_wpm_meters_enabled:
-            command = {'start_wpm_meter': 'wpm and strokes'}    # get these options from main config, add duration timing as well
-
-        _plover_wpm_meters_enabled = not _plover_wpm_meters_enabled
-        plugins.loaded['plover_link'].send_signal_to_plover(command)
-
-    if NAMES[button] == 'A':
-        # Toggle QWERTY/STENO mode
-        toggle_qwerty_steno()
-    
-    elif NAMES[button] == 'B':
-        # Toggle WPM & strokes meters for Plover
-        toggle_wpm_meters()
-
-    elif NAMES[button] == 'C':
-        # Clean the screen (should not be needed on waveshare_2, but could be useful on other display modules)
-        plugins.loaded['buttonshim']._agent.view().init_display()
-        plugins.loaded['buttonshim']._agent.view().update(force=True)
-    
-    elif NAMES[button] == 'D':
-        # Toggle wifi on/off
-        stenogotchi.set_wifi_onoff()
-        for i in range(5):
-            plugins.loaded['buttonshim']._agent._update_wifi()
-            time.sleep(2)
-        
-    elif NAMES[button] == 'E':
-        # Initiate clean shutdown process
-        stenogotchi.shutdown()
-    
-def release_handler(button, pressed, plugin):
-    """ On short press run command from config """
-    if not _button_was_held:
-        logging.info(f"[buttonshim] Button Pressed! Loading command from slot '{button}' for button '{NAMES[button]}'")
-        bCfg = plugin.options['buttons'][NAMES[button]]
-        blinkCfg = bCfg['blink']
-        logging.debug(blink)
-        if blinkCfg['enabled'] == True:
-            logging.debug(f"[buttonshim] Blinking led")
-            red = int(blinkCfg['red'])
-            green = int(blinkCfg['green'])
-            blue = int(blinkCfg['blue'])
-            on_time = float(blinkCfg['on_time'])
-            off_time = float(blinkCfg['off_time'])
-            blink_times =  int(blinkCfg['blink_times'])
-            logging.debug(f"red {red} green {green} blue {blue} on_time {on_time} off_time {off_time} blink_times {blink_times}")
-            thread = Thread(target=blink, args=(red, green, blue, on_time, off_time, blink_times))
-            thread.start()
-            logging.debug(f"[buttonshim] Blink thread started")
-        command = bCfg['command']
-        if command == '':
-            logging.debug(f"[buttonshim] Command empty")
-        else:
-            logging.debug(f"[buttonshim] Process create: {command}")
-            process = subprocess.Popen(command, shell=True, stdin=None, stdout=open("/dev/null", "w"), stderr=None, executable="/bin/bash")
-            process.wait()
-            process = None
-            logging.debug(f"[buttonshim] Process end")
-
 
 class Buttonshim(plugins.Plugin):
-    __author__ = 'gon@o2online.de'
-    __version__ = '0.0.1'
+    __author__ = 'Anodynous'
+    __version__ = '0.0.2'
     __license__ = 'GPL3'
     __description__ = 'Pimoroni Button Shim GPIO Button and RGB LED support plugin based on the pimoroni-buttonshim-lib and the pwnagotchi-gpio-buttons-plugin'
 
@@ -541,16 +107,453 @@ class Buttonshim(plugins.Plugin):
         self._agent = None
         self.running = False
         self.options = dict()
-        global _handlers
-        _handlers = [Handler(self) for x in range(NUM_BUTTONS)]
-        on_press([BUTTON_A, BUTTON_B, BUTTON_C, BUTTON_D, BUTTON_E], press_handler)
-        on_hold([BUTTON_A, BUTTON_B, BUTTON_C, BUTTON_D, BUTTON_E], hold_handler)
-        on_release([BUTTON_A, BUTTON_B, BUTTON_C, BUTTON_D, BUTTON_E], release_handler)
+        self._running = False
+        self._plover_wpm_meters_enabled = False
+        
+        self._states = None
+        self._bus = None
+        self._reg_queue = []
+        self._update_queue = []
+        self._brightness = 0.5
+        self._led_queue = queue.Queue()
+        self._t_poll = None
+        self._running = False
+        self._states = 0b00011111
+        self._handlers = [None,None,None,None,None]
+        self._button_was_held = False
+        
 
     def on_loaded(self):
         logging.info("[buttonshim] GPIO Button plugin loaded.")
         self.running = True
+        self._handlers = [Handler(self) for x in range(NUM_BUTTONS)]
+        self.on_press([BUTTON_A, BUTTON_B, BUTTON_C, BUTTON_D, BUTTON_E], self.press_handler)
+        self.on_hold([BUTTON_A, BUTTON_B, BUTTON_C, BUTTON_D, BUTTON_E], self.hold_handler)
+        self.on_release([BUTTON_A, BUTTON_B, BUTTON_C, BUTTON_D, BUTTON_E], self.release_handler)
 
     def on_ready(self, agent):
         self._agent = agent
 
+    def set_ui_update(self, key, value):
+        self._agent.view().set(key, value)
+
+    def trigger_ui_update(self):
+        self._agent.view().update()
+
+    def _run(self):
+        self._running = True
+        _last_states = 0b00011111
+        _errors = 0
+
+        while self._running:
+            led_data = None
+
+            try:
+                led_data = self._led_queue.get(False)
+                self._led_queue.task_done()
+
+            except queue.Empty:
+                pass
+
+            try:
+                if led_data:
+                    for chunk in self._chunk(led_data, 32):
+                        self._bus.write_i2c_block_data(ADDR, REG_OUTPUT, chunk)
+
+                self._states = self._bus.read_byte_data(ADDR, REG_INPUT)
+
+            except IOError:
+                _errors += 1
+                if _errors > ERROR_LIMIT:
+                    self._running = False
+                    raise IOError("More than {} IO errors have occurred!".format(ERROR_LIMIT))
+
+            for x in range(NUM_BUTTONS):
+                last = (_last_states >> x) & 1
+                curr = (self._states >> x) & 1
+                handler = self._handlers[x]
+
+                # If last > curr then it's a transition from 1 to 0
+                # since the buttons are active low, that's a press event
+                if last > curr:
+                    handler.t_pressed = time.time()
+                    handler.hold_fired = False
+
+                    if callable(handler.press):
+                        handler.t_repeat = time.time()
+                        Thread(target=handler.press, args=(x, True, handler.plugin)).start()
+
+                    continue
+
+                if last < curr and callable(handler.release):
+                    Thread(target=handler.release, args=(x, False, handler.plugin)).start()
+                    continue
+
+                if curr == 0:
+                    if callable(handler.hold) and not handler.hold_fired and (time.time() - handler.t_pressed) > handler.hold_time:
+                        Thread(target=handler.hold, args=(x,)).start()
+                        handler.hold_fired = True
+
+                    if handler.repeat and callable(handler.press) and (time.time() - handler.t_repeat) > handler.repeat_time:
+                        self._handlers[x].t_repeat = time.time()
+                        Thread(target=self._handlers[x].press, args=(x, True, handler.plugin)).start()
+
+            _last_states = self._states
+
+            time.sleep(1.0 / FPS)
+
+
+    def _quit(self):
+
+        if self._running:
+            self._led_queue.join()
+            self.set_pixel(0, 0, 0)
+            self._led_queue.join()
+
+        self._running = False
+        self._t_poll.join()
+
+
+    def setup(self):
+        if self._bus is not None:
+            return
+
+        self._bus = smbus.SMBus(1)
+
+        self._bus.write_byte_data(ADDR, REG_CONFIG, 0b00011111)
+        self._bus.write_byte_data(ADDR, REG_POLARITY, 0b00000000)
+        self._bus.write_byte_data(ADDR, REG_OUTPUT, 0b00000000)
+
+        self._t_poll = Thread(target=self._run)
+        self._t_poll.daemon = True
+        self._t_poll.start()
+
+        self.set_pixel(0, 0, 0)
+
+        atexit.register(self._quit)
+
+
+    def _set_bit(self, pin, value):
+        if value:
+            self._reg_queue[-1] |= (1 << pin)
+        else:
+            self._reg_queue[-1] &= ~(1 << pin)
+
+
+    def _next(self):
+        if len(self._reg_queue) == 0:
+            self._reg_queue = [0b00000000]
+        else:
+            self._reg_queue.append(self._reg_queue[-1])
+
+
+    def _enqueue(self):
+        self._led_queue.put(self._reg_queue)
+
+        self._reg_queue = []
+
+
+    def _chunk(self, l, n):
+        for i in range(0, len(l)+1, n):
+            yield l[i:i + n]
+
+
+    def _write_byte(self, byte):
+        for i in range(8):
+            self._next()
+            self._set_bit(LED_CLOCK, 0)
+            self._set_bit(LED_DATA, byte & 0b10000000)
+            self._next()
+            self._set_bit(LED_CLOCK, 1)
+            byte <<= 1
+
+
+    def on_hold(self, buttons, handler=None, hold_time=1):
+        """Attach a hold handler to one or more buttons.
+
+        This handler is fired when you hold a button for hold_time seconds.
+
+        When fired it will run in its own Thread.
+
+        It will be passed one argument, the button index::
+
+            @buttonshim.on_hold(buttonshim.BUTTON_A)
+            def handler(button):
+                # Your code here
+
+        :param buttons: A single button, or a list of buttons
+        :param handler: Optional: a function to bind as the handler
+        :param hold_time: Optional: the hold time in seconds (default 2)
+
+        """
+        self.setup()
+
+        if buttons is None:
+            buttons = [BUTTON_A, BUTTON_B, BUTTON_C, BUTTON_D, BUTTON_E]
+
+        if isinstance(buttons, int):
+            buttons = [buttons]
+
+        def attach_handler(handler):
+            for button in buttons:
+                self._handlers[button].hold = handler
+                self._handlers[button].hold_time = hold_time
+
+        if handler is not None:
+            attach_handler(handler)
+        else:
+            return attach_handler
+
+
+    def on_press(self, buttons, handler=None, repeat=False, repeat_time=0.5):
+        """Attach a press handler to one or more buttons.
+
+        This handler is fired when you press a button.
+
+        When fired it will be run in its own Thread.
+
+        It will be passed two arguments, the button index and a
+        boolean indicating whether the button has been pressed/released::
+
+            @buttonshim.on_press(buttonshim.BUTTON_A)
+            def handler(button, pressed):
+                # Your code here
+
+        :param buttons: A single button, or a list of buttons
+        :param handler: Optional: a function to bind as the handler
+        :param repeat: Optional: Repeat the handler if the button is held
+        :param repeat_time: Optional: Time, in seconds, after which to repeat
+
+        """
+        self.setup()
+
+        if buttons is None:
+            buttons = [BUTTON_A, BUTTON_B, BUTTON_C, BUTTON_D, BUTTON_E]
+
+        if isinstance(buttons, int):
+            buttons = [buttons]
+
+        def attach_handler(handler):
+            for button in buttons:
+                self._handlers[button].press = handler
+                self._handlers[button].repeat = repeat
+                self._handlers[button].repeat_time = repeat_time
+
+        if handler is not None:
+            attach_handler(handler)
+        else:
+            return attach_handler
+
+
+    def on_release(self, buttons=None, handler=None):
+        """Attach a release handler to one or more buttons.
+
+        This handler is fired when you let go of a button.
+
+        When fired it will be run in its own Thread.
+
+        It will be passed two arguments, the button index and a
+        boolean indicating whether the button has been pressed/released::
+
+            @buttonshim.on_release(buttonshim.BUTTON_A)
+            def handler(button, pressed):
+                # Your code here
+
+        :param buttons: A single button, or a list of buttons
+        :param handler: Optional: a function to bind as the handler
+
+        """
+        self.setup()
+
+        if buttons is None:
+            buttons = [BUTTON_A, BUTTON_B, BUTTON_C, BUTTON_D, BUTTON_E]
+
+        if isinstance(buttons, int):
+            buttons = [buttons]
+
+        def attach_handler(handler):
+            for button in buttons:
+                self._handlers[button].release = handler
+
+        if handler is not None:
+            attach_handler(handler)
+        else:
+            return attach_handler
+
+
+    def set_brightness(self, brightness):
+        self.setup()
+
+        if not isinstance(brightness, int) and not isinstance(brightness, float):
+            raise ValueError("Brightness should be an int or float")
+
+        if brightness < 0.0 or brightness > 1.0:
+            raise ValueError("Brightness should be between 0.0 and 1.0")
+
+        self._brightness = brightness
+
+
+    def set_pixel(self, r, g, b):
+        """Set the Button SHIM RGB pixel
+
+        Display an RGB colour on the Button SHIM pixel.
+
+        :param r: Amount of red, from 0 to 255
+        :param g: Amount of green, from 0 to 255
+        :param b: Amount of blue, from 0 to 255
+
+        You can use HTML colours directly with hexadecimal notation in Python. EG::
+
+            buttonshim.self.set_pixel(0xFF, 0x00, 0xFF)
+
+        """
+        self.setup()
+
+        if not isinstance(r, int) or r < 0 or r > 255:
+            raise ValueError("Argument r should be an int from 0 to 255")
+
+        if not isinstance(g, int) or g < 0 or g > 255:
+            raise ValueError("Argument g should be an int from 0 to 255")
+
+        if not isinstance(b, int) or b < 0 or b > 255:
+            raise ValueError("Argument b should be an int from 0 to 255")
+
+        r, g, b = [int(x * self._brightness) for x in (r, g, b)]
+
+        self._write_byte(0)
+        self._write_byte(0)
+        self._write_byte(0b11101111)
+        self._write_byte(LED_GAMMA[b & 0xff])
+        self._write_byte(LED_GAMMA[g & 0xff])
+        self._write_byte(LED_GAMMA[r & 0xff])
+        self._write_byte(0)
+        self._write_byte(0)
+        self._enqueue()
+
+    def blink(self, r, g, b, ontime, offtime, blinktimes):
+        logging.debug("[buttonshim] Blink")
+        for i in range(0, blinktimes):
+            self.set_pixel(r, g, b)
+            time.sleep(ontime)
+            self.set_pixel(0, 0, 0)
+            time.sleep(offtime)
+
+    def press_handler(self, button, pressed, plugin):
+        """ On press reset button held status """
+        self._button_was_held = False
+
+    def hold_handler(self, button):
+        """ On long press run built in internal Stenogotchi commands """
+        # Set button held status to prevent release_handler from triggering on release
+        self._button_was_held = True
+
+        # Blink in response to long hold event
+        red = 0
+        green = 70
+        blue = 70
+        on_time = 1
+        off_time = 0
+        blink_times = 1
+        thread = Thread(target=self.blink, args=(red, green, blue, on_time, off_time, blink_times))
+        thread.start()
+
+        def toggle_qwerty_steno():
+            try:
+                cap_state = plugins.loaded['evdevkb'].get_capture_state()
+                if not cap_state:
+                    plugins.loaded['evdevkb'].start_capture()
+                    logging.info(f"[buttonshim] Switched to QWERTY mode")
+                else:
+                    plugins.loaded['evdevkb'].stop_capture()
+                    logging.info(f"[buttonshim] Switched to STENO mode")
+            except Exception as ex:
+                logging.exception(f"[buttonshim] Check if evdevkb is loaded, exception: {str(ex)}")
+        
+        def toggle_wpm_meters():
+            command = {}
+            try:
+                wpm_method = self._agent._config['main']['plugins']['plover_link']['wpm_method']
+                wpm_timeout = self._agent._config['main']['plugins']['plover_link']['wpm_timeout']
+            except Exception as ex:
+                logging.exception(f"[buttonshim] Check that wpm_method and wpm_timeout is configured. Falling back to defaults. Exception: {str(ex)}")
+                wpm_method = 'ncra'
+                wpm_timeout = '60'
+
+            if self._plover_wpm_meters_enabled:
+                command = {'stop_wpm_meter': 'wpm and strokes'}
+                self.set_ui_update('wpm', '')
+                self.set_ui_update('strokes', '')
+                self.trigger_ui_update()
+                logging.info(f"[buttonshim] Disabled WPM readings")
+            elif not self._plover_wpm_meters_enabled:
+                command = {'start_wpm_meter': 'wpm and strokes',
+                           'wpm_method' : wpm_method,
+                           'wpm_timeout' : wpm_timeout}
+
+                wpm_method_ui = wpm_method[0:6]
+                wpm_timeout_ui = wpm_timeout + 's'
+                self.set_ui_update('wpm', wpm_method_ui)
+                self.set_ui_update('strokes', wpm_timeout_ui)
+                self.trigger_ui_update()
+
+                logging.info(f"[buttonshim] Enabled WPM readings using method {wpm_method} and timeout {wpm_timeout}")
+
+            self._plover_wpm_meters_enabled = not self._plover_wpm_meters_enabled
+            plugins.loaded['plover_link'].send_signal_to_plover(command)
+            
+        if NAMES[button] == 'A':
+            # Toggle QWERTY/STENO mode
+            toggle_qwerty_steno()     
+        
+        elif NAMES[button] == 'B':
+            # Toggle WPM & strokes meters for Plover
+            toggle_wpm_meters()
+
+        elif NAMES[button] == 'C':
+            # Clean the screen (should not be needed on waveshare_2, but could be useful on other display modules)
+            self._agent.view().init_display()
+            self._agent.view().update(force=True)
+            logging.info(f"[buttonshim] Initiated screen refresh")
+        
+        elif NAMES[button] == 'D':
+            # Toggle wifi on/off
+            stenogotchi.set_wifi_onoff()
+            # Check for changes in wifi status over a short while
+            for i in range(5):
+                self._agent._update_wifi()
+                time.sleep(2)
+            logging.info(f"[buttonshim] Toggled wifi state")
+            
+        elif NAMES[button] == 'E':
+            # Initiate clean shutdown process
+            logging.info(f"[buttonshim] Initiated clean shutdown")
+            stenogotchi.shutdown()
+    
+    def release_handler(self, button, pressed, plugin):
+        """ On short press run command from config """
+        if not self._button_was_held:
+            logging.info(f"[buttonshim] Button Pressed! Loading command from slot '{button}' for button '{NAMES[button]}'")
+            bCfg = plugin.options['buttons'][NAMES[button]]
+            blinkCfg = bCfg['blink']
+            logging.debug(f'[buttonshim] {self.blink}')
+            if blinkCfg['enabled'] == True:
+                logging.debug(f"[buttonshim] Blinking led")
+                red = int(blinkCfg['red'])
+                green = int(blinkCfg['green'])
+                blue = int(blinkCfg['blue'])
+                on_time = float(blinkCfg['on_time'])
+                off_time = float(blinkCfg['off_time'])
+                blink_times =  int(blinkCfg['blink_times'])
+                logging.debug(f"[buttonshim] red {red} green {green} blue {blue} on_time {on_time} off_time {off_time} blink_times {blink_times}")
+                thread = Thread(target=self.blink, args=(red, green, blue, on_time, off_time, blink_times))
+                thread.start()
+                logging.debug(f"[buttonshim] Blink thread started")
+            command = bCfg['command']
+            if command == '':
+                logging.debug(f"[buttonshim] Command empty")
+            else:
+                logging.debug(f"[buttonshim] Process create: {command}")
+                process = subprocess.Popen(command, shell=True, stdin=None, stdout=open("/dev/null", "w"), stderr=None, executable="/bin/bash")
+                process.wait()
+                process = None
+                logging.debug(f"[buttonshim] Process end")

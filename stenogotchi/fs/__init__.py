@@ -73,11 +73,11 @@ def setup_mounts(config):
 
         if not is_mounted:
             if not m.mount():
-                logging.debug(f"Error while mounting {m.mountpoint}")
+                logging.error(f"Error while mounting {m.mountpoint}")
                 continue
 
             if not m.sync(to_ram=True):
-                logging.debug(f"Error while syncing to {m.mountpoint}")
+                logging.error(f"Error while syncing to {m.mountpoint}")
                 m.umount()
                 continue
 

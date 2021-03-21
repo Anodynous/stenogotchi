@@ -13,7 +13,7 @@ class Example(plugins.Plugin):
     __description__ = 'An example plugin for pwnagotchi that implements all the available callbacks.'
 
     def __init__(self):
-        logging.debug("example plugin created")
+        logging.debug("[example] example plugin created")
 
     # called when http://<host>:<port>/plugins/<plugin>/ is called
     # must return a html page
@@ -23,7 +23,7 @@ class Example(plugins.Plugin):
 
     # called when the plugin is loaded
     def on_loaded(self):
-        logging.warning("WARNING: this plugin should be disabled! options = " % self.options)
+        logging.warning("[example] WARNING: this plugin should be disabled! options = " % self.options)
 
     # called before the plugin is unloaded
     def on_unload(self, ui):
@@ -52,7 +52,7 @@ class Example(plugins.Plugin):
 
     # called when everything is ready and the main loop is about to start
     def on_ready(self, agent):
-        logging.info("unit is ready")
+        logging.info("[example] unit is ready")
         # you can run custom bettercap commands if you want
         #   agent.run('ble.recon on')
         # or set a custom state

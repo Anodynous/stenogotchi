@@ -1,4 +1,3 @@
-#from stenogotchi.ui.hw.waveshare2 import WaveshareV2
 from stenogotchi.ui.hw.waveshare2 import WaveshareV2
 
 def display_for(config):

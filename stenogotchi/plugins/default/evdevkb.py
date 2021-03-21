@@ -260,19 +260,20 @@ class EvdevKbrd:
             has_key_a = evdev.ecodes.KEY_A in device.capabilities().get(evdev.ecodes.EV_KEY, [])
             if has_key_a:
                 keyboards.append(device)
-                logging.debug(f"Found keyboard '{device.name}' at path '{device.path}'")
+                logging.debug(f"[evdevkb] Found keyboard '{device.name}' at path '{device.path}'")
         return keyboards
     
     def set_keyboards(self):
         # Sets all keyboards as device to listen for key-inputs from
-        while not self.have_kb:
-            keyboards = self.get_keyboards()
-            if keyboards:
-                self.devs = keyboards
-                self.have_kb = True
-            else:
-                logging.debug('Keyboard not found, waiting 3 seconds and retrying')
-                sleep(3)
+        while self.do_capture:
+            while not self.have_kb:
+                keyboards = self.get_keyboards()
+                if keyboards:
+                    self.devs = keyboards
+                    self.have_kb = True
+                else:
+                    logging.debug('[evdevkb] Keyboard not found, waiting 3 seconds and retrying')
+                    sleep(3)
 
     def update_mod_keys(self, mod_key, value):
         """
@@ -361,15 +362,16 @@ class EvdevKeyboard(ObjectClass):
         self._agent.view().update()
 
     def start_capture(self):
-        logging.debug('Capturing evdev keypress events...')
+        logging.info('[evdevkb] Capturing evdev keypress events...')
         self.trigger_ui_update('QWERTY')
         self.evdevkb = EvdevKbrd(skip_dbus=True)
+        self.evdevkb.set_do_capture(True)
         self.do_capture = True
         self.evdevkb.set_keyboards()
         self.evdevkb.event_loop()
 
     def stop_capture(self):
-        logging.debug('Ignoring evdev keypress events...')
+        logging.info('[evdevkb] Ignoring evdev keypress events...')
         self.evdevkb.set_do_capture(False)
         self.do_capture = False
         self.evdevkb = None

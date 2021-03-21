@@ -38,38 +38,38 @@ All commands should be executed as root. The installation process can be complet
 
 3. [5min] Install additional dependencies
 
-        apt-get install xserver-xorg-video-fbdev libtiff5 libopenjp2-7 bluez python3-rpi.gpio python3-gi screen rfkill -y
-        pip3 install file_read_backwards flask flask-wtf flask-cors evdev python-xlib pillow spidev jsonpickle pydbus dbus-python
+       apt-get install xserver-xorg-video-fbdev libtiff5 libopenjp2-7 bluez python3-rpi.gpio python3-gi screen rfkill -y
+       pip3 install file_read_backwards flask flask-wtf flask-cors evdev python-xlib pillow spidev jsonpickle pydbus dbus-python
 
-4. Clone the Plover repository and comment out PyQt5 and SIP from requirements_distribution. They will fail to install and need to be compiled from source, an 8+ hour process on the rpi0, if you want access to the Plover GUI. Luckily, they are redundant in our setup as the Stenogotchi runs headless. 
+4. Clone the Plover repository and comment out PyQt5 and SIP from requirements_distribution. They will fail to install and need to be compiled from source, an 8+ hour process on the RPI0w, if you want access to the Plover GUI. Luckily, they are redundant in our setup as the Stenogotchi runs headless. 
 
-        git clone https://github.com/openstenoproject/plover.git
-        nano ./plover/requirements_distribution.txt
-            ...
-            #PyQt5-sip==4.19.13
-            #PyQt5==5.11.3
-            ...
+       git clone https://github.com/openstenoproject/plover.git
+       nano ./plover/requirements_distribution.txt
+           ...
+           #PyQt5-sip==4.19.13
+           #PyQt5==5.11.3
+           ...
 
 5. [5min] Install Plover and plover-plugins
         
-        pip3 install --user -r ./plover/requirements.txt
-        pip3 install --user -e ./plover -r ./plover/requirements_plugins.txt --no-build-isolation
+       pip3 install --user -r ./plover/requirements.txt
+       pip3 install --user -e ./plover -r ./plover/requirements_plugins.txt --no-build-isolation
 
 6. Clone the Stenogotchi repository and install the stenogotchi_link plover plugin
 
-        git clone https://github.com/Anodynous/stenogotchi.git
-        pip3 install ./stenogotchi/plover_plugin/
+       git clone https://github.com/Anodynous/stenogotchi.git
+       pip3 install ./stenogotchi/plover_plugin/
 
 7. Add configuration file for the service used to communicate over D-Bus between Plover and Stenogotchi
         
-        cp ./stenogotchi/plover_plugin/stenogotchi_link/com.github.stenogotchi.conf /etc/dbus-1/system.d/
+       cp ./stenogotchi/plover_plugin/stenogotchi_link/com.github.stenogotchi.conf /etc/dbus-1/system.d/
 
 8. Remove the input bluetooth plugin so that it does not grab the sockets we require access to. We make this the default behaviour by appending '-P input' to the pre-existing line in below service file.
 	
-        nano /lib/systemd/system/bluetooth.service
+       nano /lib/systemd/system/bluetooth.service
         
-        #----------
-        ExecStart=/usr/lib/bluetooth/bluetoothd -P input
+       #----------
+       ExecStart=/usr/lib/bluetooth/bluetoothd -P input
         
 
 9. Configure Plover and Stenogotchi to start at boot
@@ -122,7 +122,19 @@ All commands should be executed as root. The installation process can be complet
         [Plugins]
         enabled_extensions = ["stenogotchi_link"]
 
-11. Significantly reduce boot time
+11. Launch Stenogotchi manually for initial setup. Configure settings after reboot completes.
+
+        python3 ./stenogotchi/stenogotchi.py
+        nano /etc/stenogotchi/config.toml
+        
+        #----------modify the config as you see fit----------#
+        main.plugins.buttonshim.enabled = true
+        main.plugins.upslite.enabled = true
+        main.plugins.evdevkb.enabled = true
+        main.plugins.plover_link.bt_autoconnect_mac = '00:DE:AD:BE:EF:00,11:DE:AD:BE:EF:11'
+        #----------
+
+12. Significantly reduce boot time
     * Set ARM initial turbo to the max (60s) under dietpi-config > performance options to reduce boot time. You can also play around with overclocking, throttling and cpu governor to find a suitable balance between performance and power draw.     
     * Disable dietpi and apt update check at boot:
           
@@ -132,7 +144,7 @@ All commands should be executed as root. The installation process can be complet
           CONFIG_CHECK_DIETPI_UPDATES=0
           CONFIG_CHECK_APT_UPDATES=0
 
-    * Disable waiting for network and time sync at boot (unless you always will have wifi available or need reliable timestamps in logs):
+    * Disable waiting for network and time sync at boot. Doing this you should be aware that the RPI0w does not have a hardware clock. It will lose track of real world time as soon it is powered off, making log timestamps or any time based action you may set up unreliable. None of this is important for the core functionality of the Stenogotchi and disabling time-sync at boot can shave up to a minute off the boot process. By adding a cheap I2C hardware clock you can completely remove the need for network sync. Many modules are small enough to fit in the empty space of the UPS-Lite or under the eINK screen [and are easy to wire](https://www.pishop.us/product/ds3231-real-time-clock-module-for-raspberry-pi/) and [set up](https://learn.adafruit.com/adding-a-real-time-clock-to-raspberry-pi/set-rtc-time). Just don't forget to isolate it with some tape.
                         
           nano /boot/dietpi.txt
           
@@ -140,22 +152,19 @@ All commands should be executed as root. The installation process can be complet
           CONFIG_BOOT_WAIT_FOR_NETWORK=0
           CONFIG_NTP_MODE=0 
 
-12. Launch Stenogotchi once for initial setup (unless you already rebooted in previous step). Configure settings and reboot.
-
-        python3 ./stenogotchi/stenogotchi.py
-        nano /etc/stenogotchi/config.toml
-        
-        #----------modify the config as you see fit----------#
-        main.plugins.evdevkb.enabled = true
-        main.plugins.buttonshim.enabled = true
-        main.plugins.plover_link.bt_autoconnect_mac = 'DE:AD:BE:EF'
-        #----------
-
-        reboot
 
 ## Configuration
-- Configuration files are placed in /etc/stenogotchi/
-- Create a file called config.toml with overrides to the defaults. Don't edit default.toml directly as it is overridden on version updates
+* Configuration files are placed in /etc/stenogotchi/
+  * Create a file called config.toml with overrides to the defaults. Don't edit default.toml directly as it is overwritten on version updates.
+* Define your bluetooth devices in main.plugins.plover_link.bt_autoconnect_mac for auto-connect upon boot. Multiple comma separated devices in order of preference can be given. If no connection attempts are successful, the device will fall back to listening for incoming connection attempts.
+  * Issues with pairing or connecting after changes in bluetooth configurations can usually be fixed by unpairing the devices and re-pairing. On the Stenogotchi this is handled through bluetoothctl.
+    
+        bluetoothctl
+        [bluetooth]# paired-devices
+        Device 00:DE:AD:BE:EF:00 Anodynous' Ipad
+        [bluetooth]# remove 00:DE:AD:BE:EF:00
+        [bluetooth]# exit
+
 
 ## Usage
 ![stenogotchi_2](https://user-images.githubusercontent.com/17461433/107883149-d5539680-6ef5-11eb-86fe-41f0b6293eed.jpg)
