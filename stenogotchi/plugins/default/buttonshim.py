@@ -98,7 +98,7 @@ class Handler():
 
 
 class Buttonshim(plugins.Plugin):
-    __author__ = 'Anodynous'
+    __author__ = 'gon@o2online.de, Anodynous'
     __version__ = '0.0.2'
     __license__ = 'GPL3'
     __description__ = 'Pimoroni Button Shim GPIO Button and RGB LED support plugin based on the pimoroni-buttonshim-lib and the pwnagotchi-gpio-buttons-plugin'
