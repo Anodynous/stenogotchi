@@ -43,6 +43,10 @@ class Automata(object):
         self._view.on_excited()
         plugins.on('excited', self)
 
+    def set_processing(self):
+        self._view.on_processing()
+        plugins.on('processing', self)
+
     def set_rebooting(self):
         self._view.on_rebooting()
         plugins.on('rebooting', self)

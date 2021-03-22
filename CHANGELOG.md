@@ -6,8 +6,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
-- Add DS3231 real time clock module wiring and positioning reference picture to README.
-- Add three new faces to indicate processing status.
+- DS3231 real time clock module wiring and positioning reference picture to README.
+- Four new faces, producing processing animation when combined.
 
 ### Changed
 - Change led plugin and default patterns to better indicate noteworthy events.
