@@ -57,6 +57,7 @@ ui.faces.debug = "(#__#)"
 ui.faces.process_1 = '(1__0)'
 ui.faces.process_2 = '(1__1)'
 ui.faces.process_3 = '(0__1)'
+ui.faces.process_4 = '(0__0)'
 
 ui.web.enabled = false
 ui.web.address = "192.168.1.111"

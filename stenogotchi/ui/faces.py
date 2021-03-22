@@ -23,6 +23,7 @@ DEBUG = '(#__#)'
 PROCESS_1 = '(1__0)'
 PROCESS_2 = '(1__1)'
 PROCESS_3 = '(0__1)'
+PROCESS_4 = '(0__0)'
 
 
 def load_from_config(config):
