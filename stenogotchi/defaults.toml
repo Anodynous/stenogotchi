@@ -54,6 +54,9 @@ ui.faces.angry = "(-_-')"
 ui.faces.friend = "(♥‿‿♥)"
 ui.faces.broken = "(☓‿‿☓)"
 ui.faces.debug = "(#__#)"
+ui.faces.process_1 = '(1__0)'
+ui.faces.process_2 = '(1__1)'
+ui.faces.process_3 = '(0__1)'
 
 ui.web.enabled = false
 ui.web.address = "192.168.1.111"
