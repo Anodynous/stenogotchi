@@ -266,6 +266,8 @@ class EvdevKbrd:
     def set_keyboards(self):
         # Sets all keyboards as device to listen for key-inputs from
         while not self.have_kb:
+            if not self.do_capture:
+                break
             keyboards = self.get_keyboards()
             if keyboards:
                 self.devs = keyboards
