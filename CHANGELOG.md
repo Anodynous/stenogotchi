@@ -10,9 +10,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Four new faces, producing processing animation when combined.
 
 ### Changed
-- Change led plugin and default patterns to better indicate noteworthy events.
+- Led plugin and default patterns to better indicate noteworthy events.
 
 ### Fixed
+- Issues with letter capitalization and special characters due to flawed shift modifier-key execution.
+- QWERTY-mode breaking bug.
+
 ### Removed
 
 ## [0.0.4] - 2021-03-21

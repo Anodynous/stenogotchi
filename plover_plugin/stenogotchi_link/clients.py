@@ -16,7 +16,7 @@ SERVER_DBUS = 'com.github.stenogotchi'
 SERVER_SRVC = '/com/github/stenogotchi'
 ERROR_NO_SERVER: str = 'A server is not currently running'
 ERROR_SERVER_RUNNING: str = 'A server is already running'
-TIME_SLEEP = 0.001
+TIME_SLEEP = 0
 
 
 class StenogotchiClient:
@@ -171,12 +171,12 @@ class BTClient:
         #    for n in range(8)
         #    if (modifiers & (1 << n))
         #]
-        if modifiers > 1:
-            logging.debug("[stenogotchi_link] Modifier received: " + str(modifiers) +" keycode" + str(keycode))
+        #if modifiers > 1:
+        #    logging.debug("[stenogotchi_link] Modifier received: " + str(modifiers) +" keycode" + str(keycode))
         # Update modifier keys
         #for mod_keycode in modifiers_list:
         #    self.update_mod_keys(plover_modkey(mod_keycode), 1)
-        if modifiers > 1:       # Should update this to handle multiple modifier keys like plover does
+        if modifiers > 0:  # Should look at handling multiple modifiers in combination, but only shift seems to be needed in default plover keymap.
             self.update_mod_keys(plover_modkey(modifiers), 1)
 
         # Press and release the base key.
@@ -186,7 +186,7 @@ class BTClient:
         self.update_keys(plover_convert(keycode), 0)
         self.send_keys()
         # Release modifiers
-        if modifiers == 1:
+        if modifiers > 0:
             self.update_mod_keys(plover_modkey(modifiers), 0)
         #for mod_keycode in reversed(modifiers_list):
         #    self.update_mod_keys(plover_modkey(mod_keycode), 0)
