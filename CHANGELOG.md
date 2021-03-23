@@ -13,8 +13,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Led plugin and default patterns to better indicate noteworthy events.
 
 ### Fixed
-- Issues with letter capitalization and special characters due to flawed shift modifier-key execution.
-- QWERTY-mode breaking bug.
+- QWERTY-mode breaking bug introduced in v0.0.4.
+- Letter capitalization, symbol characters and return key in STENO-mode.
 
 ### Removed
 

@@ -192,10 +192,27 @@ class BTClient:
         #    self.update_mod_keys(plover_modkey(mod_keycode), 0)
     
     def send_string(self, s):
+        special_cases = ['<', '(', ')']
         for char in s:
+            if char in special_cases:
+                if char == '<':
+                    self.send_plover_keycode(59,1) # shift(,)
+                elif char == '(':
+                    self.send_plover_keycode(18,1) # shift(9)
+                elif char == ')':
+                    self.send_plover_keycode(19,1) # shift(0)
             keysym = uchr_to_keysym(char)
             mapping = self.ke._get_mapping(keysym)
             if mapping is None:
                 continue
             self.send_plover_keycode(mapping.keycode,
-                               mapping.modifiers)
+                            mapping.modifiers)
+        
+    def send_key_combination(self, combination: str):
+        """
+        TODO: handle properly all combinations, like Control_L(BackSpace)
+        """
+        if combination == 'Return':
+            self.send_plover_keycode(36)
+        else:
+            print(f"Received unknown key_combination from Plover: {combination}")

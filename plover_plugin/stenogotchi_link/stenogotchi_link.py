@@ -185,9 +185,7 @@ class EngineServer():
                 Keys are represented by their names based on the OS-specific
                 keyboard implementations in plover.oslayer.
         """
-
-        data = {'send_key_combination': combination}
-        logging.debug(f'[stenogotchi_link] _on_send_key_combination data: {data}')
+        self._btclient.send_key_combination(combination)
 
     def _on_add_translation(self):
         """Broadcasts when the add translation tool is opened via a command."""
