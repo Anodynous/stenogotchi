@@ -311,10 +311,10 @@ class EvdevKbrd:
         return [0xA1, 0x01, self.mod_keys, 0, *self.pressed_keys]
 
     def send_keys(self):
-        # If we have self._skip_dbus, use plugin function directly
+        # If ran as part of Stenogotchi, communicate directly with plugin
         if self._skip_dbus:
             plugins.loaded['plover_link']._stenogotchiservice.send_keys(self.state)
-        # If we lack self._skip_dbus assume we need to use dbus to access send_keys()
+        # If ran as stand-alone, assume dbus is needed to access send_keys() function
         else:
             self.btk_service.send_keys(self.state)
 
@@ -357,6 +357,9 @@ class EvdevKeyboard(ObjectClass):
      
     def on_ready(self, agent):
         self._agent = agent
+
+    def on_config_changed(self, config):
+        self.config = config
 
     def trigger_ui_update(self, input_mode):
         self._agent.view().set('mode', input_mode)

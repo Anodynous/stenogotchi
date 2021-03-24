@@ -51,6 +51,9 @@ class Upslite(ObjectClass):
             self._quickstart()
         except:
             logging.error("[upslite] Could not start UPS-Lite plugin")
+    
+    def on_config_changed(self, config):
+        self.config = config
 
     # Called when the ui is updated
     def on_ui_update(self, ui):

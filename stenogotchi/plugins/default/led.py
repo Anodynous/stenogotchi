@@ -36,6 +36,9 @@ class Led(plugins.Plugin):
         self._on_event('loaded')
         _thread.start_new_thread(self._worker, ())
 
+    def on_config_changed(self, config):
+        self.config = config
+
     def _on_event(self, event):
         if not self._is_busy:
             self._event_name = event

@@ -121,7 +121,6 @@ class Buttonshim(plugins.Plugin):
         self._states = 0b00011111
         self._handlers = [None,None,None,None,None]
         self._button_was_held = False
-        
 
     def on_loaded(self):
         logging.info("[buttonshim] GPIO Button plugin loaded.")
@@ -130,6 +129,9 @@ class Buttonshim(plugins.Plugin):
         self.on_press([BUTTON_A, BUTTON_B, BUTTON_C, BUTTON_D, BUTTON_E], self.press_handler)
         self.on_hold([BUTTON_A, BUTTON_B, BUTTON_C, BUTTON_D, BUTTON_E], self.hold_handler)
         self.on_release([BUTTON_A, BUTTON_B, BUTTON_C, BUTTON_D, BUTTON_E], self.release_handler)
+
+    def on_config_changed(self, config):
+        self.config = config
 
     def on_ready(self, agent):
         self._agent = agent
@@ -472,8 +474,8 @@ class Buttonshim(plugins.Plugin):
         def toggle_wpm_meters():
             command = {}
             try:
-                wpm_method = self._agent._config['main']['plugins']['plover_link']['wpm_method']
-                wpm_timeout = self._agent._config['main']['plugins']['plover_link']['wpm_timeout']
+                wpm_method = plugins.loaded['plover_link'].options['wpm_method']
+                wpm_timeout = plugins.loaded['plover_link'].options['wpm_timeout']
             except Exception as ex:
                 logging.exception(f"[buttonshim] Check that wpm_method and wpm_timeout is configured. Falling back to defaults. Exception: {str(ex)}")
                 wpm_method = 'ncra'
