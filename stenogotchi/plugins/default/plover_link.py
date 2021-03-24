@@ -66,9 +66,9 @@ class BTKbDevice:
     """
     create a bluetooth device to emulate a HID keyboard
     """
-    # Service port - must match port configured in SDP record
+    # Service control port - must match port configured in SDP record
     P_CTRL = 17
-    # Service port - must match port configured in SDP record#Interrrupt port
+    # Service interrupt port - must match port configured in SDP record
     P_INTR = 19
     # BlueZ dbus
     PROFILE_DBUS_PATH = '/bluez/yaptb/btkb_profile'
@@ -117,7 +117,7 @@ class BTKbDevice:
 
         # set the Bluetooth device configuration
         try: 
-            self.alias = plugins.loaded['plover_link']._agent._config['main']['plugins']['plover_link']['bt_device_name']
+            self.alias = plugins.loaded['plover_link'].options['bt_device_name']
         except:
             self.alias = 'Bluetooth Keyboard'
         self.discoverabletimeout = 0
@@ -272,7 +272,7 @@ class BTKbDevice:
         self._agent.set_bt_connected(self.bthost_name)
 
     def auto_connect(self):
-        bt_autoconnect_mac = plugins.loaded['plover_link']._agent._config['main']['plugins']['plover_link']['bt_autoconnect_mac']
+        bt_autoconnect_mac = plugins.loaded['plover_link'].options['bt_autoconnect_mac']
  
         if not bt_autoconnect_mac:
             logging.info('[plover_link] No bt_autoconnect_mac set in config. Listening for incoming connections instead...')  
@@ -344,6 +344,7 @@ class StenogotchiService(dbus.service.Object):
         self._agent = plugins.loaded['plover_link']._agent
         self.device = BTKbDevice()  # create and setup our BTKbDevice
         self.device.auto_connect()  # connect to preferred bt_mac. If unspecified or unavailable fall back to awaiting incoming connections
+        self.wpm_top = None
 
     @dbus.service.method('com.github.stenogotchi', in_signature='ay')   # bytearray
     def send_keys(self, cmd):
@@ -373,7 +374,14 @@ class StenogotchiService(dbus.service.Object):
     @dbus.service.method('com.github.stenogotchi', in_signature='s')    # string
     def plover_wpm_stats(self, s):
         logging.debug('[plover_link] plover_wpm_stats = ' + s)
-        self._agent.set_wpm_stats(s)
+        if not self.wpm_top: 
+            self.wpm_top = int(s)
+        else:
+            if int(s) > self.wpm_top:
+                self.wpm_top = int(s)
+        stats = '{:3s} {:5s}'.format(s, f"({self.wpm_top})")
+        
+        self._agent.set_wpm_stats(stats)
 
     @dbus.service.method('com.github.stenogotchi', in_signature='s')    # string
     def plover_strokes_stats(self, s):
@@ -392,14 +400,14 @@ class PloverLink(ObjectClass):
     __description__ = 'This plugin enables connectivity to Plover through D-Bus. Note that it needs root permissions due to using sockets'
 
     def __init__(self):
-        self._agent = None       # only added to be able to do callbacks ot agent events
+        self._agent = None
         self.running = False
         self._stenogotchiservice = None
         self.mainloop = None
 
     # called when everything is ready and the main loop is about to start
     def on_ready(self, agent):
-        self._agent = agent
+        self._agent = agent     # used for agent/automata functionsadded to be able to do callbacks to agent events
 
         DBusGMainLoop(set_as_default=True)
         self._stenogotchiservice = StenogotchiService()
@@ -411,6 +419,9 @@ class PloverLink(ObjectClass):
             logging.info("[plover_link] PloverLink is up")
         except:
             logging.error("[plover_link] Could not start PloverLink")
+    
+    def on_config_changed(self, config):
+        self.config = config
                     
     def on_unload(self, ui):
         self.mainloop.quit()

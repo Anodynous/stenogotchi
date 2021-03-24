@@ -265,15 +265,16 @@ class EvdevKbrd:
     
     def set_keyboards(self):
         # Sets all keyboards as device to listen for key-inputs from
-        while self.do_capture:
-            while not self.have_kb:
-                keyboards = self.get_keyboards()
-                if keyboards:
-                    self.devs = keyboards
-                    self.have_kb = True
-                else:
-                    logging.debug('[evdevkb] Keyboard not found, waiting 3 seconds and retrying')
-                    sleep(3)
+        while not self.have_kb:
+            if not self.do_capture:
+                break
+            keyboards = self.get_keyboards()
+            if keyboards:
+                self.devs = keyboards
+                self.have_kb = True
+            else:
+                logging.debug('[evdevkb] Keyboard not found, waiting 3 seconds and retrying')
+                sleep(3)
 
     def update_mod_keys(self, mod_key, value):
         """
@@ -310,10 +311,10 @@ class EvdevKbrd:
         return [0xA1, 0x01, self.mod_keys, 0, *self.pressed_keys]
 
     def send_keys(self):
-        # If we have self._skip_dbus, use plugin function directly
+        # If ran as part of Stenogotchi, communicate directly with plugin
         if self._skip_dbus:
             plugins.loaded['plover_link']._stenogotchiservice.send_keys(self.state)
-        # If we lack self._skip_dbus assume we need to use dbus to access send_keys()
+        # If ran as stand-alone, assume dbus is needed to access send_keys() function
         else:
             self.btk_service.send_keys(self.state)
 
@@ -356,6 +357,9 @@ class EvdevKeyboard(ObjectClass):
      
     def on_ready(self, agent):
         self._agent = agent
+
+    def on_config_changed(self, config):
+        self.config = config
 
     def trigger_ui_update(self, input_mode):
         self._agent.view().set('mode', input_mode)

@@ -45,6 +45,9 @@ class MemTemp(plugins.Plugin):
         logging.info("[memtemp] memtemp plugin loaded.")
         _thread.start_new_thread(self._cpu_poller(), ())
 
+    def on_config_changed(self, config):
+        self.config = config
+
     def mem_usage(self):
         return int(stenogotchi.mem_usage() * 100)
 

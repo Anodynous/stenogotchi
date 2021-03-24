@@ -1,3 +1,11 @@
+# ###############################################################
+# Based on: https://github.com/evilsocket/pwnagotchi/blob/master/pwnagotchi/plugins/default/led.py
+#
+# Changed 22-03-2021 by Anodynous
+# - Changed to fit Stenogotchi events
+#
+################################################################
+
 from threading import Event
 import _thread
 import logging
@@ -7,7 +15,7 @@ import stenogotchi.plugins as plugins
 
 
 class Led(plugins.Plugin):
-    __author__ = 'evilsocket@gmail.com'
+    __author__ = 'evilsocket@gmail.com, Anodynous'
     __version__ = '1.0.0'
     __license__ = 'GPL3'
     __description__ = 'This plugin blinks the PWR led with different patterns depending on the event.'
@@ -27,6 +35,9 @@ class Led(plugins.Plugin):
         logging.info("[led] plugin loaded for %s" % self._led_file)
         self._on_event('loaded')
         _thread.start_new_thread(self._worker, ())
+
+    def on_config_changed(self, config):
+        self.config = config
 
     def _on_event(self, event):
         if not self._is_busy:
@@ -73,10 +84,6 @@ class Led(plugins.Plugin):
     def on_updating(self):
         self._on_event('updating')
 
-    # called when there's one or more unread pwnmail messages
-    def on_unread_inbox(self, num_unread):
-        self._on_event('unread_inbox')
-
     # called when there's internet connectivity
     def on_internet_available(self, agent):
         self._on_event('internet_available')
@@ -85,21 +92,13 @@ class Led(plugins.Plugin):
     def on_ready(self, agent):
         self._on_event('ready')
 
-    # called when the AI finished loading
-    def on_ai_ready(self, agent):
-        self._on_event('ai_ready')
+    # called when the status is set to grateful
+    def on_grateful(self, agent):
+        self._on_event('grateful')
 
-    # called when the AI starts training for a given number of epochs
-    def on_ai_training_start(self, agent, epochs):
-        self._on_event('ai_training_start')
-
-    # called when the AI got the best reward so far
-    def on_ai_best_reward(self, agent, reward):
-        self._on_event('ai_best_reward')
-
-    # called when the AI got the worst reward so far
-    def on_ai_worst_reward(self, agent, reward):
-        self._on_event('ai_worst_reward')
+    # called when the status is set to lonely
+    def on_lonely(self, agent):
+        self._on_event('lonely')
 
     # called when the status is set to bored
     def on_bored(self, agent):
@@ -109,13 +108,13 @@ class Led(plugins.Plugin):
     def on_sad(self, agent):
         self._on_event('sad')
 
+    # called when the status is set to angry
+    def on_angry(self, agent):
+        self._on_event('angry')
+
     # called when the status is set to excited
     def on_excited(self, agent):
         self._on_event('excited')
-
-    # called when the status is set to lonely
-    def on_lonely(self, agent):
-        self._on_event('lonely')
 
     # called when the agent is rebooting the board
     def on_rebooting(self, agent):
@@ -129,31 +128,42 @@ class Led(plugins.Plugin):
     def on_sleep(self, agent, t):
         self._on_event('sleep')
 
-    # called when the agent refreshed its access points list
-    def on_wifi_update(self, agent, access_points):
-        self._on_event('wifi_update')
-
-    # called when the agent is sending an association frame
-    def on_association(self, agent, access_point):
-        self._on_event('association')
-
-    # called when the agent is deauthenticating a client station from an AP
-    def on_deauthentication(self, agent, access_point, client_station):
-        self._on_event('deauthentication')
-
-    # called when a new handshake is captured, access_point and client_station are json objects
-    # if the agent could match the BSSIDs to the current list, otherwise they are just the strings of the BSSIDs
-    def on_handshake(self, agent, filename, access_point, client_station):
-        self._on_event('handshake')
-
     # called when an epoch is over (where an epoch is a single loop of the main algorithm)
     def on_epoch(self, agent, epoch, epoch_data):
         self._on_event('epoch')
 
-    # called when a new peer is detected
-    def on_peer_detected(self, agent, peer):
-        self._on_event('peer_detected')
+    # called when successfully connected to a bluetooth host
+    def on_bt_connected(self, agent, bthost_name):
+        self._on_event('bt_connected')
 
-    # called when a known peer is lost
-    def on_peer_lost(self, agent, peer):
-        self._on_event('peer_lost')
+    # called when disconnected from bluetooth host
+    def on_bt_disconnected(self, agent):
+        self._on_event('bt_disconnected')
+
+    # called when plover boots
+    def on_plover_boot(self, agent):
+        self._on_event('plover_boot')
+
+    # called when plover is ready
+    def on_plover_ready(self, agent):
+        self._on_event('plover_ready')
+
+    # called when plover quits
+    def on_plover_quit(self, agent):
+        self._on_event('plover_quit')
+
+    # called when wifi is connected
+    def on_wifi_connected(self, agent, ssid, ip):
+        self._on_event('wifi_connected')
+
+    # called when wifi is disconnected
+    def on_wifi_disconnected(self, agent):
+        self._on_event('wifi_disconnected')
+
+    # called when wpm stats are updated
+    def on_wpm_stats(self, agent):
+        self._on_event('wpm_set')
+
+    # called when wpm-strokes stats are updated
+    def on_strokes_stats(self, agent):
+        self._on_event('strokes_set')

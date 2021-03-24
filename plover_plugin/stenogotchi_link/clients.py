@@ -16,7 +16,7 @@ SERVER_DBUS = 'com.github.stenogotchi'
 SERVER_SRVC = '/com/github/stenogotchi'
 ERROR_NO_SERVER: str = 'A server is not currently running'
 ERROR_SERVER_RUNNING: str = 'A server is already running'
-TIME_SLEEP = 0.001
+TIME_SLEEP = 0
 
 
 class StenogotchiClient:
@@ -171,12 +171,12 @@ class BTClient:
         #    for n in range(8)
         #    if (modifiers & (1 << n))
         #]
-        if modifiers > 1:
-            logging.debug("[stenogotchi_link] Modifier received: " + str(modifiers) +" keycode" + str(keycode))
+        #if modifiers > 1:
+        #    logging.debug("[stenogotchi_link] Modifier received: " + str(modifiers) +" keycode" + str(keycode))
         # Update modifier keys
         #for mod_keycode in modifiers_list:
         #    self.update_mod_keys(plover_modkey(mod_keycode), 1)
-        if modifiers > 1:       # Should update this to handle multiple modifier keys like plover does
+        if modifiers > 0:  # Should look at handling multiple modifiers in combination, but only shift seems to be needed in default plover keymap.
             self.update_mod_keys(plover_modkey(modifiers), 1)
 
         # Press and release the base key.
@@ -186,16 +186,33 @@ class BTClient:
         self.update_keys(plover_convert(keycode), 0)
         self.send_keys()
         # Release modifiers
-        if modifiers == 1:
+        if modifiers > 0:
             self.update_mod_keys(plover_modkey(modifiers), 0)
         #for mod_keycode in reversed(modifiers_list):
         #    self.update_mod_keys(plover_modkey(mod_keycode), 0)
     
     def send_string(self, s):
+        special_cases = ['<', '(', ')']
         for char in s:
+            if char in special_cases:
+                if char == '<':
+                    self.send_plover_keycode(59,1) # shift(,)
+                elif char == '(':
+                    self.send_plover_keycode(18,1) # shift(9)
+                elif char == ')':
+                    self.send_plover_keycode(19,1) # shift(0)
             keysym = uchr_to_keysym(char)
             mapping = self.ke._get_mapping(keysym)
             if mapping is None:
                 continue
             self.send_plover_keycode(mapping.keycode,
-                               mapping.modifiers)
+                            mapping.modifiers)
+        
+    def send_key_combination(self, combination: str):
+        """
+        TODO: handle properly all combinations, like Control_L(BackSpace)
+        """
+        if combination == 'Return':
+            self.send_plover_keycode(36)
+        else:
+            print(f"Received unknown key_combination from Plover: {combination}")

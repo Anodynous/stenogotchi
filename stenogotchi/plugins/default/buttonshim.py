@@ -98,7 +98,7 @@ class Handler():
 
 
 class Buttonshim(plugins.Plugin):
-    __author__ = 'Anodynous'
+    __author__ = 'gon@o2online.de, Anodynous'
     __version__ = '0.0.2'
     __license__ = 'GPL3'
     __description__ = 'Pimoroni Button Shim GPIO Button and RGB LED support plugin based on the pimoroni-buttonshim-lib and the pwnagotchi-gpio-buttons-plugin'
@@ -121,7 +121,6 @@ class Buttonshim(plugins.Plugin):
         self._states = 0b00011111
         self._handlers = [None,None,None,None,None]
         self._button_was_held = False
-        
 
     def on_loaded(self):
         logging.info("[buttonshim] GPIO Button plugin loaded.")
@@ -130,6 +129,9 @@ class Buttonshim(plugins.Plugin):
         self.on_press([BUTTON_A, BUTTON_B, BUTTON_C, BUTTON_D, BUTTON_E], self.press_handler)
         self.on_hold([BUTTON_A, BUTTON_B, BUTTON_C, BUTTON_D, BUTTON_E], self.hold_handler)
         self.on_release([BUTTON_A, BUTTON_B, BUTTON_C, BUTTON_D, BUTTON_E], self.release_handler)
+
+    def on_config_changed(self, config):
+        self.config = config
 
     def on_ready(self, agent):
         self._agent = agent
@@ -472,8 +474,8 @@ class Buttonshim(plugins.Plugin):
         def toggle_wpm_meters():
             command = {}
             try:
-                wpm_method = self._agent._config['main']['plugins']['plover_link']['wpm_method']
-                wpm_timeout = self._agent._config['main']['plugins']['plover_link']['wpm_timeout']
+                wpm_method = plugins.loaded['plover_link'].options['wpm_method']
+                wpm_timeout = plugins.loaded['plover_link'].options['wpm_timeout']
             except Exception as ex:
                 logging.exception(f"[buttonshim] Check that wpm_method and wpm_timeout is configured. Falling back to defaults. Exception: {str(ex)}")
                 wpm_method = 'ncra'
@@ -485,15 +487,14 @@ class Buttonshim(plugins.Plugin):
                 self.set_ui_update('strokes', '')
                 self.trigger_ui_update()
                 logging.info(f"[buttonshim] Disabled WPM readings")
+
             elif not self._plover_wpm_meters_enabled:
                 command = {'start_wpm_meter': 'wpm and strokes',
                            'wpm_method' : wpm_method,
                            'wpm_timeout' : wpm_timeout}
 
-                wpm_method_ui = wpm_method[0:6]
-                wpm_timeout_ui = wpm_timeout + 's'
-                self.set_ui_update('wpm', wpm_method_ui)
-                self.set_ui_update('strokes', wpm_timeout_ui)
+                self.set_ui_update('wpm', wpm_method)
+                self.set_ui_update('strokes', f"{wpm_timeout}s")
                 self.trigger_ui_update()
 
                 logging.info(f"[buttonshim] Enabled WPM readings using method {wpm_method} and timeout {wpm_timeout}")

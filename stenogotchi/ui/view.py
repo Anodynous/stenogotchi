@@ -41,31 +41,29 @@ class View(object):
         self._height = self._layout['height']
         self._state = State(state={
             'ups': LabeledValue(color=BLACK, label='BAT', value='', position=self._layout['ups'],
-                                    label_font=fonts.Bold,
-                                    text_font=fonts.Medium),
-            'wpm': LabeledValue(color=BLACK, label='WPM', value='', position=self._layout['wpm'],
-                                label_font=fonts.Bold,
-                                text_font=fonts.Medium),
+                                    label_font=fonts.Bold,text_font=fonts.Medium),
 
-            'strokes': LabeledValue(color=BLACK, label='STR', value='', position=self._layout['strokes'],
-                                label_font=fonts.Bold,
-                                text_font=fonts.Medium),
+            'wpm': LabeledValue(color=BLACK, label='WPM', value='', position=self._layout['wpm']['pos'],
+                                label_font=fonts.Bold, text_font=fonts.Medium, max_length=self._layout['wpm']['max']),
 
-            'uptime': LabeledValue(color=BLACK, label='UP', value='00:00:00', position=self._layout['uptime'],
-                                   label_font=fonts.Bold,
-                                   text_font=fonts.Medium),
+            'strokes': LabeledValue(color=BLACK, label='STR', value='', position=self._layout['strokes']['pos'],
+                                label_font=fonts.Bold, text_font=fonts.Medium, max_length=self._layout['strokes']['max']),
+
+            'uptime': LabeledValue(color=BLACK, label='UP', value='', position=self._layout['uptime'],
+                                   label_font=fonts.Bold, text_font=fonts.Medium),
 
             'line1': Line(self._layout['line1'], color=BLACK),
+ 
             'line2': Line(self._layout['line2'], color=BLACK),
-
+ 
             'face': Text(value=faces.SLEEP, position=self._layout['face'], color=BLACK, font=fonts.Huge),
-
+ 
             'friend_face': Text(value=None, position=self._layout['friend_face'], font=fonts.Bold, color=BLACK),
-            'friend_name': Text(value=None, position=self._layout['friend_name'], font=fonts.BoldSmall,
-                                color=BLACK),
-
+ 
+            'friend_name': Text(value=None, position=self._layout['friend_name'], font=fonts.BoldSmall, color=BLACK),
+ 
             'name': Text(value='%s>' % 'stenogotchi', position=self._layout['name'], color=BLACK, font=fonts.Bold),
-
+ 
             'status': Text(value=self._voice.default(),
                            position=self._layout['status']['pos'],
                            color=BLACK,
@@ -77,9 +75,11 @@ class View(object):
             'bthost': LabeledValue(label='BT', value='', color=BLACK,
                                    position=self._layout['bthost']['pos'], label_font=fonts.Bold,
                                    text_font=fonts.Medium, max_length=self._layout['bthost']['max']),
+ 
             'wifi': LabeledValue(label='WIFI', value='', color=BLACK,
                                    position=self._layout['wifi']['pos'], label_font=fonts.Bold,
                                    text_font=fonts.Medium, max_length=self._layout['wifi']['max']),
+ 
             'mode': Text(value='NONE', position=self._layout['mode'],
                          font=fonts.Bold, color=BLACK),
         })
@@ -264,6 +264,16 @@ class View(object):
         self.set('status', self._voice.on_lonely())
         self.update()
 
+    def on_processing(self):
+        start_face = self._state.get('face')
+        processing_faces = [faces.PROCESS_1, faces.PROCESS_2, faces.PROCESS_3, faces.PROCESS_4]
+        for face in processing_faces:
+            self.set('face', face)
+            self.update()
+            time.sleep(2)
+        self.set('face', start_face)
+        self.update()
+
     def on_rebooting(self):
         self.set('face', faces.BROKEN)
         self.set('status', self._voice.on_rebooting())
@@ -281,7 +291,7 @@ class View(object):
         self.update()
 
     def on_plover_ready(self):
-        face = random.choice((faces.AWAKE, faces.LOOK_R_HAPPY, faces.HAPPY, faces.EXCITED, faces.GRATEFUL, faces.MOTIVATED))
+        face = random.choice((faces.AWAKE, faces.LOOK_R_HAPPY, faces.HAPPY, faces.EXCITED, faces.GRATEFUL))
         self.set('face', face)
         self.set('status', self._voice.on_plover_ready())
         if self._state.get('mode') == 'NONE':
@@ -297,10 +307,7 @@ class View(object):
         self.update()
 
     def on_set_wpm(self, wpm):
-        # Implement check for strokes data and show in () after wpm. Or show top session wpm in this
-        # Add option to reset top session stat with button 
         self.set('wpm', wpm)
-        # set face if new top wpm reached, with reaction text
         self.update()
 
     def on_set_strokes(self, strokes):
