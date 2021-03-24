@@ -6,6 +6,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
+### Changed
+### Fixed
+### Removed
+
+## [0.0.5] - 2021-03-24
+### Added
 - DS3231 real time clock module wiring and positioning reference picture to README.
 - Four new faces, producing processing animation when combined.
 - WPM stats now track and display top result for session.
@@ -16,8 +22,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - QWERTY-mode breaking bug introduced in v0.0.4.
 - Letter capitalization, symbol characters and return key in STENO-mode.
-
-### Removed
 
 ## [0.0.4] - 2021-03-21
 ### Added
@@ -52,6 +56,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - README now includes basic configuration and usage documentation.
 - LICENSE file.
 
-[Unreleased]: https://github.com/Anodynous/stenogotchi/compare/v0.0.4...dev
+[Unreleased]: https://github.com/Anodynous/stenogotchi/compare/v0.0.5...dev
+[0.0.5]: https://github.com/Anodynous/stenogotchi/compare/v0.0.4...v0.0.5
 [0.0.4]: https://github.com/Anodynous/stenogotchi/compare/v0.0.3...v0.0.4
 [0.0.3]: https://github.com/Anodynous/stenogotchi/releases/tag/v0.0.3
