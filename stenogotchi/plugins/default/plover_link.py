@@ -344,6 +344,7 @@ class StenogotchiService(dbus.service.Object):
         self._agent = plugins.loaded['plover_link']._agent
         self.device = BTKbDevice()  # create and setup our BTKbDevice
         self.device.auto_connect()  # connect to preferred bt_mac. If unspecified or unavailable fall back to awaiting incoming connections
+        self.wpm_top = None
 
     @dbus.service.method('com.github.stenogotchi', in_signature='ay')   # bytearray
     def send_keys(self, cmd):
@@ -373,7 +374,14 @@ class StenogotchiService(dbus.service.Object):
     @dbus.service.method('com.github.stenogotchi', in_signature='s')    # string
     def plover_wpm_stats(self, s):
         logging.debug('[plover_link] plover_wpm_stats = ' + s)
-        self._agent.set_wpm_stats(s)
+        if not self.wpm_top: 
+            self.wpm_top = int(s)
+        else:
+            if int(s) > self.wpm_top:
+                self.wpm_top = int(s)
+        stats = '{:3s} {:5s}'.format(s, f"({self.wpm_top})")
+        
+        self._agent.set_wpm_stats(stats)
 
     @dbus.service.method('com.github.stenogotchi', in_signature='s')    # string
     def plover_strokes_stats(self, s):
