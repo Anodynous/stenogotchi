@@ -152,12 +152,11 @@ All commands should be executed as root. The installation process can be complet
           CONFIG_BOOT_WAIT_FOR_NETWORK=0
           CONFIG_NTP_MODE=0 
 
-
 ## Configuration
-* Configuration files are placed in /etc/stenogotchi/
-  * Create a file called config.toml with overrides to the defaults. Don't edit default.toml directly as it is overwritten on version updates.
-* Define your bluetooth devices in main.plugins.plover_link.bt_autoconnect_mac for auto-connect upon boot. Multiple comma separated devices in order of preference can be given. If no connection attempts are successful, the device will fall back to listening for incoming connection attempts.
-  * Issues with pairing or connecting after changes in bluetooth configurations can usually be fixed by unpairing the devices and re-pairing. On the Stenogotchi this is handled through bluetoothctl.
+* Configuration files are placed in /etc/stenogotchi/. Create a separate file named config.toml containing overrides to the defaults. Don't edit default.toml directly as it will be overwritten on Stenogotchi version updates.
+
+* Define your bluetooth devices in main.plugins.plover_link.bt_autoconnect_mac to auto-connect on boot. Multiple comma separated devices in order of priority can be given. If no connection attempts are successful, the device will fall back to listening for incoming connection attempts.
+  * Issues with pairing or connecting after changes in bluetooth configurations can usually be fixed through unpairing and re-pairing. On the Stenogotchi side this is best handled through bluetoothctl.
     
         bluetoothctl
         [bluetooth]# paired-devices
@@ -165,12 +164,17 @@ All commands should be executed as root. The installation process can be complet
         [bluetooth]# remove 00:DE:AD:BE:EF:00
         [bluetooth]# exit
 
+## Updating
+       cd ~/stenogotchi
+       git pull
+       pip3 install ./stenogotchi/plover_plugin/
 
 ## Usage
 ![stenogotchi_2](https://user-images.githubusercontent.com/17461433/107883149-d5539680-6ef5-11eb-86fe-41f0b6293eed.jpg)
 
 ### Buttonshim
 Below long-press (1s) actions are pre-defined. Short-press triggers user configurable terminal commands.
+ 
 
 * Button A - toggle QWERTY / STENO mode
 * Button B - toggle wpm readings (60s NCRA)
