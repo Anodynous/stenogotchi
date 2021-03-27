@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
+- Reactions to new records in WPM-tracking mode.
+
 ### Changed
 ### Fixed
 ### Removed

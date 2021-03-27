@@ -306,13 +306,23 @@ class View(object):
             self.set('mode', 'NONE')
         self.update()
 
-    def on_set_wpm(self, wpm):
+    def on_wpm(self, wpm):
         self.set('wpm', wpm)
         self.update()
 
-    def on_set_strokes(self, strokes):
+    def on_strokes(self, strokes):
         self.set('strokes', strokes)
         self.update()
+
+    def on_wpm_record(self, wpm_top):
+        if wpm_top < 100:
+            self.set('face', faces.LOOK_R_HAPPY)
+        elif wpm_top < 200:
+            self.set('face', faces.EXCITED)
+        else:
+            self.set('face', faces.INTENSE)
+        self.set('status', self._voice.on_wpm_record(wpm_top))
+        # Don't trigger self.update as we always will call set_wpm() afterwards.
 
     def on_bt_connected(self, bthost_name):
         self.set('face', faces.LOOK_L_HAPPY)

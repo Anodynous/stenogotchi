@@ -188,7 +188,33 @@ class Voice:
             self._('Plover is ready'),
             self._('Plover is finally dressed and ready to go'),
             self._('We are ready to go')])
-
+    
+    def on_wpm_record(self, wpm_top):
+        if wpm_top < 100:
+            return random.choice([
+                self._('Keep up the good work!'),
+                self._('You are getting quick!')])
+        if wpm_top < 150:
+            return random.choice([
+                self._('Impressive!'),
+                self._('You have left most qwerty users in the dust!')])
+        elif wpm_top < 200:
+            return random.choice([
+                self._('Your fingers were a blur'),
+                self._('Wow, I could barely keep up with that.'),
+                self._('Amazing!')])
+        elif wpm_top < 250:
+            return random.choice([
+                self._('I can\'t keep up with you anymore'),
+                self._('I can barely think that fast'),
+                self._('Warp drive engaged!')])
+        elif wpm_top < 300:
+            return random.choice([
+                self._('I\'m starting to think you\'re cheating!'),
+                self._('Keep that up and your fingers will fly off')])
+        else:
+            return self._('Mark Kislingbury... Is that you?!')
+        
     def hhmmss(self, count, fmt):
         if count > 1:
             # plural

@@ -374,19 +374,22 @@ class StenogotchiService(dbus.service.Object):
     @dbus.service.method('com.github.stenogotchi', in_signature='s')    # string
     def plover_wpm_stats(self, s):
         logging.debug('[plover_link] plover_wpm_stats = ' + s)
+        wpm = int(s)
         if not self.wpm_top: 
-            self.wpm_top = int(s)
+            self.wpm_top = wpm
+            self._agent.set_wpm(wpm, self.wpm_top)
         else:
-            if int(s) > self.wpm_top:
-                self.wpm_top = int(s)
-        stats = '{:3s} {:5s}'.format(s, f"({self.wpm_top})")
-        
-        self._agent.set_wpm_stats(stats)
+            if wpm > self.wpm_top:
+                self.wpm_top = wpm
+                self._agent.set_wpm_record(self.wpm_top)
+                logging.debug(f'[plover_link] new wpm_record: {self.wpm_top}')
+            else:
+                self._agent.set_wpm(wpm, self.wpm_top)
 
     @dbus.service.method('com.github.stenogotchi', in_signature='s')    # string
     def plover_strokes_stats(self, s):
         logging.debug('[plover_link] plover_strokes_stats = ' + s)
-        self._agent.set_strokes_stats(s)
+        self._agent.set_strokes(s)
 
     @dbus.service.signal('com.github.stenogotchi', signature='a{sv}')    # dictionary of strings to variants
     def signal_to_plover(self, message):
