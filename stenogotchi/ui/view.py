@@ -185,7 +185,7 @@ class View(object):
     def wait(self, secs, sleeping=True):
         was_normal = self.is_normal()
         part = secs / 10.0
-
+        
         for step in range(0, 10):
             # if we weren't in a normal state before going
             # to sleep, keep that face and status on for
@@ -291,7 +291,7 @@ class View(object):
         self.update()
 
     def on_plover_ready(self):
-        face = random.choice((faces.AWAKE, faces.LOOK_R_HAPPY, faces.HAPPY, faces.EXCITED, faces.GRATEFUL))
+        face = random.choice((faces.AWAKE, faces.LOOK_R_HAPPY, faces.LOOK_L_HAPPY, faces.EXCITED, faces.GRATEFUL))
         self.set('face', face)
         self.set('status', self._voice.on_plover_ready())
         if self._state.get('mode') == 'NONE':

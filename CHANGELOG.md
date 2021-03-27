@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Reactions to new records in WPM-tracking mode.
 
 ### Changed
+- Character and personality adjustments
+
 ### Fixed
 ### Removed
 

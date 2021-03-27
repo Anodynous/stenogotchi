@@ -37,11 +37,21 @@ class Voice:
 
     def on_normal(self):
         return random.choice([
+            self._('Wonder what we\'ll type next'),
+            self._('Sure is cosy in here'),
+            self._('We better not be writing any spam mail ...'),
+            self._('I bet I\'m a great swimmer.'),
+            self._('Used to know this Tama guy ... Real pest that one.'),
+            self._('Did you know I\'m barely literate?'),
+            self._('Hi'),
+            self._('You\'re looking sharp today!'),
+            self._('We\'re friends right? ... Best friends!'),
+            '',
+            '',
+            '',
+            '',
             '',
             '...'])
-
-    def on_free_channel(self, channel):
-        return self._('Hey, channel {channel} is free! Your AP will say thanks.').format(channel=channel)
 
     def on_reading_logs(self, lines_so_far=0):
         if lines_so_far == 0:
@@ -60,7 +70,9 @@ class Voice:
 
     def on_demotivated(self, reward):
         return random.choice([
-            self._('This sucks...'),
+            self._('This sucks ...'),
+            self._('Meh ...'),
+            self._('What\'s even the point ...'),
             self._('Shitty day :/')])
 
 
@@ -81,7 +93,7 @@ class Voice:
     def on_excited(self):
         return random.choice([
             self._('I\'m living the life!'),
-            self._('I type before you think.'),
+            self._('I type before you think'),
             self._('So many words!!!'),
             self._('I\'m having so much fun!'),
             self._('My crime is that of curiosity ...')])
@@ -120,9 +132,10 @@ class Voice:
 
     def on_napping(self, secs):
         return random.choice([
-            self._('Napping for {secs}s ...').format(secs=secs),
+            #self._('Napping for {secs}s ...').format(secs=secs),
+            self._('Napping for a bit ...'),
             self._('Zzzzz'),
-            self._('ZzzZzzz ({secs}s)').format(secs=secs)])
+            self._('ZzzZzzz')])
 
     def on_shutdown(self):
         return random.choice([
@@ -130,7 +143,9 @@ class Voice:
             self._('Zzz')])
 
     def on_awakening(self):
-        return random.choice(['...', '!'])
+        return random.choice([
+        '!',
+        ''])
 
     def on_waiting(self, secs):
         return random.choice([
@@ -158,7 +173,7 @@ class Voice:
     def on_bt_disconnected(self):
         return random.choice([
             self._('Lost connection to bluetooth host'),
-            self._('Maybe it was a milk- and not bluetooth as it fell out...'),
+            self._('Maybe it was a milk tooth and not bluetooth since it fell out ...'),
             self._('Need a new bluetooth connection buddy')])
 
     def on_wifi_connected(self, ssid, ip):
@@ -173,12 +188,12 @@ class Voice:
         return random.choice([
             self._('I... I just lost WiFi'),
             self._('I\'m feeling disconnected'),
-            self._('Dude! I was in the middle of a Netflix show!')])
+            self._('Bruh, I was watching Netflix!')])
 
     def on_plover_boot(self):
         return random.choice([
-            self._('Just waiting for Plover to pick up the phone now...'),
-            self._('Plover is loading dictionaries...'),
+            self._('Just waiting for Plover to pick up the phone now ...'),
+            self._('Plover is loading dictionaries ...'),
             self._('Waiting for Plover to wake up')])
 
     def on_plover_ready(self):
@@ -201,7 +216,7 @@ class Voice:
         elif wpm_top < 200:
             return random.choice([
                 self._('Your fingers were a blur'),
-                self._('Wow, I could barely keep up with that.'),
+                self._('Wow, I barely managed to keep up'),
                 self._('Amazing!')])
         elif wpm_top < 250:
             return random.choice([
@@ -213,7 +228,7 @@ class Voice:
                 self._('I\'m starting to think you\'re cheating!'),
                 self._('Keep that up and your fingers will fly off')])
         else:
-            return self._('Mark Kislingbury... Is that you?!')
+            return self._('Mark Kislingbury ... Is that you?!')
         
     def hhmmss(self, count, fmt):
         if count > 1:

@@ -381,8 +381,8 @@ class StenogotchiService(dbus.service.Object):
         else:
             if wpm > self.wpm_top:
                 self.wpm_top = wpm
+                logging.debug(f'[plover_link] new wpm record: {self.wpm_top}')
                 self._agent.set_wpm_record(self.wpm_top)
-                logging.debug(f'[plover_link] new wpm_record: {self.wpm_top}')
             else:
                 self._agent.set_wpm(wpm, self.wpm_top)
 
