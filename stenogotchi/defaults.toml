@@ -78,6 +78,9 @@ main.plugins.plover_link.enabled = true
 main.plugins.plover_link.bt_autoconnect_mac = ''
 main.plugins.plover_link.bt_device_name = 'Stenogotchi'
 
+main.plugins.dict_lookup.enabled = false
+main.plugins.dict_lookup.enable_sorting = true      # When enabled dictionary lookup will be sorted primarily by number of strokes, secondarily by length of the strokes.
+
 # For WPM readings a word is defined in one of three ways:
 ##    NCRA: The National Court Reporters Association defines a “word” as 1.4 syllables. This is the measure used for official NCRA testing material.
 ##    Traditional: The traditional metric for “word” in the context of keyboarding is defined to be 5 characters per word, including spaces. This is compatible with the notion of “word” in many typing speed utilities.
