@@ -238,7 +238,7 @@ if __name__ == '__main__':
     main()
 
 
-class PloverLink(ObjectClass):
+class DictLookup(ObjectClass):
     __autohor__ = 'Anodynous'
     __version__ = '0.1'
     __license__ = 'GPL3'
