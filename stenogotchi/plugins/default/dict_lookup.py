@@ -254,7 +254,8 @@ class DictLookup(ObjectClass):
         logging.debug("[dict_lookup] waiting for Plover to start before fetching dictionaries")
         self.lookup = LookUp()
         
-    def on_plover_ready(self):
+    def on_plover_ready(self, agent):
+        self._agent = agent
         logging.debug("[dict_lookup] fetching enabled Plover dictionaries")
         self.running = True
         # Find and read active Plover dictionary contents
@@ -264,9 +265,6 @@ class DictLookup(ObjectClass):
         logging.info("[dict_lookup] finished loading entries from all enabled Plover dictionaries")
         if self.options['enable_sorting']:
             self.lookup.set_sort(True)
-
-    def on_ready(self, agent):
-        self._agent = agent
 
     def on_config_changed(self, config):
         self.config = config
