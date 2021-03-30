@@ -45,7 +45,7 @@ class WaveshareV2(DisplayImpl):
                 'max': 20
             }
         else:    # these are not correctly configured based on different width and height of color display
-            fonts.setup(10, 8, 10, 25, 25, 9)
+            fonts.setup(10, 9, 10, 35, 25, 9)
             self._layout['width'] = 212
             self._layout['height'] = 104
             self._layout['face'] = (0, 26)
