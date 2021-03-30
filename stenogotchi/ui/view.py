@@ -213,8 +213,8 @@ class View(object):
         self.on_normal()
 
     def on_shutdown(self):
-        face = random.choice((faces.SLEEP, faces.SLEEP2))
-        self.set('face', face)
+        face = random.choices((faces.SLEEP, faces.SLEEP2), weights=[0.7, 0.3], k=1)
+        self.set('face', face[0])
         self.set('status', self._voice.on_shutdown())
         self.update(force=True)
         self._frozen = True
@@ -285,14 +285,14 @@ class View(object):
         self.update()
     
     def on_plover_boot(self):
-        face = random.choice((faces.SLEEP, faces.SLEEP2, faces.BORED))
-        self.set('face', face)
+        face = random.choices([faces.SLEEP, faces.SLEEP2, faces.BORED], weights=[0.6, 0.3, 0.1], k=1)
+        self.set('face', face[0])
         self.set('status', self._voice.on_plover_boot())
         self.update()
 
     def on_plover_ready(self):
-        face = random.choice((faces.AWAKE, faces.LOOK_R_HAPPY, faces.LOOK_L_HAPPY, faces.EXCITED, faces.GRATEFUL))
-        self.set('face', face)
+        face = random.choices([faces.AWAKE, faces.LOOK_R_HAPPY, faces.LOOK_L_HAPPY, faces.EXCITED, faces.GRATEFUL], weights=[0.5, 0.2, 0.2, 0.05, 0.05], k=1)
+        self.set('face', face[0])
         self.set('status', self._voice.on_plover_ready())
         if self._state.get('mode') == 'NONE':
             self.set('mode', 'STENO')
@@ -342,6 +342,12 @@ class View(object):
     def on_wifi_disconnected(self):
         self.set('face', faces.LONELY)
         self.set('status', self._voice.on_wifi_disconnected())
+        self.update()
+    
+    def on_dict_lookup_done(self):
+        face = random.choices([faces.AWAKE, faces.LOOK_R_HAPPY, faces.LOOK_L_HAPPY, faces.EXCITED, faces.GRATEFUL], weights=[0.5, 0.2, 0.2, 0.05, 0.05], k=1)
+        self.set('face', face[0])
+        self.set('status', self._voice.on_dict_lookup_done())
         self.update()
 
     def update(self, force=False, new_data={}):

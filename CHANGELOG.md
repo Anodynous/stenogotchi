@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Added
 - Reactions to new records in WPM-tracking mode.
-- Plugin for dictionary lookup of words and strokes from enabled Plover dictionaries. Still lacking ui and input support.
+- Plover dictionary lookup with eINK display and STENO input support.
 
 ### Changed
 - Character and personality adjustments

@@ -33,6 +33,7 @@ class EngineServer():
         self._btclient = BTClient()
         self._wpm_meter = None
         self._strokes_meter = None
+        self._output_to_stenogotchi = False
 
     # Started when user enables extension
     def start(self):
@@ -167,16 +168,20 @@ class EngineServer():
         Args:
             text: The string that was output.
         """
-
-        self._btclient.send_string(text)
+        if self._output_to_stenogotchi:
+            self._stenogotchiclient.send_string(text)
+        else:
+            self._btclient.send_string(text)
 
     def _on_send_backspaces(self, count: int):
         """Broadcasts when backspaces are output.
         Args:
             count: The number of backspaces that were output.
         """
-
-        self._btclient.send_backspaces(count)
+        if self._output_to_stenogotchi:
+            self._stenogotchiclient.send_backspaces(count)
+        else:
+            self._btclient.send_backspaces(count)
 
     def _on_send_key_combination(self, combination: str):
         """Broadcasts when a key combination is output.
@@ -185,7 +190,10 @@ class EngineServer():
                 Keys are represented by their names based on the OS-specific
                 keyboard implementations in plover.oslayer.
         """
-        self._btclient.send_key_combination(combination)
+        if self._output_to_stenogotchi:
+            self._stenogotchiclient.send_key_combination(combination)
+        else:
+            self._btclient.send_key_combination(combination)
 
     def _on_add_translation(self):
         """Broadcasts when the add translation tool is opened via a command."""

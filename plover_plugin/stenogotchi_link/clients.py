@@ -72,8 +72,19 @@ class StenogotchiClient:
     def plover_strokes_stats(self, s):
         self.stenogotchi_service.plover_strokes_stats(s)
 
+    def send_backspaces(self, y):
+        self.stenogotchi_service.send_backspaces_stenogotchi(y)
+
+    def send_string(self, s):
+        self.stenogotchi_service.send_string_stenogotchi(s)
+
+    def send_key_combination(self, s):
+        self.stenogotchi_service.send_key_combination_stenogotchi(s)
+
     def stenogotchi_signal_handler(self, dict):
         # Enable and disable wpm/strokes meters
+        if 'output_to_stenogotchi' in dict:
+            self._engineserver._output_to_stenogotchi = dict['output_to_stenogotchi']
         if 'start_wpm_meter' in dict:
             wpm_method = dict['wpm_method']
             wpm_timeout = int(dict['wpm_timeout'])
@@ -215,4 +226,9 @@ class BTClient:
         if combination == 'Return':
             self.send_plover_keycode(36)
         else:
-            print(f"Received unknown key_combination from Plover: {combination}")
+            # For debug purposes
+            message = f"Received unknown key_combination from Plover: {combination}"
+            print(message)
+
+            with open('/var/log/stenogotchi_link.log', 'a+') as f:
+                f.write(message + '\n')

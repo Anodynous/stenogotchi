@@ -99,3 +99,7 @@ class Automata(object):
         self._view.on_wpm_record(wpm_top)
         plugins.on('wpm_record', self)
         self.set_wpm(wpm_top, wpm_top)  # Since we set a new record wpm and wpm_top will be equal
+
+    def set_on_dict_lookup_done(self):
+        self._view.on_dict_lookup_done()
+        plugins.on('dict_lookup_done', self)

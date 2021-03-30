@@ -226,6 +226,14 @@ class Voice:
                 self._('Keep that up and your fingers will fly off')])
         else:
             return self._('Mark Kislingbury ... Is that you?!')
+
+    def on_dict_lookup_done(self):
+        return random.choice([
+            self._('I can never remember that one either'),
+            self._('Welp ... I already forgot it again'),
+            self._('Oh ... I totally knew that one'),
+            self._('How often do you need that word anyway?'),
+            self._('Last time we\'ll need to look that one up. Right?')])
         
     def hhmmss(self, count, fmt):
         if count > 1:

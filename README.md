@@ -173,12 +173,11 @@ All commands should be executed as root. The installation process can be complet
 ![stenogotchi_2](https://user-images.githubusercontent.com/17461433/107883149-d5539680-6ef5-11eb-86fe-41f0b6293eed.jpg)
 
 ### Buttonshim
-Below long-press (1s) actions are pre-defined. Short-press triggers user configurable terminal commands.
+Below long-press (1s) actions are pre-defined. Short-press triggers user configurable terminal commands, e.g. rclone sync of Plover dictionaries with cloud storage.
  
-
 * Button A - toggle QWERTY / STENO mode
-* Button B - toggle wpm readings (60s NCRA)
-* Button C - full refresh eINK
+* Button B - toggle wpm & strokes readings
+* Button C - toggle dictionary lookup mode
 * Button D - toggle wifi (reboot persistent)
 * Button E - shutdown
 
@@ -194,12 +193,12 @@ Below long-press (1s) actions are pre-defined. Short-press triggers user configu
 - [x] ButtonSHIM toggle between STENO and QWERTY output mode
 - [x] WPM readings for STENO mode
 - [x] Full installation guide for Plover and Stenogotchi using DietPi as base image
+- [x] Dictionary lookup using eINK screen
 - [ ] Decrease steno latency
+- [ ] Plover chords for triggering Stenogotchi actions
+- [ ] Dictionary additions using eINK screen
 - [ ] Document configuration options and buttonSHIM functionality
 - [ ] Clean up and optimize code, fix bugs and add test suite
-- [ ] Dictionary lookup using eINK screen
-- [ ] Dictionary additions using eINK screen
-- [ ] Plover chords for triggering Stenogotchi actions
 - [ ] Expand Stenogotchi statuses, reactions and mood indicators
 - [ ] On-the-fly updating and reloading of Plover dictionaries
 - [ ] Improved web-ui, including buttonSHIM functionality

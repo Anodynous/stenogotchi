@@ -511,11 +511,15 @@ class Buttonshim(plugins.Plugin):
             toggle_wpm_meters()
 
         elif NAMES[button] == 'C':
-            # Clean the screen (should not be needed on waveshare_2, but could be useful on other display modules)
-            self._agent.view().init_display()
-            self._agent.view().update(force=True)
-            logging.info(f"[buttonshim] Initiated screen refresh")
-        
+            # Toggle dictionary lookup mode
+            if plugins.loaded['dict_lookup'].get_running():
+                if not plugins.loaded['dict_lookup'].get_input_mode():  # If not currently enabled, enable input mode
+                    plugins.loaded['dict_lookup'].enable_input_mode()
+                else:                                                   # If currently enabled, revert to normal view
+                    plugins.loaded['dict_lookup'].disable_input_mode()
+            else: 
+                logging.debug(f"[buttonshim] dict_lookup is not ready yet. Check that Plover is running.")
+
         elif NAMES[button] == 'D':
             # Toggle wifi on/off
             stenogotchi.set_wifi_onoff()
