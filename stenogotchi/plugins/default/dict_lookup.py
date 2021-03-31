@@ -258,11 +258,20 @@ class UiHandler():
             if key in self.clear_elements:
                 self.add_element(key, element)
 
+    def surprise_exit(self):
+        if not self._view.get('face') == faces.LOOK_L:
+            self._view.set('face', faces.LOOK_L)
+            self.update_view()
+            time.sleep(1)
+        self._view.set('face', faces.LOOK_R)
+        self.update_view()
+        time.sleep(1)
+    
     def relocate_face(self, minion):
         self.remove_element('face')
         if minion:
             # Shrink and relocate
-            face = random.choices((faces.LOOK_L_HAPPY, faces.LOOK_L), weights=(0.8, 0.2), k=1)
+            face = random.choices((faces.LOOK_L_HAPPY, faces.LOOK_L), weights=(0.9, 0.10), k=1)
             self.add_element('face', Text(value=face[0], position=((self._view._width - self.minion_offset + 2), 0), color=BLACK, font=self.minion_font))
         else:
             # Grow and relocate, state doesn't matter as we will update it before view refresh
@@ -306,6 +315,9 @@ class UiHandler():
         logging.info("[dict_lookup] Enabled dictionary lookup mode")
 
     def disable_input_mode(self):
+        # Add some variety to the exit
+        if random.randint(0, 9) > 7:
+            self.surprise_exit()
         self._view.remove_element('line1_offset')
         self._view.remove_element('input')
         self._view.remove_element('out1')
