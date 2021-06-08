@@ -43,7 +43,7 @@ All commands should be executed as root. The installation process can be complet
 
 4. Clone the Plover repository and comment out PyQt5 and SIP from requirements_distribution. They will fail to install and need to be compiled from source, an 8+ hour process on the RPI0w, if you want access to the Plover GUI. Luckily, they are redundant in our setup as the Stenogotchi runs headless. 
 
-       git clone https://github.com/openstenoproject/plover.git
+       git clone -b dev9 https://github.com/openstenoproject/plover.git
        nano ./plover/requirements_distribution.txt
            ...
            #PyQt5-sip==4.19.13
