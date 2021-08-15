@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
+- Modifier, function and navigation-key support, both individually and in combination. (Unsupported inputs logged in plover.log)
 - Reactions to new records in WPM-tracking mode.
 - Plover dictionary lookup with eINK display and STENO input support.
 
