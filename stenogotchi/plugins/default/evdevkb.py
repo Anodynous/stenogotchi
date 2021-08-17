@@ -313,7 +313,7 @@ class EvdevKbrd:
     def send_keys(self):
         # If ran as part of Stenogotchi, communicate directly with plugin
         if self._skip_dbus:
-            plugins.loaded['plover_link']._stenogotchiservice.send_keys(self.state)
+            plugins.loaded['plover_link']._stenogotchiservice.send_keys([self.state])
         # If ran as stand-alone, assume dbus is needed to access send_keys() function
         else:
             self.btk_service.send_keys(self.state)

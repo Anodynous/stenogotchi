@@ -346,9 +346,10 @@ class StenogotchiService(dbus.service.Object):
         self.device.auto_connect()  # connect to preferred bt_mac. If unspecified or unavailable fall back to awaiting incoming connections
         self.wpm_top = None
 
-    @dbus.service.method('com.github.stenogotchi', in_signature='ay')   # bytearray
-    def send_keys(self, cmd):
-        self.device.send(cmd)
+    @dbus.service.method('com.github.stenogotchi', in_signature='aay')   # array of bytearrays
+    def send_keys(self, key_list):
+        for key in key_list:
+            self.device.send(key)
 
     @dbus.service.method('com.github.stenogotchi', in_signature='b')    # boolean
     def plover_is_running(self, b):

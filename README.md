@@ -194,7 +194,7 @@ Below long-press (1s) actions are pre-defined. Short-press triggers user configu
 - [x] WPM readings for STENO mode
 - [x] Full installation guide for Plover and Stenogotchi using DietPi as base image
 - [x] Dictionary lookup using eINK screen
-- [ ] Decrease steno latency
+- [x] Decrease steno latency
 - [ ] Plover chords for triggering Stenogotchi actions
 - [ ] Dictionary additions using eINK screen
 - [ ] Document configuration options and buttonSHIM functionality

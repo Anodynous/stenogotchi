@@ -163,22 +163,28 @@ class BTClient:
     def clear_keys(self):
         self.pressed_keys = []
 
-    def send_keys(self):
-        self.btk_service.send_keys(self.state)
+    def send_keys(self, state_list=None):
+        if not state_list:
+            self.btk_service.send_keys([state_list])
+        else:
+            flat_list = state_list
+            self.btk_service.send_keys(flat_list)
 
     def send_backspaces(self, number_of_backspaces):
         self.clear_keys()
         self.clear_mod_keys()
+        state_list = []
         for x in range(number_of_backspaces):
             self.update_keys(42, 1)     # 42 is HID keycode for backspace
-            self.send_keys()
-            sleep(TIME_SLEEP)
+            state_list.append(self.state)
             self.update_keys(42, 0)
-            self.send_keys()
-            sleep(TIME_SLEEP)
+            state_list.append(self.state)
+        self.send_keys(state_list)
+        
 
-    def send_plover_keycode(self, keycode, modifiers=None):
-        """Emulate a key press and release.
+    def map_hid_events(self, keycode, modifiers=None):
+        """ Returns a list of HID bytearrays to produce the key combination.
+        
         Arguments:
         keycode -- An integer in the inclusive range [8-255].
         modifiers -- An 8-bit bit mask indicating if the key
@@ -187,8 +193,11 @@ class BTClient:
         TODO: International, accented characters and a range of symbols are not working with the US keyboard layout. 
             Could be solved using Alt codes on Windows, but Mac/iOS uses different Option codes. Complicated to solve 
             in a clean way as we only emulate a BT keyboard and all characters must be produced on the remote host.
-            -> Look into separate WIN/MAC translation tables. Profiles which can be linked to BT MAC adresses. 
+            -> Look into separate WIN/MAC translation tables. Profiles which can be linked to BT MAC adresses.
         """
+        self.clear_keys()
+        self.clear_mod_keys()
+        state_sublist = []
         #modifiers_list = [
         #    self.ke.modifier_mapping[n][0]
         #    for n in range(8)
@@ -212,37 +221,42 @@ class BTClient:
             self.update_mod_keys(modkey_hid, 1)
         # Press and release the base key.
         self.update_keys(normkey_hid, 1)
-        self.send_keys()
+        state_sublist.append(self.state)
         sleep(TIME_SLEEP)
         self.update_keys(normkey_hid, 0)
-        self.send_keys()
+        state_sublist.append(self.state)
         # Release modifiers
         if modifiers > 0:
             self.update_mod_keys(modkey_hid, 0)
-            self.send_keys()
+            state_sublist.append(self.state)
         
+        return state_sublist
         #for mod_keycode in reversed(modifiers_list):
         #    self.update_mod_keys(plover_modkey(mod_keycode), 0)
         
     
     def send_string(self, s):
         # TODO: Universal handling for special cases
+        state_list = []
         special_cases = ['<', '(', ')']
         for char in s:
             if char in special_cases:
                 #plover.log.debug(f"[stenogotchi_link] handling special case character: {char}")
                 if char == '<':
-                    self.send_plover_keycode(59,50) # shift(,)
+                    self.map_hid_events(59,50) # shift(,)
                 elif char == '(':
-                    self.send_plover_keycode(18,50) # shift(9)
+                    self.map_hid_events(18,50) # shift(9)
                 elif char == ')':
-                    self.send_plover_keycode(19,50) # shift(0)
+                    self.map_hid_events(19,50) # shift(0)
             keysym = uchr_to_keysym(char)
             mapping = self.ke._get_mapping(keysym)
             if mapping is None:
                 continue
-            self.send_plover_keycode(mapping.keycode,
-                            mapping.modifiers)
+            sublist = self.map_hid_events(mapping.keycode, mapping.modifiers)
+            if sublist:
+                state_list.extend(sublist)
+        if len(state_list) > 0:
+            self.send_keys(state_list)
         
     def send_key_combination(self, combo_string: str):
         """
@@ -263,11 +277,10 @@ class BTClient:
         in the parenthetical are pressed and released in turn. For
         example, Alt_L(Tab) means to hold the left Alt key down, press
         and release the Tab key, and then release the left Alt key.
-        
-        TODO: handle properly all combinations, like Control_L(BackSpace)
         """
         self.clear_keys()
         self.clear_mod_keys()
+        state_list = []
 
         # Parse and validate combo.
         key_events = [
@@ -284,14 +297,11 @@ class BTClient:
             # Update and send keycode if mapped, otherwise log
             if modkey_hid > -1:
                 self.update_mod_keys(modkey_hid, event_type)
-                self.send_keys()
+                state_list.append(self.state)
             elif normkey_hid > -1:
                 self.update_keys(normkey_hid, event_type)
-                self.send_keys()
+                state_list.append(self.state)
             else:
                 plover.log.debug(f"[stenogotchi_link]Received key_combination from Plover: {combo_string}, resulting in key_events: {key_events}")
                 plover.log.error(f"Unable to map keycode: {keycode}, in keymap.py (event_type: {event_type})")
-            sleep(TIME_SLEEP)
-
-        self.clear_keys()
-        self.clear_mod_keys()
+        self.send_keys(state_list)
