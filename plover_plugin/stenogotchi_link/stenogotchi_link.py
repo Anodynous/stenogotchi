@@ -2,7 +2,7 @@
 # This is a Plover plugin acting as link between Plover and Stenogotchi
 # Based on: https://github.com/nsmarkop/plover_websocket_server
 
-import logging
+import plover.log
 import json
 import jsonpickle
 from typing import Optional, List
@@ -39,7 +39,7 @@ class EngineServer():
     def start(self):
         """ Starts the server. """
         self._connect_hooks()
-        logging.info("[stenogotchi_link] Plover_link started")
+        plover.log.info("[stenogotchi_link] Plover_link started")
         self._stenogotchiclient.plover_is_running(True)
 
     # Called when Plover exits or user disables the extension
@@ -83,7 +83,7 @@ class EngineServer():
         """Creates hooks into all of Plover's events."""
 
         if not self._engine:
-            logging.error(f'[stenogotchi_link] {ERROR_MISSING_ENGINE}')
+            plover.log.error(f'[stenogotchi_link] {ERROR_MISSING_ENGINE}')
             raise AssertionError(ERROR_MISSING_ENGINE)
             
         for hook in self._engine.HOOKS:
@@ -139,7 +139,7 @@ class EngineServer():
         """
 
         data = {'output_changed': enabled}
-        logging.debug(f'[stenogotchi_link] _on_output_changed data: {data}')
+        plover.log.debug(f'[stenogotchi_link] _on_output_changed data: {data}')
         self._stenogotchiclient.plover_output_enabled(enabled)
         
 
@@ -153,7 +153,7 @@ class EngineServer():
         config_json = jsonpickle.encode(config_update, unpicklable=False)
 
         data = {'config_changed': json.loads(config_json)}
-        logging.debug(f'[stenogotchi_link] _on_config_changed data: {data}')
+        plover.log.debug(f'[stenogotchi_link] _on_config_changed data: {data}')
 
     def _on_dictionaries_loaded(self, dictionaries: StenoDictionaryCollection):
         """Broadcasts when all of the dictionaries get loaded.
@@ -199,25 +199,25 @@ class EngineServer():
         """Broadcasts when the add translation tool is opened via a command."""
 
         data = {'add_translation': True}
-        logging.debug(f'[stenogotchi_link] _on_add_translation data: {data}')
+        plover.log.debug(f'[stenogotchi_link] _on_add_translation data: {data}')
         
     def _on_focus(self):
         """Broadcasts when the main window is focused via a command."""
 
         data = {'focus': True}
-        logging.debug(f'[stenogotchi_link] _on_focus data: {data}')
+        plover.log.debug(f'[stenogotchi_link] _on_focus data: {data}')
 
     def _on_configure(self):
         """Broadcasts when the configuration tool is opened via a command."""
 
         data = {'configure': True}
-        logging.debug(f'[stenogotchi_link] _on_configure data: {data}')
+        plover.log.debug(f'[stenogotchi_link] _on_configure data: {data}')
 
     def _on_lookup(self):
         """Broadcasts when the lookup tool is opened via a command."""
 
         data = {'lookup': True}
-        logging.debug(f'[stenogotchi_link] _on_lookup data: {data}')
+        plover.log.debug(f'[stenogotchi_link] _on_lookup data: {data}')
 
     def _on_quit(self):
         """Broadcasts when the application is terminated.
@@ -225,7 +225,7 @@ class EngineServer():
         """
 
         data = {'quit': True}
-        logging.debug(f'[stenogotchi_link] _on_quit data: {data}')
+        plover.log.debug(f'[stenogotchi_link] _on_quit data: {data}')
         self._stenogotchiclient.plover_is_running(False)
 
 
