@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Plover v4.0.0.dev10 compatibility
 - Stenogotchi_link plugin now logs to plover.log
 - Character and personality adjustments
+- Simplified installation process
 
 ### Fixed
 - Significantly reduced input latency in STENO mode
