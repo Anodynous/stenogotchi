@@ -41,30 +41,21 @@ All commands should be executed as root. The installation process can be complet
        apt-get install xserver-xorg-video-fbdev libtiff5 libopenjp2-7 bluez python3-rpi.gpio python3-gi screen rfkill -y
        pip3 install file_read_backwards flask flask-wtf flask-cors evdev python-xlib pillow spidev jsonpickle pydbus dbus-python
 
-4. Clone the Plover repository and comment out PyQt5 and SIP from requirements_distribution. They will fail to install and need to be compiled from source, an 8+ hour process on the RPI0w, if you want access to the Plover GUI. Luckily, they are redundant in our setup as the Stenogotchi runs headless. 
+4. Download and install Plover (v4.0.0.dev10)
 
-       git clone -b dev9 https://github.com/openstenoproject/plover.git
-       nano ./plover/requirements_distribution.txt
-           ...
-           #PyQt5-sip==4.19.13
-           #PyQt5==5.11.3
-           ...
+       wget https://github.com/openstenoproject/plover/releases/download/v4.0.0.dev10/plover-4.0.0.dev10-py3-none-any.whl
+       pip3 install plover-4.0.0.dev10-py3-none-any.whl
 
-5. [5min] Install Plover and plover-plugins
-        
-       pip3 install --user -r ./plover/requirements.txt
-       pip3 install --user -e ./plover -r ./plover/requirements_plugins.txt --no-build-isolation
-
-6. Clone the Stenogotchi repository and install the stenogotchi_link plover plugin
+5. Clone the Stenogotchi repository and install the plover plugin "stenogotchi_link"
 
        git clone https://github.com/Anodynous/stenogotchi.git
        pip3 install ./stenogotchi/plover_plugin/
 
-7. Add configuration file for the service used to communicate over D-Bus between Plover and Stenogotchi
+6. Add configuration file for D-Bus service used to communicate between Stenogotchi and plover plugin
         
        cp ./stenogotchi/plover_plugin/stenogotchi_link/com.github.stenogotchi.conf /etc/dbus-1/system.d/
 
-8. Remove the input bluetooth plugin so that it does not grab the sockets we require access to. We make this the default behaviour by appending '-P input' to the pre-existing line in below service file.
+7. Remove the input bluetooth plugin so that it does not grab the sockets we require access to. We make this the default behaviour by appending '-P input' to the pre-existing line in below service file.
 	
        nano /lib/systemd/system/bluetooth.service
         
@@ -72,7 +63,7 @@ All commands should be executed as root. The installation process can be complet
        ExecStart=/usr/lib/bluetooth/bluetoothd -P input
         
 
-9. Configure Plover and Stenogotchi to start at boot
+8. Configure Plover and Stenogotchi to start at boot
     * Using dietpi-autostart enable automatic login of root to the local terminal
     * Automatically start Stenogotchi and X server at local terminal login
 
@@ -91,10 +82,10 @@ All commands should be executed as root. The installation process can be complet
           #----------
           screen -S plover plover -g none -l debug
 
-10. Configure Plover. Setup will ultimately depend on your own preferences and keyboard, but below is what I use. Make sure to include at least 'auto_start = True' and the '[Plugins]' section in your own config.
+9. Configure Plover. Setup will ultimately depend on your own preferences and keyboard, but below is what I use. Make sure to include at least 'auto_start = True' and the '[Plugins]' section in your own config.
 
-        mkdir -p /root/.local/share/plover/
-        nano /root/.local/share/plover/plover.cfg
+        mkdir -p /root/.config/plover/
+        nano /root/.config/plover/plover.cfg
         
         #----------
         [Output Configuration]
@@ -122,7 +113,7 @@ All commands should be executed as root. The installation process can be complet
         [Plugins]
         enabled_extensions = ["stenogotchi_link"]
 
-11. Launch Stenogotchi manually for initial setup. Configure settings after reboot completes.
+10. Launch Stenogotchi manually for initial setup. Configure settings after reboot completes.
 
         python3 ./stenogotchi/stenogotchi.py
         nano /etc/stenogotchi/config.toml
@@ -134,7 +125,7 @@ All commands should be executed as root. The installation process can be complet
         main.plugins.plover_link.bt_autoconnect_mac = '00:DE:AD:BE:EF:00,11:DE:AD:BE:EF:11'
         #----------
 
-12. Significantly reduce boot time
+11. Significantly reduce boot time
     * Set ARM initial turbo to the max (60s) under dietpi-config > performance options to reduce boot time. You can also play around with overclocking, throttling and cpu governor to find a suitable balance between performance and power draw.     
     * Disable dietpi and apt update check at boot:
           

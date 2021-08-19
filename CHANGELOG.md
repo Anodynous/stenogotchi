@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Plover dictionary lookup with eINK display and STENO input support.
 
 ### Changed
+- Plover v4.0.0.dev10 compatibility
 - Stenogotchi_link plugin now logs to plover.log
 - Character and personality adjustments
 

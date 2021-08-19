@@ -219,6 +219,12 @@ class EngineServer():
         data = {'lookup': True}
         plover.log.debug(f'[stenogotchi_link] _on_lookup data: {data}')
 
+    def _on_suggestions(self):
+        """Broadcasts when the lookup tool is opened via a command."""
+
+        data = {'suggestions': True}
+        plover.log.debug(f'[stenogotchi_link] _on_lookup data: {data}')
+
     def _on_quit(self):
         """Broadcasts when the application is terminated.
         Can be either a full quit or a restart.
