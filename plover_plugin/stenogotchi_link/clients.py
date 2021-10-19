@@ -239,7 +239,8 @@ class BTClient:
         # TODO: Universal handling for special cases
         # Not able to type these chars, need to figure that out
         state_list = []
-        special_cases = ['<', '(', ')']
+        # special_cases = ['<', '(', ')']
+        special_cases = []
         for char in s:
             if char in special_cases:
                 #plover.log.debug(f"[stenogotchi_link] handling special case character: {char}")
