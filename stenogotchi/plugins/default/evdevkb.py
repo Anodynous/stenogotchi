@@ -357,6 +357,7 @@ class EvdevKeyboard(ObjectClass):
      
     def on_ready(self, agent):
         self._agent = agent
+        self.start_capture()
 
     def on_config_changed(self, config):
         self.config = config
@@ -367,7 +368,7 @@ class EvdevKeyboard(ObjectClass):
 
     def start_capture(self):
         logging.info('[evdevkb] Capturing evdev keypress events...')
-        self.trigger_ui_update('QWERTY')
+        self.trigger_ui_update('READY')
         self.evdevkb = EvdevKbrd(skip_dbus=True)
         self.evdevkb.set_do_capture(True)
         self.do_capture = True

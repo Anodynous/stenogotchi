@@ -21,7 +21,7 @@ else:
     ObjectClass = object
 
 I2CBUS = 1              # Run "sudo i2cdetect -l" to see which bus is being used (bcm2835 is what you are looking for). 0 = /dev/i2c-0 (port I2C0), 1 = /dev/i2c-1 (port I2C1)
-I2CADDRESS = 0x36       # Run "sudo i2cdetect -y 1" to see address 36 mounted on the i2c bus. This is MAXI17040G which we want to interact with
+I2CADDRESS = 0x32       # Run "sudo i2cdetect -y 1" to see address 36 mounted on the i2c bus. This is MAXI17040G which we want to interact with
 
 
 class Upslite(ObjectClass):
@@ -59,6 +59,7 @@ class Upslite(ObjectClass):
     def on_ui_update(self, ui):
         # update those elements
         self._read_charge()
+        self._read_voltage()
         self._check_plugged()
 
         # Set battery reading
@@ -69,7 +70,7 @@ class Upslite(ObjectClass):
 
         # Check for critical level. Initiate shutdown if too low
         if not self.is_plugged:
-            if self.charge <= self.options['shutdown_level']:
+            if (self.charge <= self.options['shutdown_level']) and (self.charge > 0):
                 logging.info(f'[upslite] Battery charge critical: {self.charge}')
                 ui.update(force=True, new_data={'status': 'Battery level critical. Shutting down in 1m unless connected to charger...'})
                 time.sleep(60)
@@ -86,6 +87,7 @@ class Upslite(ObjectClass):
         read = self.bus.read_word_data(self.address, 0X02)
         swapped = struct.unpack("<H", struct.pack(">H", read))[0]
         voltage = swapped * 1.25 /1000/16
+        logging.info(f'Voltage: {voltage}')
         if voltage > 0:     # if we get a non-zero value
             self.voltage = round(5.2 % voltage, 2)
 
@@ -98,6 +100,8 @@ class Upslite(ObjectClass):
         read = self.bus.read_word_data(self.address, 0X04)
         swapped = struct.unpack("<H", struct.pack(">H", read))[0]
         charge = swapped/256
+        logging.info(f'Charge Swap Level: {swapped}')
+        logging.info(f'Charge Level: {charge}')
         if charge > 100:
             charge = 100
         self.charge = round(charge)
@@ -138,8 +142,8 @@ if __name__ == '__main__':
         charge = ups.get_charge()
         is_plugged = ups.get_is_plugged()
         
-        print("Voltage:%5.2fV" % voltage)
-        print("Battery:%5i%%" % charge)
+        logging.info("Voltage:%5.2fV" % voltage)
+        logging.info("Battery:%5i%%" % charge)
 
         if charge > 99:
             print("Battery FULL")

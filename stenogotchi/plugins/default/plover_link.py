@@ -420,6 +420,7 @@ class PloverLink(ObjectClass):
 
     def __init__(self):
         self._agent = None
+        self._plover_wpm_meters_enabled = False
         self.running = False
         self._stenogotchiservice = None
         self.mainloop = None
@@ -431,7 +432,7 @@ class PloverLink(ObjectClass):
         DBusGMainLoop(set_as_default=True)
         self._stenogotchiservice = StenogotchiService()
         self.mainloop = GLib.MainLoop()
-        
+
         try:
             self.mainloop.run()
             self.running = True
