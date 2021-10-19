@@ -237,6 +237,7 @@ class BTClient:
     
     def send_string(self, s):
         # TODO: Universal handling for special cases
+        # Not able to type these chars, need to figure that out
         state_list = []
         special_cases = ['<', '(', ')']
         for char in s:
