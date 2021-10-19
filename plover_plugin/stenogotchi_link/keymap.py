@@ -105,9 +105,9 @@ plover_keytable = {
     90: 98,     #kp_0 - "KEY_KP0"
     126: 215,   # "Keypad ±"
     #"KEY_KPDOT": 99,
-    #94 : 197,   # "Keypad <"    # not working, shift(,) added as special case for send_string() instead.
-    #187: 182,   # "Keypad ("    # not working, shift(9) added as special case for send_string() instead.
-    #188: 183,   # "Keypad )"    # not working, shift(0) added as special case for send_string() instead.
+    94 : 197,   # "Keypad <"    # not working, shift(,) added as special case for send_string() instead.
+    187: 182,   # "Keypad ("    # not working, shift(9) added as special case for send_string() instead.
+    188: 183,   # "Keypad )"    # not working, shift(0) added as special case for send_string() instead.
 
     
     # TODO: Media keys not working correctly
@@ -146,4 +146,4 @@ def plover_modkey(plover_keycode):
     if plover_keycode in plover_modkeys:
         return plover_modkeys[plover_keycode]
     else:
-        return -1  # Return an invalid array element  
+        return -1  # Return an invalid array element
