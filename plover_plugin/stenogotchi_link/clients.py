@@ -236,6 +236,8 @@ class BTClient:
         
     
     def send_string(self, s):
+
+        plover.log.debug(f"[stenogotchi_link] Send String: {s}")
         # TODO: Universal handling for special cases
         # Not able to type these chars, need to figure that out
         state_list = []
