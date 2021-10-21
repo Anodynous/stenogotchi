@@ -261,7 +261,6 @@ class BTClient:
             sublist = self.map_hid_events(mapping.keycode, mapping.modifiers)
             if sublist:
                 state_list.extend(sublist)
-            pdb.set_trace()
         if len(state_list) > 0:
             self.send_keys(state_list)
         
