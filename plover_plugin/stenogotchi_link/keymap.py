@@ -2,6 +2,7 @@
 # Linux keycodes can be found in /usr/share/X11/xkb/keycodes/evdev
 
 # Linux keycode used by Plover : HID keycode used for BT
+import plover.log
 plover_keytable = {
     # Function row.
     67: 58,     #"F1",
@@ -137,6 +138,7 @@ plover_modkeys = {
 }
 
 def plover_convert(plover_keycode):
+    plover.log.debug(f'[stenogotchi_link] {plover_keycode}')
     if plover_keycode in plover_keytable:
         return plover_keytable[plover_keycode]
     else:
