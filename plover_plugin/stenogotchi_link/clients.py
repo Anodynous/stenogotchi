@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-
+import pdb
 import plover.log
 import dbus, dbus.exceptions
 from dbus.mainloop.glib import DBusGMainLoop
@@ -249,7 +249,8 @@ class BTClient:
             if char in special_cases:
                 plover.log.debug(f"[stenogotchi_link] handling special case character: {char}")
                 if char == '<':
-                    self.map_hid_events(60,50) # shift(,)
+                    pdb.set_trace()
+                    self.map_hid_events(59,50) # shift(,)
                 elif char == '(':
                     self.map_hid_events(18,50) # shift(9)
                 elif char == ')':
