@@ -256,12 +256,12 @@ class BTClient:
                     self.map_hid_events(19,50) # shift(0)
             keysym = uchr_to_keysym(char)
             mapping = self.ke._get_mapping(keysym)
-            pdb.set_trace()
             if mapping is None:
                 continue
             sublist = self.map_hid_events(mapping.keycode, mapping.modifiers)
             if sublist:
                 state_list.extend(sublist)
+            pdb.set_trace()
         if len(state_list) > 0:
             self.send_keys(state_list)
         
