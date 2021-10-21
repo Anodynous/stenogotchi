@@ -239,19 +239,18 @@ class BTClient:
 
         plover.log.debug(f"[stenogotchi_link] Send String: {s}")
         # TODO: Universal handling for special cases
-        # Not able to type these chars, need to figure that out
         state_list = []
         #special_cases = []
         special_cases = ['<', '(', ')']
         for char in s:
-            if char in special_cases:
-                plover.log.debug(f"[stenogotchi_link] handling special case character: {char}")
-                if char == '<':
-                    self.map_hid_events(59,50) # shift(,)
-                elif char == '(':
-                    self.map_hid_events(18,50) # shift(9)
-                elif char == ')':
-                    self.map_hid_events(19,50) # shift(0)
+            # if char in special_cases:
+                # plover.log.debug(f"[stenogotchi_link] handling special case character: {char}")
+                # if char == '<':
+                    # self.map_hid_events(59,50) # shift(,)
+                # elif char == '(':
+                    # self.map_hid_events(18,50) # shift(9)
+                # elif char == ')':
+                    # self.map_hid_events(19,50) # shift(0)
             keysym = uchr_to_keysym(char)
             mapping = self.ke._get_mapping(keysym)
             if mapping is None:
