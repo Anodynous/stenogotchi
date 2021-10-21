@@ -107,7 +107,7 @@ plover_keytable = {
     90: 98,     #kp_0 - "KEY_KP0"
     126: 215,   # "Keypad ±"
     #"KEY_KPDOT": 99,
-    94 : 92,   # "Keypad <"    # not working, shift(,) added as special case for send_string() instead.
+    94 : 198,   # "Keypad <"    # not working, shift(,) added as special case for send_string() instead.
     187: 182,   # "Keypad ("    # not working, shift(9) added as special case for send_string() instead.
     188: 183,   # "Keypad )"    # not working, shift(0) added as special case for send_string() instead.
 
