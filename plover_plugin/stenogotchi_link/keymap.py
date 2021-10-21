@@ -138,12 +138,16 @@ plover_modkeys = {
 
 def plover_convert(plover_keycode):
     if plover_keycode in plover_keytable:
-        return plover_keytable[plover_keycode]
+        new_code = plover_keytable[plover_keycode]
+        plover.log.debug(f'[stenogotchi_link] New Code: {new_code}')
+        return new_code
     else:
         return -1  # Return an invalid keycode
 
 def plover_modkey(plover_keycode):
     if plover_keycode in plover_modkeys:
-        return plover_modkeys[plover_keycode]
+        new_mod = plover_modkeys[plover_keycode]
+        plover.log.debug(f'[stenogotchi_link] New Mod: {new_mod}')
+        return new_mod
     else:
         return -1  # Return an invalid array element
