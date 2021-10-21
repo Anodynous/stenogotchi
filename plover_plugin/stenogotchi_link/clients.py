@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-import pdb
 import plover.log
 import dbus, dbus.exceptions
 from dbus.mainloop.glib import DBusGMainLoop
