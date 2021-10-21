@@ -249,7 +249,7 @@ class BTClient:
             if char in special_cases:
                 plover.log.debug(f"[stenogotchi_link] handling special case character: {char}")
                 if char == '<':
-                    self.map_hid_events(52) # shift(,)
+                    self.map_hid_events(52,108) # shift(,)
                 elif char == '(':
                     self.map_hid_events(18,50) # shift(9)
                 elif char == ')':
