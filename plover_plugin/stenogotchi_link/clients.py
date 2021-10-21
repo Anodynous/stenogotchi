@@ -249,7 +249,6 @@ class BTClient:
             if char in special_cases:
                 plover.log.debug(f"[stenogotchi_link] handling special case character: {char}")
                 if char == '<':
-                    pdb.set_trace()
                     self.map_hid_events(59,50) # shift(,)
                 elif char == '(':
                     self.map_hid_events(18,50) # shift(9)
@@ -257,6 +256,7 @@ class BTClient:
                     self.map_hid_events(19,50) # shift(0)
             keysym = uchr_to_keysym(char)
             mapping = self.ke._get_mapping(keysym)
+            pdb.set_trace()
             if mapping is None:
                 continue
             sublist = self.map_hid_events(mapping.keycode, mapping.modifiers)
