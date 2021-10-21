@@ -205,7 +205,9 @@ class BTClient:
         #]
         #for mod_keycode in modifiers_list:
         #    self.update_mod_keys(plover_modkey(mod_keycode), 1)
-             
+
+        plover.log.debug(f'[stenogotchi_link] Received keycode {keycode}')
+        plover.log.debug(f'[stenogotchi_link] Received modifier {modifiers}')
         normkey_hid = plover_convert(keycode)
         # Log issues with mapping any keycodes
         if normkey_hid < 0:
