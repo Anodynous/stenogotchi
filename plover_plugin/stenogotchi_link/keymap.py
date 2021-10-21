@@ -1,3 +1,5 @@
+import plover.log
+
 # Find HID keycode mapping here: https://www.usb.org/sites/default/files/documents/hut1_12v2.pdf
 # Linux keycodes can be found in /usr/share/X11/xkb/keycodes/evdev
 
