@@ -100,6 +100,9 @@ All commands should be executed as root. The installation process can be complet
 
 ## Configuration / Troubleshooting
 * Configuration files are placed in /etc/stenogotchi/. Create a separate file named config.toml containing overrides to the defaults. Don't edit default.toml directly as it will be overwritten on Stenogotchi version updates.
+* If your target device expects a different input language or keyboard layout than US qwerty, use setxkbmap to align it. This should be added to the beginning of your .xinitrc file to run automatically at startup. For German language and dvorak layout for example the below would be used.
+
+      setxkbmap -layout de -variant dvorak
 
 ### Bluetooth pairing
 * Define your bluetooth devices in main.plugins.plover_link.bt_autoconnect_mac to auto-connect on boot. Multiple comma separated devices in order of priority can be given. If no connection attempts are successful, the device will fall back to listening for incoming connection attempts.

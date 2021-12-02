@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Stenogotchi_link plugin now logs to plover.log
 - Character and personality adjustments
 - Simplified installation process
+- Added documentation for aligning text output with target device expected input language and layout
 
 ### Fixed
 - Significantly reduced input latency in STENO mode
