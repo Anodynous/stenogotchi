@@ -71,7 +71,30 @@ class EngineServer():
     def _on_wpm_meter_update_wpm(self, stats):
         """ Sends wpm stats to stenogotchi as a string """
         self._stenogotchiclient.plover_wpm_stats(stats['wpm_user'])
+
+    def _on_plover_translation(self, results, type):
+        """ Sends translation results from Plover to stenogotchi as list of strings"""
+        if type == 'word':  # Result from Plover will be in format List[Tuple[str]]
+            plover.log.debug(f"Lookup_word result: {results}")
+            results_list = []
+            for touple in results:
+                for result in touple:
+                    results_list.append(result)
+        elif type == 'stroke':  # Result from Plover will be in format str
+            plover.log.debug(f"Lookup_stroke results: {results}")
+            results_list = [results]
+
+        plover.log.debug(f"Sending result_list to Stenogotchi: {results_list}")
+        self._stenogotchiclient.send_lookup_results(results_list)
     
+    def lookup_word(self, word):
+        matches = self._engine.reverse_lookup(word)
+        self._on_plover_translation(matches, 'word')
+
+    def lookup_stroke(self, stroke):
+        matches = self._engine.lookup(stroke)
+        self._on_plover_translation(matches, 'stroke')
+
     def get_server_status(self):
         """Gets the status of the server.
         Returns: 

@@ -6,7 +6,7 @@ Based on: https://gist.github.com/ukBaz/a47e71e7b87fbc851b27cde7d1c0fcf0#file-re
 Which in turn takes the original idea from: http://yetanotherpointlesstechblog.blogspot.com/2016/04/emulating-bluetooth-keyboard-with.html
 
 Tested on:
-    Python 3.7
+    Python 3.7-3.9
     BlueZ 5.5
 """
 import os
@@ -407,6 +407,12 @@ class StenogotchiService(dbus.service.Object):
         plugins.loaded['dict_lookup'].input_handler._on_send_key_combination(s)
         logging.debug('[plover_link] send_key_combination_stenogotchi = ' + s)
     
+    @dbus.service.method('com.github.stenogotchi', in_signature='aay')    # list of strings
+    def plover_translation_handler(self, l):
+        plugins.loaded['dict_lookup'].input_handler._on_lookup_results(l)
+        logging.debug('[plover_link] plover_translation_handler = ' + l)
+        
+
     @dbus.service.signal('com.github.stenogotchi', signature='a{sv}')    # dictionary of strings to variants
     def signal_to_plover(self, message):
         # The signal is emitted when this method exits

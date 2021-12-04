@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - Plover v4.0.0.dev10 compatibility
+- Dict_lookup plugin now utilizes native Plover lookup functionality for better compatibility with all supported dictionary formats
 - Stenogotchi_link plugin now logs to plover.log
 - Character and personality adjustments
 - Simplified installation process

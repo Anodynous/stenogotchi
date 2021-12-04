@@ -81,8 +81,15 @@ class StenogotchiClient:
     def send_key_combination(self, s):
         self.stenogotchi_service.send_key_combination_stenogotchi(s)
 
+    def send_lookup_results(self, l):
+        self.stenogotchi_service.plover_translation_handler(l)
+
     def stenogotchi_signal_handler(self, dict):
         # Enable and disable wpm/strokes meters
+        if 'lookup_word' in dict:
+            self._engineserver.lookup_word(dict['lookup_word'])
+        if 'lookup_stroke' in dict:
+            self._engineserver.lookup_stroke(dict['lookup_stroke'])
         if 'output_to_stenogotchi' in dict:
             self._engineserver._output_to_stenogotchi = dict['output_to_stenogotchi']
         if 'start_wpm_meter' in dict:
