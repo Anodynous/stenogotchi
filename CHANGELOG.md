@@ -9,16 +9,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Modifier, function and navigation-key support, both individually and in combination. (Unsupported inputs logged in plover.log)
 - Reactions to new records in WPM-tracking mode.
 - Plover dictionary lookup with eINK display and STENO input support.
+- Buttonshim actions, both built-in and custom, accessible through web UI.
 
 ### Changed
-- Plover v4.0.0.dev10 compatibility
-- Stenogotchi_link plugin now logs to plover.log
-- Character and personality adjustments
-- Simplified installation process
-- Added documentation for aligning text output with target device expected input language and layout
+- Plover v4.0.0.dev10 compatibility.
+- Stenogotchi_link plugin now logs to plover.log.
+- Character and personality adjustments.
+- Simplified installation process.
+- Added documentation for aligning text output with target device expected input language and layout.
 
 ### Fixed
-- Significantly reduced input latency in STENO mode
+- Significantly reduced input latency in STENO mode.
 
 ### Removed
 

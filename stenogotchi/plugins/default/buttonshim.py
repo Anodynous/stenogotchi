@@ -444,6 +444,58 @@ class Buttonshim(plugins.Plugin):
         """ On press reset button held status """
         self._button_was_held = False
 
+    def toggle_qwerty_steno(self):
+        try:
+            cap_state = plugins.loaded['evdevkb'].get_capture_state()
+            if not cap_state:
+                plugins.loaded['evdevkb'].start_capture()
+                logging.info(f"[buttonshim] Switched to QWERTY mode")
+            else:
+                plugins.loaded['evdevkb'].stop_capture()
+                logging.info(f"[buttonshim] Switched to STENO mode")
+        except Exception as ex:
+            logging.exception(f"[buttonshim] Check if evdevkb is loaded, exception: {str(ex)}")
+    
+    def toggle_wpm_meters(self):
+        command = {}
+        try:
+            wpm_method = plugins.loaded['plover_link'].options['wpm_method']
+            wpm_timeout = plugins.loaded['plover_link'].options['wpm_timeout']
+        except Exception as ex:
+            logging.exception(f"[buttonshim] Check that wpm_method and wpm_timeout is configured. Falling back to defaults. Exception: {str(ex)}")
+            wpm_method = 'ncra'
+            wpm_timeout = '60'
+
+        if self._plover_wpm_meters_enabled:
+            command = {'stop_wpm_meter': 'wpm and strokes'}
+            self.set_ui_update('wpm', '')
+            self.set_ui_update('strokes', '')
+            self.trigger_ui_update()
+            logging.info(f"[buttonshim] Disabled WPM readings")
+
+        elif not self._plover_wpm_meters_enabled:
+            command = {'start_wpm_meter': 'wpm and strokes',
+                        'wpm_method' : wpm_method,
+                        'wpm_timeout' : wpm_timeout}
+
+            self.set_ui_update('wpm', wpm_method)
+            self.set_ui_update('strokes', f"{wpm_timeout}s")
+            self.trigger_ui_update()
+
+            logging.info(f"[buttonshim] Enabled WPM readings using method {wpm_method} and timeout {wpm_timeout}")
+
+        self._plover_wpm_meters_enabled = not self._plover_wpm_meters_enabled
+        plugins.loaded['plover_link'].send_signal_to_plover(command)
+    
+    def toggle_dictionary_lookup(self):
+        if plugins.loaded['dict_lookup'].get_running():
+            if not plugins.loaded['dict_lookup'].get_input_mode():  # If not currently enabled, enable input mode
+                plugins.loaded['dict_lookup'].enable_input_mode()
+            else:                                                   # If currently enabled, revert to normal view
+                plugins.loaded['dict_lookup'].disable_input_mode()
+        else: 
+            logging.debug(f"[buttonshim] dict_lookup is not ready yet. Check that Plover is running.")
+
     def hold_handler(self, button):
         """ On long press run built in internal Stenogotchi commands """
         # Set button held status to prevent release_handler from triggering on release
@@ -458,67 +510,18 @@ class Buttonshim(plugins.Plugin):
         blink_times = 1
         thread = Thread(target=self.blink, args=(red, green, blue, on_time, off_time, blink_times))
         thread.start()
-
-        def toggle_qwerty_steno():
-            try:
-                cap_state = plugins.loaded['evdevkb'].get_capture_state()
-                if not cap_state:
-                    plugins.loaded['evdevkb'].start_capture()
-                    logging.info(f"[buttonshim] Switched to QWERTY mode")
-                else:
-                    plugins.loaded['evdevkb'].stop_capture()
-                    logging.info(f"[buttonshim] Switched to STENO mode")
-            except Exception as ex:
-                logging.exception(f"[buttonshim] Check if evdevkb is loaded, exception: {str(ex)}")
-        
-        def toggle_wpm_meters():
-            command = {}
-            try:
-                wpm_method = plugins.loaded['plover_link'].options['wpm_method']
-                wpm_timeout = plugins.loaded['plover_link'].options['wpm_timeout']
-            except Exception as ex:
-                logging.exception(f"[buttonshim] Check that wpm_method and wpm_timeout is configured. Falling back to defaults. Exception: {str(ex)}")
-                wpm_method = 'ncra'
-                wpm_timeout = '60'
-
-            if self._plover_wpm_meters_enabled:
-                command = {'stop_wpm_meter': 'wpm and strokes'}
-                self.set_ui_update('wpm', '')
-                self.set_ui_update('strokes', '')
-                self.trigger_ui_update()
-                logging.info(f"[buttonshim] Disabled WPM readings")
-
-            elif not self._plover_wpm_meters_enabled:
-                command = {'start_wpm_meter': 'wpm and strokes',
-                           'wpm_method' : wpm_method,
-                           'wpm_timeout' : wpm_timeout}
-
-                self.set_ui_update('wpm', wpm_method)
-                self.set_ui_update('strokes', f"{wpm_timeout}s")
-                self.trigger_ui_update()
-
-                logging.info(f"[buttonshim] Enabled WPM readings using method {wpm_method} and timeout {wpm_timeout}")
-
-            self._plover_wpm_meters_enabled = not self._plover_wpm_meters_enabled
-            plugins.loaded['plover_link'].send_signal_to_plover(command)
-            
+           
         if NAMES[button] == 'A':
             # Toggle QWERTY/STENO mode
-            toggle_qwerty_steno()     
+            self.toggle_qwerty_steno()     
         
         elif NAMES[button] == 'B':
             # Toggle WPM & strokes meters for Plover
-            toggle_wpm_meters()
+            self.toggle_wpm_meters()
 
         elif NAMES[button] == 'C':
             # Toggle dictionary lookup mode
-            if plugins.loaded['dict_lookup'].get_running():
-                if not plugins.loaded['dict_lookup'].get_input_mode():  # If not currently enabled, enable input mode
-                    plugins.loaded['dict_lookup'].enable_input_mode()
-                else:                                                   # If currently enabled, revert to normal view
-                    plugins.loaded['dict_lookup'].disable_input_mode()
-            else: 
-                logging.debug(f"[buttonshim] dict_lookup is not ready yet. Check that Plover is running.")
+            self.toggle_dictionary_lookup()
 
         elif NAMES[button] == 'D':
             # Toggle wifi on/off

@@ -36,11 +36,12 @@
     {% endif %}
 
     {% set navigation = [
-        ( '/', 'home', 'eye', 'Home' ),
-        ( '/inbox', 'inbox', 'bars', 'Inbox' ),
-        ( '/inbox/new', 'new', 'mail', 'New' ),
-        ( '/inbox/profile', 'profile', 'info', 'Profile' ),
-        ( '/inbox/peers', 'peers', 'user', 'Peers' ),
+        ( '/', 'home', 'home', 'Home' ),
+        ( '/buttonshim/E', 'buttonshim', 'bars', 'E' ),
+        ( '/buttonshim/D', 'buttonshim', 'bars', 'D' ),
+        ( '/buttonshim/C', 'buttonshim', 'bars', 'C' ),
+        ( '/buttonshim/B', 'buttonshim', 'bars', 'B' ),
+        ( '/buttonshim/A', 'buttonshim', 'bars', 'A' ),
         ( '/plugins', 'plugins', 'grid', 'Plugins' ),
     ] %}
     {% set active_page = active_page|default('inbox') %}

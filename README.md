@@ -9,7 +9,7 @@ Likely use-cases include:
 - Hassle-free switching between devices without the need to install and configure Plover
 - On-the-go stenographic recording
 
-Stenogotchi is built on top of [Pwnagotchi](https://github.com/evilsocket/pwnagotchi), but instead of hungering for WPA handshakes it feeds on your steno chords. It emulates a BT HID device for connecting to a host and output can be toggled between STENO and QWERTY mode on the fly. The friendly UI optimized for low-power eINK displays is also accessible as a web-ui version, making both the eINK display and buttonSHIM modules optional. If the RPI0w always will be powered over microUSB a separate battery pack is not needed. The suggested UPS-Lite 1000 mAH battery provides 3+ hours of runtime and supports pass-through charging. 
+Stenogotchi is built on top of [Pwnagotchi](https://github.com/evilsocket/pwnagotchi), but instead of hungering for WPA handshakes it feeds on your steno chords. It emulates a BT HID device for connecting to a host and output can be toggled between STENO and QWERTY mode on the fly. The friendly UI optimized for low-power eINK displays is also accessible as a web UI version, making both the eINK display and buttonSHIM modules optional. If the RPI0w always will be powered over microUSB a separate battery pack is not needed. The suggested UPS-Lite 1000 mAH battery provides 3+ hours of runtime and supports pass-through charging. 
 
 ## Hardware
 | Module                                                                           | Status       |
@@ -159,13 +159,13 @@ Below long-press (1s) actions are pre-defined. Short-press triggers user configu
 - [x] Full installation guide for Plover and Stenogotchi using DietPi as base image
 - [x] Dictionary lookup using eINK screen
 - [x] Decrease steno latency
+- [x] Improved web UI, including buttonSHIM functionality
 - [ ] Plover chords for triggering Stenogotchi actions
 - [ ] Dictionary additions using eINK screen
 - [ ] Document configuration options and buttonSHIM functionality
 - [ ] Clean up and optimize code, fix bugs and add test suite
 - [ ] Expand Stenogotchi statuses, reactions and mood indicators
 - [ ] On-the-fly updating and reloading of Plover dictionaries
-- [ ] Improved web-ui, including buttonSHIM functionality
 - [ ] Simple AI for shaping personality of the Stenogotchi
 - [ ] Proper usage and configuration documentation
 - [ ] Support for other eINK display modules

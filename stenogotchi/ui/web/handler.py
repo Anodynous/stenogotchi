@@ -4,6 +4,7 @@ import base64
 import _thread
 import secrets
 import json
+import subprocess
 from functools import wraps
 
 # https://stackoverflow.com/questions/14888799/disable-console-messages-in-flask-server
@@ -33,6 +34,12 @@ class Handler:
         self._app.add_url_rule('/ui', 'ui', self.with_auth(self.ui))
 
         self._app.add_url_rule('/shutdown', 'shutdown', self.with_auth(self.shutdown), methods=['POST'])
+        
+        self._app.add_url_rule('/toggle_input', 'toggle_input', self.with_auth(self.toggle_input), methods=['POST'])
+        self._app.add_url_rule('/toggle_wpm', 'toggle_wpm', self.with_auth(self.toggle_wpm), methods=['POST'])
+        self._app.add_url_rule('/toggle_lookup', 'toggle_lookup', self.with_auth(self.toggle_lookup), methods=['POST'])
+        self._app.add_url_rule('/buttonshim/<button>', 'buttonshim', self.with_auth(self.buttonshim), methods=['GET'])
+
         self._app.add_url_rule('/reboot', 'reboot', self.with_auth(self.reboot), methods=['POST'])
         self._app.add_url_rule('/restart', 'restart', self.with_auth(self.restart), methods=['POST'])
 
@@ -199,6 +206,56 @@ class Handler:
         finally:
             _thread.start_new_thread(stenogotchi.shutdown, ())
 
+    # switch between STENO and QWERTY input mode
+    def toggle_input(self):
+        if 'buttonshim' in plugins.loaded:
+            _thread.start_new_thread(plugins.loaded['buttonshim'].toggle_qwerty_steno, ())
+            return redirect("/")
+        else:
+            return render_template('status.html', title=stenogotchi.name(), go_back_after=10,
+                                   message='Please enable the buttonshim plugin first.')
+
+    # toggle WPM readings
+    def toggle_wpm(self):
+        if 'buttonshim' in plugins.loaded:
+            _thread.start_new_thread(plugins.loaded['buttonshim'].toggle_wpm_meters, ())
+            return redirect("/")
+        else: 
+            return render_template('status.html', title=stenogotchi.name(), go_back_after=10,
+                                message='Please enable the buttonshim plugin first.')
+    
+    # toggle dictionary lookup mode
+    def toggle_lookup(self):
+        if 'buttonshim' and 'dict_lookup' in plugins.loaded:
+            if plugins.loaded['dict_lookup'].get_running():
+                _thread.start_new_thread(plugins.loaded['buttonshim'].toggle_dictionary_lookup, ())
+                return redirect("/")
+            else:
+                return render_template('status.html', title=stenogotchi.name(), go_back_after=5,
+                                    message='Dict_lookup is not ready yet. Check that Plover is running.')    
+        else:
+            return render_template('status.html', title=stenogotchi.name(), go_back_after=5,
+                                    message='Please enable both the buttonshim and dict_lookup plugins first.')
+    
+    # buttonshim custom action (emulating buttonshim short press)
+    def buttonshim(self, button):
+        logging.info(f"[WEBUI-buttonshim] Button Pressed! Loading command from slot '{button}' for button '{button}'")
+        bCfg = plugins.loaded['buttonshim'].options['buttons'][button]
+        command = bCfg['command']
+        if command == '':
+            logging.debug(f"[WEBUI-buttonshim] No command set for button {button} in config")
+            return render_template('status.html', title=stenogotchi.name(), go_back_after=5, 
+                                    message=f"No command set in config for button {button}")
+        else:
+            logging.debug(f"[WEBUI-buttonshim] Process create: {command}")
+            process = subprocess.Popen(command, shell=True, stdin=None, 
+                                        stdout=open("/dev/null", "w"), stderr=None, executable="/bin/bash")
+            process.wait()
+            process = None
+            logging.debug(f"[WEBUI-buttonshim] Process end")
+            return render_template('status.html', title=stenogotchi.name(), go_back_after=10, 
+                                    message=f"Executed command: '{command}'")
+        
     # serve a message and reboot the unit
     def reboot(self):
           try:
