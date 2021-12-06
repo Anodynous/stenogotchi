@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Reactions to new records in WPM-tracking mode.
 - Plover dictionary lookup with eINK display and STENO input support.
 - Buttonshim actions, both built-in and custom, accessible through web UI.
+- Hardware build guide to documentation.
 
 ### Changed
 - Plover v4.0.0.dev10 compatibility.
