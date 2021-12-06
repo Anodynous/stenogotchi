@@ -20,6 +20,7 @@ Stenogotchi is built on top of [Pwnagotchi](https://github.com/evilsocket/pwnago
 | [ButtonSHIM](https://shop.pimoroni.com/products/button-shim)                     | Recommended  |
 | [UPS-Lite v1.2](https://hackaday.io/project/173847-ups-lite)                     | Recommended  |
 
+See the [build notes](BUILDNOTES.md) for guidance on fitting the parts together.
 ## Installation
 All commands should be executed as root. The installation process can be completed headless.
 
@@ -125,7 +126,7 @@ All commands should be executed as root. The installation process can be complet
        CONFIG_CHECK_DIETPI_UPDATES=0
        CONFIG_CHECK_APT_UPDATES=0
           
-* Disable waiting for network and time sync at boot. Doing this you should be aware that the RPI0w does not have a hardware clock. It will lose track of real world time as soon it is powered off, making log timestamps or any time based action you may set up unreliable. None of this is important for the core functionality of the Stenogotchi and disabling time-sync at boot can shave up to a minute off the boot process. By adding a cheap I2C hardware clock you can completely remove the need for network sync. Many modules are small enough to fit in the empty space of the UPS-Lite or under the eINK screen [and are easy to wire](https://www.pishop.us/product/ds3231-real-time-clock-module-for-raspberry-pi/) and [set up](https://learn.adafruit.com/adding-a-real-time-clock-to-raspberry-pi/set-rtc-time). Just don't forget to isolate it with some tape. Here you can see [how to wire and fit the DS3231 module in the Stenogotchi](https://user-images.githubusercontent.com/17461433/111912767-cff8e700-8a73-11eb-9bd0-a406bd7241ef.jpg).
+* Disable waiting for network and time sync at boot. Doing this you should be aware that the RPI0w does not have a hardware clock. It will lose track of real world time as soon it is powered off, making log timestamps or any time based action you may set up unreliable. None of this is important for the core functionality of the Stenogotchi and disabling time-sync at boot can shave up to a minute off the boot process. By adding a cheap I2C hardware clock you can completely remove the need for network sync. Many modules are small enough to fit in the empty space of the UPS-Lite or under the eINK screen. See the [build notes](BUILDNOTES.md) for more directions.
                         
        nano /boot/dietpi.txt
           
