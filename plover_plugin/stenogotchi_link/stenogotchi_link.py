@@ -74,17 +74,25 @@ class EngineServer():
 
     def _on_plover_translation(self, results, type):
         """ Sends translation results from Plover to stenogotchi as list of strings"""
-        if type == 'word':  # Result from Plover will be in format List[Tuple[str]]
-            plover.log.debug(f"Lookup_word result: {results}")
+        if type == 'word':  # Result from Plover will be in format List[Tuple[str]], examine: {('EBGS', 'APL', '*EUPB'), ('KP*PL',), ('KPAPL', 'PHEUPB'), ('KPAPL', '-PB'), ('KP-PB',), ('EBGS', 'APL', '-PB'), ('KP',), ('EBGS', 'APL', 'PHEUPB'), ('EBGS', 'APL', 'EUPB')}
             results_list = []
+            chords = None
             for touple in results:
+                if chords:
+                    results_list.append(chords)
+                    chords = None
                 for result in touple:
-                    results_list.append(result)
+                    if chords:
+                        chords = chords + '/' + result
+                    else:
+                        chords = result
+            if chords:
+                results_list.append(chords)
+                chords = None
         elif type == 'stroke':  # Result from Plover will be in format str
+            # TODO: implement functionality for stroke-lookup
             plover.log.debug(f"Lookup_stroke results: {results}")
             results_list = [results]
-
-        plover.log.debug(f"Sending result_list to Stenogotchi: {results_list}")
         self._stenogotchiclient.send_lookup_results(results_list)
     
     def lookup_word(self, word):

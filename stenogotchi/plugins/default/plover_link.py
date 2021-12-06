@@ -389,30 +389,29 @@ class StenogotchiService(dbus.service.Object):
 
     @dbus.service.method('com.github.stenogotchi', in_signature='s')    # string
     def plover_strokes_stats(self, s):
-        logging.debug('[plover_link] plover_strokes_stats = ' + s)
+        logging.debug(f"[plover_link] plover_strokes_stats = '{s}'")
         self._agent.set_strokes(s)
 
     @dbus.service.method('com.github.stenogotchi', in_signature='s')    # string
     def send_string_stenogotchi(self, s):
         plugins.loaded['dict_lookup'].input_handler._on_send_string(s)
-        logging.debug('[plover_link] send_string_stenogotchi = ' + s)
+        logging.debug(f"[plover_link] send_string_stenogotchi = '{s}'")
 
     @dbus.service.method('com.github.stenogotchi', in_signature='n')    # 16-bit signed int
     def send_backspaces_stenogotchi(self, n):
         plugins.loaded['dict_lookup'].input_handler._on_send_backspaces(n)
-        logging.debug('[plover_link] send_backspaces_stenogotchi = ' + str(n))
+        logging.debug(f"[plover_link] send_backspaces_stenogotchi = '{n}'")
 
     @dbus.service.method('com.github.stenogotchi', in_signature='s')    # string
     def send_key_combination_stenogotchi(self, s):
         plugins.loaded['dict_lookup'].input_handler._on_send_key_combination(s)
-        logging.debug('[plover_link] send_key_combination_stenogotchi = ' + s)
+        logging.debug(f"[plover_link] send_key_combination_stenogotchi = '{s}'")
     
-    @dbus.service.method('com.github.stenogotchi', in_signature='aay')    # list of strings
+    @dbus.service.method('com.github.stenogotchi', in_signature='as')    # list of strings
     def plover_translation_handler(self, l):
         plugins.loaded['dict_lookup'].input_handler._on_lookup_results(l)
-        logging.debug('[plover_link] plover_translation_handler = ' + l)
+        logging.debug(f"[plover_link] plover_translation_handler = '{l}'")
         
-
     @dbus.service.signal('com.github.stenogotchi', signature='a{sv}')    # dictionary of strings to variants
     def signal_to_plover(self, message):
         # The signal is emitted when this method exits

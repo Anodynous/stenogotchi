@@ -1,15 +1,9 @@
 #!/usr/bin/env python3
 
-import os
 import logging
-import argparse
-import configparser
-import json
-import re
 import time
-
-
 import random
+
 import stenogotchi.plugins as plugins
 from stenogotchi.ui.components import LabeledValue, Text, Line
 from stenogotchi.ui.view import BLACK
@@ -64,7 +58,7 @@ class UiHandler():
             self._view.remove_element(key)
         except KeyError:
             # TODO: fix self._view.has_element to replace this. Always seems to return None right now.
-            logging.debug(f"[dict_lookup] No element '{key}' available for removal")
+            logging.error(f"[dict_lookup] No element '{key}' available for removal")
 
     def add_element(self, key, element):
         self._view.add_element(key, element)
@@ -85,12 +79,13 @@ class UiHandler():
         # Add new ui elements for input and output        
         line1_offset = self._view._layout['line1'].copy()
         line1_offset[2] = self._view._width - self.minion_offset
-        self.add_element('input', LabeledValue(color=BLACK, label='>', value='', position=(0, 0) , label_font=fonts.Bold, text_font=fonts.Medium, max_length=29))
+        self.add_element('input', LabeledValue(color=BLACK, label='', value='', position=(0, 0) , label_font=fonts.Bold, text_font=fonts.Medium, max_length=29))
         self.add_element('line1_offset', Line(line1_offset, color=BLACK))
         self.add_element('out1', Text(value='', position=self._agent._view._layout['name'], color=BLACK, font=fonts.Bold, wrap=True, max_length=self._agent._view._layout['status']['max']-1))
         self.add_element('out2', Text(value='', position=self._agent._view._layout['status']['pos'], color=BLACK, font=self._agent._view._layout['status']['font'], wrap=True, max_length=self._agent._view._layout['status']['max']))
-        self.update_view()
         self.input_mode = True
+        # Used instead of self.update_view() to indicate input position from the start
+        self.display_input("")
         logging.info("[dict_lookup] Enabled dictionary lookup mode")
 
     def disable_input_mode(self):
@@ -131,9 +126,9 @@ class UiHandler():
             cnt = 0
             for item in list:
                 if cnt < 6:  # lines 0-5 fit in first column
-                    out1_str += f"{item} \n"
+                    out1_str += f"{item}\n"
                 elif cnt < 13:  # lines 6-11 fit in second column
-                    out2_str += f"{item} \n"
+                    out2_str += f"{item}\n"
                 else:
                     break  # no more room
                 cnt += 1
@@ -142,8 +137,9 @@ class UiHandler():
             self._view.set('out2', out2_str)
             self.update_view()
 
-    def display_input(self, string):
+    def display_input(self, string, position_indicator="_"):
         if self.get_input_mode():
+            string += position_indicator   # Character added to highlight input position
             self._agent._view.set('input', string)
             self.update_view()
 
@@ -156,31 +152,32 @@ class InputHandler():
         self._input = ""
     
     def _on_send_string(self, text: str):
-        self._input += text
         # If enter key received
-        if text == '\n':
+        if text in ('\n', '\r', '\r\n'):
             if plugins.loaded['dict_lookup'].get_input_mode():
-                result_dict = plugins.loaded['dict_lookup'].lookup_word(self._input)
-                plugins.loaded['dict_lookup'].display_lookup_result(result_dict)
-        elif text:
-            self.push_input()
+                self._input += " "
+                self.push_input(position_indicator="")
+                plugins.loaded['dict_lookup'].lookup_word(self._input)
         else:
-            pass
+            self._input += text
+            self.push_input()
 
     def _on_send_backspaces(self, count: int):
-        if count > len(self._input):
+        if count >= len(self._input):
             self.clear_input()
         else:
             self._input = self._input[:-count]
-        self.push_input()
+            self.push_input()
 
     def _on_send_key_combination(self, combination: str):
-        logging.warning(f"[dict_lookup] Key-combinations not supported. Input '{combination}' ignored")
+        if combination == 'Control_L(BackSpace)':
+            self.clear_input()
+        else:
+            logging.warning(f"[dict_lookup] Key-combinations not supported. Input '{combination}' ignored")
     
     def _on_lookup_results(self, results_list):
         logging.debug(f"[dict_lookup] Lookup result from Plover '{results_list}'")
-        if results_list:
-            plugins.loaded['dict_lookup'].display_lookup_result(results_list)
+        plugins.loaded['dict_lookup'].display_lookup_result(results_list)
 
     def enable_input_mode(self):
         # TODO: trigger routing from evdevkb to here
@@ -194,16 +191,17 @@ class InputHandler():
         plugins.loaded['plover_link'].send_signal_to_plover(command)
         self.input_mode = False
 
-    def push_input(self):
-        plugins.loaded['dict_lookup'].push_input(self._input)
+    def push_input(self, position_indicator="_"):
+        plugins.loaded['dict_lookup'].push_input(self._input, position_indicator)
 
     def clear_input(self):
         self._input = ""
+        self.push_input()
 
 
 class DictLookup(plugins.Plugin):
     __autohor__ = 'Anodynous'
-    __version__ = '0.2'
+    __version__ = '0.3'
     __license__ = 'GPL3'
     __description__ = 'This plugin enables looking up words and strokes in enabled plover dictionaries'
 
@@ -248,30 +246,43 @@ class DictLookup(plugins.Plugin):
     def lookup_word(self, word):
         # Remove leading/trailing whitespaces and send word to plover for dictionary lookup
         word = word.strip()
-        logging.debug(f"[dict_lookup] Looking up word '{word}'")
         command = {'lookup_word': word}
         plugins.loaded['plover_link'].send_signal_to_plover(command)
 
     def lookup_stroke(self, stroke):
         # Remove leading/trailing whitespaces and send stroke to plover for dictionary lookup
+        # TODO: implement functionality to use stroke-lookup
         stroke = stroke.strip()
         logging.debug(f"[dict_lookup] Looking up stroke '{stroke}'")
         command = {'lookup_word': stroke}
         plugins.loaded['plover_link'].send_signal_to_plover(command)
    
     def display_lookup_result(self, results_list):
-        logging.debug(f"[dict_lookup] received lookup_result: {results_list}")
         self.push_output(results_list)
 
-    def push_input(self, string):
-        if string:
-            if self.input_mode:
-                self.ui_handler.display_input(string)
+    def sort_list(self, rlist):
+        # Sorts the results in ascending order.
+        # Primary sorting key: number of chords
+        # Secondary sorting key: length of chord(combination)
+        sort_key = lambda k : (k.count('/'), len(k))
+        rlist_sorted = []
+        if len(rlist) < 2:
+            return rlist
+        else:
+            rlist_sorted = sorted(rlist, key=sort_key)
+            return rlist_sorted
+
+    def push_input(self, string="", position_indicator="_"):
+        if self.input_mode:
+            self.ui_handler.display_input(string, position_indicator)
     
-    def push_output(self, flat_list):
-        if flat_list:
-            if self.input_mode:
-                self.ui_handler.display_output(flat_list)        
+    def push_output(self, rlist):
+        if self.input_mode:
+            if rlist:
+                rlist_sorted = self.sort_list(rlist)
+            else:
+                rlist_sorted = []
+            self.ui_handler.display_output(rlist_sorted)        
         
 if __name__ == '__main__':
-    print("Please enable and run as Plover plugin")
+    print("Please enable and run as Stenogotchi plugin")
