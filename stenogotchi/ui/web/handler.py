@@ -146,7 +146,7 @@ class Handler:
     # serve a message and reboot the unit
     def reboot(self):
           try:
-              return render_template('status.html', title=stenogotchi.name(), go_back_after=60,
+              return render_template('status.html', title=stenogotchi.name(), go_back_after=70,
                                      message='Rebooting ...')
           finally:
               _thread.start_new_thread(stenogotchi.reboot, ())
