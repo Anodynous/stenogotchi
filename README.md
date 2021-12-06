@@ -12,13 +12,14 @@ Likely use-cases include:
 Stenogotchi is built on top of [Pwnagotchi](https://github.com/evilsocket/pwnagotchi), but instead of hungering for WPA handshakes it feeds on your steno chords. It emulates a BT HID device for connecting to a host and output can be toggled between STENO and QWERTY mode on the fly. The friendly UI optimized for low-power eINK displays is also accessible as a web UI version, making both the eINK display and buttonSHIM modules optional. If the RPI0w always will be powered over microUSB a separate battery pack is not needed. The suggested UPS-Lite 1000 mAH battery provides 3+ hours of runtime and supports pass-through charging. 
 
 ## Hardware
-| Module                                                                           | Status       |
-|:---------------------------------------------------------------------------------|:-------------|
-| [Raspberry Pi Zero W](https://www.raspberrypi.org/products/raspberry-pi-zero-w/) | Required     |
-| MicroSD card                                                                     | Required     |
-| [Waveshare 2.13 v.2](https://www.waveshare.com/wiki/2.13inch_e-Paper_HAT)        | Recommended  |
-| [ButtonSHIM](https://shop.pimoroni.com/products/button-shim)                     | Recommended  |
-| [UPS-Lite v1.2](https://hackaday.io/project/173847-ups-lite)                     | Recommended  |
+| Module                                                                                                 | Status       |
+|:-------------------------------------------------------------------------------------------------------|:-------------|
+| [Raspberry Pi Zero W](https://www.raspberrypi.org/products/raspberry-pi-zero-w/)                       | Required     |
+| MicroSD card (min 4 GiB)                                                                               | Required     |
+| [Waveshare 2.13 v.2](https://www.waveshare.com/wiki/2.13inch_e-Paper_HAT)                              | Recommended  |
+| [ButtonSHIM](https://shop.pimoroni.com/products/button-shim)                                           | Recommended  |
+| [UPS-Lite v1.2](https://hackaday.io/project/173847-ups-lite)                                           | Recommended  |
+| [DS3231 RTC Module](https://www.pishop.us/product/ds3231-real-time-clock-module-for-raspberry-pi/)     | Optional     |
 
 See the [build notes](BUILDNOTES.md) for guidance on fitting the parts together.
 ## Installation
