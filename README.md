@@ -102,6 +102,7 @@ All commands should be executed as root. The installation process can be complet
 
 ## Configuration / Troubleshooting
 * Configuration files are placed in /etc/stenogotchi/. Create a separate file named config.toml containing overrides to the defaults. Don't edit default.toml directly as it will be overwritten on Stenogotchi version updates.
+* The logfile is created in /var/log, which dietpi by default mounts to RAM to preserve the SD card lifespan. To make the file persistent across reboots it needs to be written to the disk. To aid with troubleshooting, either set the location to another existing folder using 'main.log.path' in config.toml or change the global dietpi setting using dietpi-software > Log System.
 * If your target device expects a different input language or keyboard layout than US qwerty, use setxkbmap to align it. This should be added to the beginning of your .xinitrc file to run automatically at startup. For German language and dvorak layout for example the below would be used.
 
       setxkbmap -layout de -variant dvorak
