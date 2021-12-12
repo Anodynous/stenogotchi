@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Simplified installation process.
 - Added documentation for aligning text output with target device expected input language and layout.
 - Dict_lookup plugin now utilizes native Plover lookup functionality for better compatibility with supported dictionary formats.
+- Web UI default port changed from 8080 to 80.
 
 ### Fixed
 - Significantly reduced input latency in STENO mode.

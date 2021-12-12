@@ -64,7 +64,7 @@ ui.web.address = "192.168.1.111"
 ui.web.username = "changeme"
 ui.web.password = "changeme"
 ui.web.origin = ""
-ui.web.port = 8080
+ui.web.port = 80
 ui.web.on_frame = ""
 
 ui.display.enabled = true
