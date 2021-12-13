@@ -43,6 +43,7 @@ All commands should be executed as root. The installation process can be complet
        wget https://github.com/openstenoproject/plover/releases/download/v4.0.0.dev10/plover-4.0.0.dev10-py3-none-any.whl
        pip3 install plover-4.0.0.dev10-py3-none-any.whl
 
+   * If you'd rather try the [continuous build of Plover](https://github.com/openstenoproject/plover/releases/download/continuous/plover-4.0.0.dev10+120.g4394ef1-py3-none-any.whl) for the latest improvements, you will need to install both build-essential and python3-dev through apt-get first. Switch back to dev10 if you experience issues.
 4. Clone the Stenogotchi repository and install the plover plugin "stenogotchi_link"
 
        git clone https://github.com/Anodynous/stenogotchi.git
