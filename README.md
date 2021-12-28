@@ -43,7 +43,7 @@ All commands should be executed as root. The installation process can be complet
        wget https://github.com/openstenoproject/plover/releases/download/v4.0.0.dev10/plover-4.0.0.dev10-py3-none-any.whl
        pip3 install plover-4.0.0.dev10-py3-none-any.whl
 
-   * If you'd rather try the [continuous build of Plover](https://github.com/openstenoproject/plover/releases/download/continuous/plover-4.0.0.dev10+120.g4394ef1-py3-none-any.whl) for the latest improvements, you will need to install both build-essential and python3-dev through apt-get first. Switch back to dev10 if you experience issues.
+   * If you'd rather try the [continuous build of Plover](https://github.com/openstenoproject/plover/releases/tag/continuous) for the latest improvements, you will need to install both build-essential and python3-dev through apt-get first. Switch back to dev10 if you experience issues.
 4. Clone the Stenogotchi repository and install the plover plugin "stenogotchi_link"
 
        git clone https://github.com/Anodynous/stenogotchi.git
@@ -110,7 +110,7 @@ All commands should be executed as root. The installation process can be complet
 
 ### Bluetooth pairing
 * Define your bluetooth devices in main.plugins.plover_link.bt_autoconnect_mac to auto-connect on boot. Multiple comma separated devices in order of priority can be given. If no connection attempts are successful, the device will fall back to listening for incoming connection attempts.
-* Issues with pairing or connecting after changes in bluetooth configurations can usually be fixed through unpairing and re-pairing. On the Stenogotchi side this is best handled through bluetoothctl.
+* Issues with pairing or connecting after changes in bluetooth configurations can usually be fixed through unpairing and re-pairing. On the Stenogotchi side this is best handled through bluetoothctl.    
     
         bluetoothctl
         [bluetooth]# paired-devices
