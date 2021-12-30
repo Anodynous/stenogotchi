@@ -1,6 +1,5 @@
 PyGObject == 3.30.4
 dbus_python == 1.2.16
-pydbus == 0.6.0
 evdev == 1.4.0
 RPi.GPIO == 0.7.0
 file_read_backwards == 2.0.0

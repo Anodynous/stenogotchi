@@ -12,14 +12,14 @@ Likely use-cases include:
 Stenogotchi is built on top of [Pwnagotchi](https://github.com/evilsocket/pwnagotchi), but instead of hungering for WPA handshakes it feeds on your steno chords. It emulates a BT HID device for connecting to a host and output can be toggled between STENO and QWERTY mode on the fly. The friendly UI optimized for low-power eINK displays is also accessible as a web UI version, making both the eINK display and buttonSHIM modules optional. If the RPI0w always will be powered over microUSB a separate battery pack is not needed. The suggested UPS-Lite 1000 mAH battery provides 3+ hours of runtime and supports pass-through charging. 
 
 ## Hardware
-| Module                                                                                                 | Status       |
-|:-------------------------------------------------------------------------------------------------------|:-------------|
-| [Raspberry Pi Zero W](https://www.raspberrypi.org/products/raspberry-pi-zero-w/)                       | Required     |
-| MicroSD card (min 4 GiB)                                                                               | Required     |
-| [Waveshare 2.13 v.2](https://www.waveshare.com/wiki/2.13inch_e-Paper_HAT)                              | Recommended  |
-| [ButtonSHIM](https://shop.pimoroni.com/products/button-shim)                                           | Recommended  |
-| [UPS-Lite v1.2](https://hackaday.io/project/173847-ups-lite)                                           | Recommended  |
-| [DS3231 RTC Module](https://www.pishop.us/product/ds3231-real-time-clock-module-for-raspberry-pi/)     | Optional     |
+| Module                                                                                                                                                                    | Status       |
+|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:-------------|
+| [Raspberry Pi Zero W](https://www.raspberrypi.org/products/raspberry-pi-zero-w/) or [Raspberry Pi Zero 2 W](https://www.raspberrypi.com/products/raspberry-pi-zero-2-w/)  | Required     |
+| MicroSD card (min 4 GiB)                                                                                                                                                  | Required     |
+| [Waveshare 2.13 v.2](https://www.waveshare.com/wiki/2.13inch_e-Paper_HAT)                                                                                                 | Recommended  |
+| [ButtonSHIM](https://shop.pimoroni.com/products/button-shim)                                                                                                              | Recommended  |
+| [UPS-Lite v1.2](https://hackaday.io/project/173847-ups-lite)                                                                                                              | Recommended  |
+| [DS3231 RTC Module](https://www.pishop.us/product/ds3231-real-time-clock-module-for-raspberry-pi/)                                                                        | Optional     |
 
 See the [build notes](BUILDNOTES.md) for guidance on fitting the parts together.
 ## Installation
@@ -36,7 +36,7 @@ All commands should be executed as root. The installation process can be complet
 2. Install dependencies
 
        apt-get install git xorg xserver-xorg-video-fbdev python3-pip python3-rpi.gpio python3-gi libtiff5 libopenjp2-7 bluez screen rfkill -y
-       pip3 install file_read_backwards flask flask-wtf flask-cors evdev python-xlib pillow spidev jsonpickle pydbus dbus-python toml
+       pip3 install file_read_backwards flask flask-wtf flask-cors evdev python-xlib pillow spidev jsonpickle dbus-python toml
 
 3. Download and install Plover (v4.0.0.dev10)
 
@@ -108,16 +108,16 @@ All commands should be executed as root. The installation process can be complet
 
       setxkbmap -layout de -variant dvorak
 
-### Bluetooth pairing
-* Define your bluetooth devices in main.plugins.plover_link.bt_autoconnect_mac to auto-connect on boot. Multiple comma separated devices in order of priority can be given. If no connection attempts are successful, the device will fall back to listening for incoming connection attempts.
-* Issues with pairing or connecting after changes in bluetooth configurations can usually be fixed through unpairing and re-pairing. On the Stenogotchi side this is best handled through bluetoothctl.    
+### Bluetooth connections
+* Define your bluetooth devices in main.plugins.plover_link.bt_autoconnect_mac to auto-connect on boot. Multiple comma-separated devices in order of priority can be given. If no connection attempts are successful at boot, the device will fall back to listening for incoming connection and pairing attempts.
+* Only one active connection at a time is supported. To switch remote devices, disable bluetooth on the remote device and wait around 10 seconds before initiating a new connection. The Stenogotchi will attempt to reconnect to the lost device for a few seconds before falling back to listening for new incoming connections.
+* Issues with pairing or connecting after changes in bluetooth configurations can normally be fixed through unpairing and re-pairing. On the Stenogotchi side this is best handled through bluetoothctl using the below process. Re-initiate pairing process from remote device after the pairing information has been cleared on both host and client side.
     
         bluetoothctl
         [bluetooth]# paired-devices
         Device 00:DE:AD:BE:EF:00 Anodynous' Ipad
         [bluetooth]# remove 00:DE:AD:BE:EF:00
         [bluetooth]# exit
-* If you have issues with pairing, remove the device MAC(s) from config.toml and unpair through bluetoothctl as described above. Then with bluetoothctl open on the Stenogotchi initiate the pairing from the device to be connected. Accept pairing request on both devices and re-add the MAC in config.toml. Reboot.
 
 ### Significantly reduce boot time
 * Set ARM initial turbo to the max (60s) under dietpi-config > performance options to reduce boot time. You can also play around with overclocking, throttling and cpu governor to find a suitable balance between performance and power draw.     

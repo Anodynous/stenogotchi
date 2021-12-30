@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - Significantly reduced input latency in STENO mode.
 - Dict_lookup plugin now utilizes native Plover lookup for full compatibility with all supported dictionary formats.
+- Improved Bluetooth pairing and connection management.
 
 ### Removed
 
