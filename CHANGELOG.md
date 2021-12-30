@@ -23,6 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - Significantly reduced input latency in STENO mode.
 - Improved Bluetooth pairing and connection management.
+- Web UI now starts only once a wifi connection has been established.
 
 ### Removed
 
