@@ -176,7 +176,7 @@ class InputHandler():
             logging.warning(f"[dict_lookup] Key-combinations not supported. Input '{combination}' ignored")
     
     def _on_lookup_results(self, results_list):
-        logging.debug(f"[dict_lookup] Lookup result from Plover '{results_list}'")
+        # logging.debug(f"[dict_lookup] Lookup result from Plover '{results_list}'")
         plugins.loaded['dict_lookup'].display_lookup_result(results_list)
 
     def enable_input_mode(self):
