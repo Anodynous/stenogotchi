@@ -437,15 +437,14 @@ class BTKbDevice:
                 except Exception as e:
                     if e.__class__.__name__ == "OSError" and str(e) == "[Errno 52] Invalid exchange":
                             self.unpair_device(i)
-                            logging.info(f'[plover_link] Invalid handshake exchange with {i}. Unpaired device. Please re-initiate pairing from remote device')
+                            logging.info(f'[plover_link] Invalid handshake exchange with {i}. Unpaired device. Please re-initiate pairing from remote device.')
                             self._agent._view.on_custom(f"Had to purge {i} due to invalid handshake. Please re-pair us.")
                     elif (e.__class__.__name__ == "PermissionError" and str(e) == "[Errno 13] Permission denied"):
                         logging.info(f'[plover_link] Permission to connect to {i} denied. Ensure device has been paired.')
                         self._agent._view.on_custom(f"Hey... {i} refused my connection! Please re-pair us.")
                     elif (e.__class__.__name__ == "ConnectionRefusedError" and str(e) == "[Errno 111] Connection refused"):
-                        logging.info(f'[plover_link] Connect to {i} refused. Unpaired device. Please re-initiate pairing from remote device')
-                        self.unpair_device(i)
-                        self._agent._view.on_custom(f"Had to purge {i} due to my connection being refused. Please re-pair us.")
+                        logging.info(f'[plover_link] Connection to {i} refused. Ensure device has been paired and is available.')
+                        self._agent._view.on_custom(f"Hmpf... {i} refused my connection. Ensure device has been paired and is available.")
                     elif e.__class__.__name__ == "OSError" and str(e) == "[Errno 112] Host is down":
                         logging.info(f'[plover_link] Host {i} is down.')
                     else:
