@@ -59,6 +59,7 @@ ui.faces.process_2 = "(1__1)"
 ui.faces.process_3 = "(0__1)"
 ui.faces.process_4 = "(0__0)"
 
+# The web UI provides an alternative way of interacting with the device beside the ButtonSHIM module. Enabling the web UI will also load the buttonshim plugin.
 ui.web.enabled = false
 ui.web.address = "192.168.1.111"
 ui.web.username = "changeme"

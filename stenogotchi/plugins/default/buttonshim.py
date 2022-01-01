@@ -220,19 +220,22 @@ class Buttonshim(plugins.Plugin):
         if self._bus is not None:
             return
 
-        self._bus = smbus.SMBus(1)
+        try:
+            self._bus = smbus.SMBus(1)
 
-        self._bus.write_byte_data(ADDR, REG_CONFIG, 0b00011111)
-        self._bus.write_byte_data(ADDR, REG_POLARITY, 0b00000000)
-        self._bus.write_byte_data(ADDR, REG_OUTPUT, 0b00000000)
+            self._bus.write_byte_data(ADDR, REG_CONFIG, 0b00011111)
+            self._bus.write_byte_data(ADDR, REG_POLARITY, 0b00000000)
+            self._bus.write_byte_data(ADDR, REG_OUTPUT, 0b00000000)
 
-        self._t_poll = Thread(target=self._run)
-        self._t_poll.daemon = True
-        self._t_poll.start()
+            self._t_poll = Thread(target=self._run)
+            self._t_poll.daemon = True
+            self._t_poll.start()
 
-        self.set_pixel(0, 0, 0)
+            self.set_pixel(0, 0, 0)
 
-        atexit.register(self._quit)
+            atexit.register(self._quit)
+        except OSError as ex:
+            logging.error(f"[buttonshim] Ignore if no ButtonSHIM hw module present and web UI enabled: OSError encountered during setup: {ex}")
 
 
     def _set_bit(self, pin, value):
