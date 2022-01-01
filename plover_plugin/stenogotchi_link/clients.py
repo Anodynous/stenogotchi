@@ -184,6 +184,8 @@ class BTClient:
         self.btkobject = self.bus.get_object(SERVER_DBUS, SERVER_SRVC)
         self.btk_service = dbus.Interface(self.btkobject, SERVER_DBUS)
         self.ke = CustomKeyboardEmulation()
+        self._backspace_mapping_hid = plover_convert(self.ke._backspace_mapping.keycode)
+
 
     def update_mod_keys(self, mod_key, value):
         """
@@ -242,9 +244,9 @@ class BTClient:
         self.clear_mod_keys()
         state_list = []
         for x in range(number_of_backspaces):
-            self.update_keys(42, 1)     # 42 is HID keycode for backspace
+            self.update_keys(self._backspace_mapping_hid, 1)
             state_list.append(self.state)
-            self.update_keys(42, 0)
+            self.update_keys(self._backspace_mapping_hid, 0)
             state_list.append(self.state)
         self.send_keys(state_list)
         
