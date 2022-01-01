@@ -105,10 +105,6 @@ plover_keytable = {
     90: 98,     #kp_0 - "KEY_KP0"
     126: 215,   # "Keypad ±"
     #"KEY_KPDOT": 99,
-    #94 : 197,   # "Keypad <"    # not working, shift(,) added as special case for send_string() instead.
-    #187: 182,   # "Keypad ("    # not working, shift(9) added as special case for send_string() instead.
-    #188: 183,   # "Keypad )"    # not working, shift(0) added as special case for send_string() instead.
-
     
     # TODO: Media keys not working correctly
     # Media keys
@@ -125,8 +121,9 @@ plover_keytable = {
 
 # Map modifier keys to array element in the bit array
 plover_modkeys = {
+    # TODO: AltGr will not on MacOS/iOs/iPadOS produce expected character.
     134: 0,     #Super_R - "KEY_RIGHTMETA", WIN-key
-    108: 1,     #"KEY_RIGHTALT"
+    128: 1,     #"KEY_RIGHTALT", AltGr used to produce some symbols
     62: 2,      #"KEY_RIGHTSHIFT"
     105: 3,     #"KEY_RIGHTCTRL"
     133: 4,     #Super_L - "KEY_LEFTMETA", WIN-key

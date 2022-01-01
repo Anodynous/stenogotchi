@@ -8,7 +8,8 @@ from time import sleep
 from threading import Thread
 from gi.repository import GLib
 
-from plover.oslayer.xkeyboardcontrol import KeyboardEmulation, uchr_to_keysym, is_latin1, UCS_TO_KEYSYM
+from Xlib import X, XK
+from plover.oslayer.xkeyboardcontrol import KeyboardEmulation, uchr_to_keysym
 from plover import key_combo as plover_key_combo
 from stenogotchi_link.keymap import plover_convert, plover_modkey
 
@@ -111,6 +112,65 @@ class StenogotchiClient:
             elif dict['stop_wpm_meter'] == 'strokes':
                 self._engineserver.stop_wpm_meter(disable_wpm=False, disable_strokes=True)
 
+class CustomKeyboardEmulation(KeyboardEmulation):
+    """ 
+    We use the Plover implementation, but change _update_keymap()
+    to prefer lower keycode rather than low modkeys combos in mapping.
+    This way we avoid some issues when mapping to BT HID keycodes.
+    """
+    def _update_keymap(self):
+        '''Analyse keymap, build a mapping of keysym to (keycode + modifiers),
+        and find unused keycodes that can be used for unmapped keysyms.
+        '''
+        self._keymap = {}
+        self._custom_mappings_queue = []
+        # Analyse X11 keymap.
+        keycode = self._display.display.info.min_keycode
+        keycode_count = self._display.display.info.max_keycode - keycode + 1
+        for mapping in self._display.get_keyboard_mapping(keycode, keycode_count):
+            mapping = tuple(mapping)
+            while mapping and X.NoSymbol == mapping[-1]:
+                mapping = mapping[:-1]
+            if not mapping:
+                # Free never used before keycode.
+                custom_mapping = [self.UNUSED_KEYSYM] * self.CUSTOM_MAPPING_LENGTH
+                custom_mapping[-1] = self.PLOVER_MAPPING_KEYSYM
+                mapping = custom_mapping
+            elif self.CUSTOM_MAPPING_LENGTH == len(mapping) and \
+                    self.PLOVER_MAPPING_KEYSYM == mapping[-1]:
+                # Keycode was previously used by Plover.
+                custom_mapping = list(mapping)
+            else:
+                # Used keycode.
+                custom_mapping = None
+            for keysym_index, keysym in enumerate(mapping):
+                if keysym == self.PLOVER_MAPPING_KEYSYM:
+                    continue
+                if keysym_index not in (0, 1, 4, 5):
+                    continue
+                modifiers = 0
+                if 1 == (keysym_index % 2):
+                    # The keycode needs the Shift modifier.
+                    modifiers |= X.ShiftMask
+                if 4 <= keysym_index <= 5:
+                    # 3rd (AltGr) level.
+                    modifiers |= X.Mod5Mask
+                mapping = self.Mapping(keycode, modifiers, keysym, custom_mapping)
+                if keysym != X.NoSymbol and keysym != self.UNUSED_KEYSYM:
+                    # Some keysym are mapped multiple times, prefer lower keycode (Plover prefers lower modifiers combos).
+                    previous_mapping = self._keymap.get(keysym)
+                    if previous_mapping is None or mapping.keycode < previous_mapping.keycode:
+                        self._keymap[keysym] = mapping
+                if custom_mapping is not None:
+                    self._custom_mappings_queue.append(mapping)
+            keycode += 1
+        # Determine the backspace mapping.
+        backspace_keysym = XK.string_to_keysym('BackSpace')
+        self._backspace_mapping = self._get_mapping(backspace_keysym)
+        assert self._backspace_mapping is not None
+        assert self._backspace_mapping.custom_mapping is None
+        # Get modifier mapping.
+        self.modifier_mapping = self._display.get_modifier_mapping()
 
 class BTClient:
     """
@@ -123,7 +183,7 @@ class BTClient:
         self.bus = dbus.SystemBus()
         self.btkobject = self.bus.get_object(SERVER_DBUS, SERVER_SRVC)
         self.btk_service = dbus.Interface(self.btkobject, SERVER_DBUS)
-        self.ke = KeyboardEmulation()
+        self.ke = CustomKeyboardEmulation()
 
     def update_mod_keys(self, mod_key, value):
         """
@@ -225,6 +285,7 @@ class BTClient:
 
         # Apply modifiers
         if modifiers:
+            # TODO: Handle combination of modifiers. 129 for example is shift (1) + AltGr (128)
             self.update_mod_keys(modkey_hid, 1)
         # Press and release the base key.
         self.update_keys(normkey_hid, 1)
@@ -243,20 +304,11 @@ class BTClient:
         
     
     def send_string(self, s):
-        # TODO: Universal handling for special cases
         state_list = []
-        special_cases = ['<', '(', ')']
         for char in s:
-            if char in special_cases:
-                #plover.log.debug(f"[stenogotchi_link] handling special case character: {char}")
-                if char == '<':
-                    self.map_hid_events(59,50) # shift(,)
-                elif char == '(':
-                    self.map_hid_events(18,50) # shift(9)
-                elif char == ')':
-                    self.map_hid_events(19,50) # shift(0)
             keysym = uchr_to_keysym(char)
             mapping = self.ke._get_mapping(keysym)
+            #plover.log.debug(f"[stenogotchi_link] mapping : '{mapping}' mapping.keycode : '{mapping.keycode}' and mapping.modifier : '{mapping.modifiers}' (for keysym : '{keysym}' given char : '{char}')")
             if mapping is None:
                 continue
             sublist = self.map_hid_events(mapping.keycode, mapping.modifiers)
@@ -299,7 +351,10 @@ class BTClient:
         for keycode, event_type in key_events:
             # Convert to HID
             normkey_hid = plover_convert(keycode)
-            modkey_hid = plover_modkey(keycode)
+            if normkey_hid == -1:
+                modkey_hid = plover_modkey(keycode)
+            else:
+                modkey_hid = -1
 
             # Update and send keycode if mapped, otherwise log
             if modkey_hid > -1:
