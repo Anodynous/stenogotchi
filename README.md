@@ -99,7 +99,7 @@ All commands should be executed as root. The installation process can be complet
 ## Updating
        cd ~/stenogotchi
        git pull
-       pip3 install ./stenogotchi/plover_plugin/
+       pip3 install ~/stenogotchi/plover_plugin/
 
 ## Configuration / Troubleshooting
 * Configuration files are placed in /etc/stenogotchi/. Create a separate file named config.toml containing overrides to the defaults. Don't edit default.toml directly as it will be overwritten on Stenogotchi version updates.
