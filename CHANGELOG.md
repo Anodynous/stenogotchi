@@ -4,27 +4,32 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.1.0] - 2022-01-02
 ### Added
-- Modifier, function and navigation-key support, both individually and in combination. (Unsupported inputs logged in plover.log)
+- Modifier, function and navigation-key support, both individually and in combination (unsupported inputs logged in plover.log).
 - Reactions to new records in WPM-tracking mode.
 - Plover dictionary lookup with eINK display and STENO input support. The plugin (dict_lookup) utilizes native Plover lookup functionality for full compatibility with supported dictionary formats.
 - Buttonshim actions, both built-in and custom, accessible through web UI.
-- Hardware build guide to documentation.
+- Hardware build guide.
 
 ### Changed
 - Plover v4.0.0.dev10 or higher required.
-- Stenogotchi_link plugin now logs to plover.log.
+- Stenogotchi_link v0.3.0 required. Plugin now logs to plover.log.
 - Character and personality adjustments.
 - Simplified installation process.
 - Added documentation for aligning text output with target device expected input language and layout.
 - Web UI default port changed from 8080 to 80.
+- Bluetooth connection established only once Plover has started.
 
 ### Fixed
 - Significantly reduced input latency in STENO mode.
 - Improved Bluetooth pairing and connection management.
 - Web UI now starts only once a wifi connection has been established.
 
+## [Unreleased]
+### Added
+### Changed
+### Fixed
 ### Removed
 
 ## [0.0.5] - 2021-03-24
@@ -73,7 +78,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - README now includes basic configuration and usage documentation.
 - LICENSE file.
 
-[Unreleased]: https://github.com/Anodynous/stenogotchi/compare/v0.0.5...dev
+[Unreleased]: https://github.com/Anodynous/stenogotchi/compare/v0.1.0...dev
+[0.1.0]: https://github.com/Anodynous/stenogotchi/compare/v0.0.5...v0.1.0
 [0.0.5]: https://github.com/Anodynous/stenogotchi/compare/v0.0.4...v0.0.5
 [0.0.4]: https://github.com/Anodynous/stenogotchi/compare/v0.0.3...v0.0.4
 [0.0.3]: https://github.com/Anodynous/stenogotchi/releases/tag/v0.0.3
