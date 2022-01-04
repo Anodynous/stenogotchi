@@ -185,7 +185,7 @@ class View(object):
     def wait(self, secs, sleeping=True):
         was_normal = self.is_normal()
         part = secs / 10.0
-
+        
         for step in range(0, 10):
             # if we weren't in a normal state before going
             # to sleep, keep that face and status on for
@@ -213,8 +213,8 @@ class View(object):
         self.on_normal()
 
     def on_shutdown(self):
-        face = random.choice((faces.SLEEP, faces.SLEEP2))
-        self.set('face', face)
+        face = random.choices((faces.SLEEP, faces.SLEEP2), weights=[0.7, 0.3], k=1)
+        self.set('face', face[0])
         self.set('status', self._voice.on_shutdown())
         self.update(force=True)
         self._frozen = True
@@ -285,14 +285,14 @@ class View(object):
         self.update()
     
     def on_plover_boot(self):
-        face = random.choice((faces.SLEEP, faces.SLEEP2, faces.BORED))
-        self.set('face', face)
+        face = random.choices([faces.SLEEP, faces.SLEEP2, faces.BORED], weights=[0.6, 0.3, 0.1], k=1)
+        self.set('face', face[0])
         self.set('status', self._voice.on_plover_boot())
         self.update()
 
     def on_plover_ready(self):
-        face = random.choice((faces.AWAKE, faces.LOOK_R_HAPPY, faces.HAPPY, faces.EXCITED, faces.GRATEFUL))
-        self.set('face', face)
+        face = random.choices([faces.AWAKE, faces.LOOK_R_HAPPY, faces.LOOK_L_HAPPY, faces.EXCITED, faces.GRATEFUL], weights=[0.5, 0.2, 0.2, 0.05, 0.05], k=1)
+        self.set('face', face[0])
         self.set('status', self._voice.on_plover_ready())
         if self._state.get('mode') == 'NONE':
             self.set('mode', 'STENO')
@@ -306,13 +306,23 @@ class View(object):
             self.set('mode', 'NONE')
         self.update()
 
-    def on_set_wpm(self, wpm):
+    def on_wpm(self, wpm):
         self.set('wpm', wpm)
         self.update()
 
-    def on_set_strokes(self, strokes):
+    def on_strokes(self, strokes):
         self.set('strokes', strokes)
         self.update()
+
+    def on_wpm_record(self, wpm_top):
+        if wpm_top < 100:
+            self.set('face', faces.LOOK_R_HAPPY)
+        elif wpm_top < 200:
+            self.set('face', faces.EXCITED)
+        else:
+            self.set('face', faces.INTENSE)
+        self.set('status', self._voice.on_wpm_record(wpm_top))
+        # Don't trigger self.update as we always will call set_wpm() afterwards.
 
     def on_bt_connected(self, bthost_name):
         self.set('face', faces.LOOK_L_HAPPY)
@@ -332,6 +342,12 @@ class View(object):
     def on_wifi_disconnected(self):
         self.set('face', faces.LONELY)
         self.set('status', self._voice.on_wifi_disconnected())
+        self.update()
+    
+    def on_dict_lookup_done(self):
+        face = random.choices([faces.AWAKE, faces.LOOK_R_HAPPY, faces.LOOK_L_HAPPY, faces.EXCITED, faces.GRATEFUL], weights=[0.5, 0.2, 0.2, 0.05, 0.05], k=1)
+        self.set('face', face[0])
+        self.set('status', self._voice.on_dict_lookup_done())
         self.update()
 
     def update(self, force=False, new_data={}):

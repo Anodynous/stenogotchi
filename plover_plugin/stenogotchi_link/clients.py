@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
-
-import logging
+import plover.log
 import dbus, dbus.exceptions
 from dbus.mainloop.glib import DBusGMainLoop
 
@@ -9,7 +8,9 @@ from time import sleep
 from threading import Thread
 from gi.repository import GLib
 
-from plover.oslayer.xkeyboardcontrol import KeyboardEmulation, uchr_to_keysym, is_latin1, UCS_TO_KEYSYM
+from Xlib import X, XK
+from plover.oslayer.xkeyboardcontrol import KeyboardEmulation, uchr_to_keysym
+from plover import key_combo as plover_key_combo
 from stenogotchi_link.keymap import plover_convert, plover_modkey
 
 SERVER_DBUS = 'com.github.stenogotchi'
@@ -46,7 +47,7 @@ class StenogotchiClient:
                                                                 dbus_interface=SERVER_DBUS,
                                                                 signal_name='signal_to_plover')
         except dbus.exceptions.DBusException as e:
-            logging.error(f'[stenogotchi_link] Failed to initialize D-Bus object: {str(e)}')
+            plover.log.error(f'[stenogotchi_link] Failed to initialize D-Bus object: {str(e)}')
     
     def _exit(self):
         self._mainloop.quit()
@@ -72,12 +73,30 @@ class StenogotchiClient:
     def plover_strokes_stats(self, s):
         self.stenogotchi_service.plover_strokes_stats(s)
 
+    def send_backspaces(self, y):
+        self.stenogotchi_service.send_backspaces_stenogotchi(y)
+
+    def send_string(self, s):
+        self.stenogotchi_service.send_string_stenogotchi(s)
+
+    def send_key_combination(self, s):
+        self.stenogotchi_service.send_key_combination_stenogotchi(s)
+
+    def send_lookup_results(self, l):
+        self.stenogotchi_service.plover_translation_handler(l)
+
     def stenogotchi_signal_handler(self, dict):
         # Enable and disable wpm/strokes meters
+        if 'lookup_word' in dict:
+            self._engineserver.lookup_word(dict['lookup_word'])
+        if 'lookup_stroke' in dict:
+            self._engineserver.lookup_stroke(dict['lookup_stroke'])
+        if 'output_to_stenogotchi' in dict:
+            self._engineserver._output_to_stenogotchi = dict['output_to_stenogotchi']
         if 'start_wpm_meter' in dict:
             wpm_method = dict['wpm_method']
             wpm_timeout = int(dict['wpm_timeout'])
-            logging.info('[stenogotchi_link] Starting WPM meter')
+            plover.log.info('[stenogotchi_link] Starting WPM meter')
             if dict['start_wpm_meter'] == 'wpm and strokes':
                 self._engineserver.start_wpm_meter(enable_wpm=True, enable_strokes=True, wpm_method=wpm_method, wpm_timeout=wpm_timeout)
             elif dict['start_wpm_meter'] == 'wpm':
@@ -85,7 +104,7 @@ class StenogotchiClient:
             elif dict['start_wpm_meter'] == 'strokes':
                 self._engineserver.start_wpm_meter(enable_wpm=False, enable_strokes=True, wpm_method=wpm_method, wpm_timeout=wpm_timeout)
         if 'stop_wpm_meter' in dict:
-            logging.info('[stenogotchi_link] Stopping WPM meter')
+            plover.log.info('[stenogotchi_link] Stopping WPM meter')
             if dict['stop_wpm_meter'] == 'wpm and strokes':
                 self._engineserver.stop_wpm_meter(disable_wpm=True, disable_strokes=True)
             elif dict['stop_wpm_meter'] == 'wpm':
@@ -93,12 +112,70 @@ class StenogotchiClient:
             elif dict['stop_wpm_meter'] == 'strokes':
                 self._engineserver.stop_wpm_meter(disable_wpm=False, disable_strokes=True)
 
+class CustomKeyboardEmulation(KeyboardEmulation):
+    """ 
+    We use the Plover implementation, but change _update_keymap()
+    to prefer lower keycode rather than low modkeys combos in mapping.
+    This way we avoid some issues when mapping to BT HID keycodes.
+    """
+    def _update_keymap(self):
+        '''Analyse keymap, build a mapping of keysym to (keycode + modifiers),
+        and find unused keycodes that can be used for unmapped keysyms.
+        '''
+        self._keymap = {}
+        self._custom_mappings_queue = []
+        # Analyse X11 keymap.
+        keycode = self._display.display.info.min_keycode
+        keycode_count = self._display.display.info.max_keycode - keycode + 1
+        for mapping in self._display.get_keyboard_mapping(keycode, keycode_count):
+            mapping = tuple(mapping)
+            while mapping and X.NoSymbol == mapping[-1]:
+                mapping = mapping[:-1]
+            if not mapping:
+                # Free never used before keycode.
+                custom_mapping = [self.UNUSED_KEYSYM] * self.CUSTOM_MAPPING_LENGTH
+                custom_mapping[-1] = self.PLOVER_MAPPING_KEYSYM
+                mapping = custom_mapping
+            elif self.CUSTOM_MAPPING_LENGTH == len(mapping) and \
+                    self.PLOVER_MAPPING_KEYSYM == mapping[-1]:
+                # Keycode was previously used by Plover.
+                custom_mapping = list(mapping)
+            else:
+                # Used keycode.
+                custom_mapping = None
+            for keysym_index, keysym in enumerate(mapping):
+                if keysym == self.PLOVER_MAPPING_KEYSYM:
+                    continue
+                if keysym_index not in (0, 1, 4, 5):
+                    continue
+                modifiers = 0
+                if 1 == (keysym_index % 2):
+                    # The keycode needs the Shift modifier.
+                    modifiers |= X.ShiftMask
+                if 4 <= keysym_index <= 5:
+                    # 3rd (AltGr) level.
+                    modifiers |= X.Mod5Mask
+                mapping = self.Mapping(keycode, modifiers, keysym, custom_mapping)
+                if keysym != X.NoSymbol and keysym != self.UNUSED_KEYSYM:
+                    # Some keysym are mapped multiple times, prefer lower keycode (Plover prefers lower modifiers combos).
+                    previous_mapping = self._keymap.get(keysym)
+                    if previous_mapping is None or mapping.keycode < previous_mapping.keycode:
+                        self._keymap[keysym] = mapping
+                if custom_mapping is not None:
+                    self._custom_mappings_queue.append(mapping)
+            keycode += 1
+        # Determine the backspace mapping.
+        backspace_keysym = XK.string_to_keysym('BackSpace')
+        self._backspace_mapping = self._get_mapping(backspace_keysym)
+        assert self._backspace_mapping is not None
+        assert self._backspace_mapping.custom_mapping is None
+        # Get modifier mapping.
+        self.modifier_mapping = self._display.get_modifier_mapping()
 
 class BTClient:
     """
     Transmits keystroke output from Plover to Stenogotchi as HID messages over D-Bus.
     """
-
     def __init__(self):
         self.target_length = 6
         self.mod_keys = 0b00000000
@@ -106,7 +183,8 @@ class BTClient:
         self.bus = dbus.SystemBus()
         self.btkobject = self.bus.get_object(SERVER_DBUS, SERVER_SRVC)
         self.btk_service = dbus.Interface(self.btkobject, SERVER_DBUS)
-        self.ke = KeyboardEmulation()
+        self.ke = CustomKeyboardEmulation()
+        self._backspace_mapping_hid = plover_convert(self.ke._backspace_mapping.keycode)
 
 
     def update_mod_keys(self, mod_key, value):
@@ -127,6 +205,9 @@ class BTClient:
         """
         Sets the active normal keys
         """
+        if norm_key < 0:    # Log for debug purposes in case keycode isn't valid
+            plover.log.error(f"[stenogotchi_link] KeyError in update_keys, unable to send keycode: {norm_key}")
+            return
         if value < 1:
             self.pressed_keys.remove(norm_key)
         elif norm_key not in self.pressed_keys:
@@ -151,68 +232,140 @@ class BTClient:
     def clear_keys(self):
         self.pressed_keys = []
 
-    def send_keys(self):
-        self.btk_service.send_keys(self.state)
+    def send_keys(self, state_list=None):
+        if not state_list:
+            self.btk_service.send_keys([state_list])
+        else:
+            flat_list = state_list
+            self.btk_service.send_keys(flat_list)
 
     def send_backspaces(self, number_of_backspaces):
         self.clear_keys()
         self.clear_mod_keys()
+        state_list = []
         for x in range(number_of_backspaces):
-            self.update_keys(42, 1)     # 42 is HID keycode for backspace
-            self.send_keys()
-            sleep(TIME_SLEEP)
-            self.update_keys(42, 0)
-            self.send_keys()
-            sleep(TIME_SLEEP)
+            self.update_keys(self._backspace_mapping_hid, 1)
+            state_list.append(self.state)
+            self.update_keys(self._backspace_mapping_hid, 0)
+            state_list.append(self.state)
+        self.send_keys(state_list)
+        
 
-    def send_plover_keycode(self, keycode, modifiers=0):
+    def map_hid_events(self, keycode, modifiers=None):
+        """ Returns a list of HID bytearrays to produce the key combination.
+        
+        Arguments:
+        keycode -- An integer in the inclusive range [8-255].
+        modifiers -- An 8-bit bit mask indicating if the key
+        pressed is modified by other keys, such as Shift, Capslock,
+        Control, and Alt.
+        TODO: International, accented characters and a range of symbols are not working with the US keyboard layout. 
+            Could be solved using Alt codes on Windows, but Mac/iOS uses different Option codes. Complicated to solve 
+            in a clean way as we only emulate a BT keyboard and all characters must be produced on the remote host.
+            -> Look into separate WIN/MAC translation tables. Profiles which can be linked to BT MAC adresses.
+        """
+        self.clear_keys()
+        self.clear_mod_keys()
+        state_sublist = []
         #modifiers_list = [
         #    self.ke.modifier_mapping[n][0]
         #    for n in range(8)
         #    if (modifiers & (1 << n))
         #]
-        #if modifiers > 1:
-        #    logging.debug("[stenogotchi_link] Modifier received: " + str(modifiers) +" keycode" + str(keycode))
-        # Update modifier keys
         #for mod_keycode in modifiers_list:
         #    self.update_mod_keys(plover_modkey(mod_keycode), 1)
-        if modifiers > 0:  # Should look at handling multiple modifiers in combination, but only shift seems to be needed in default plover keymap.
-            self.update_mod_keys(plover_modkey(modifiers), 1)
+             
+        normkey_hid = plover_convert(keycode)
+        # Log issues with mapping any keycodes
+        if normkey_hid < 0:
+            plover.log.error(f"[stenogotchi_link] Unable to map keycode: {keycode} using plover_convert in keymap.py.")
+            return
+        if modifiers:
+            modkey_hid = plover_modkey(modifiers)
+            if modkey_hid < 0:
+                plover.log.error(f"[stenogotchi_link] Unable to map keycode: {keycode} using plover_modkey in keymap.py.")
 
+        # Apply modifiers
+        if modifiers:
+            # TODO: Handle combination of modifiers. 129 for example is shift (1) + AltGr (128)
+            self.update_mod_keys(modkey_hid, 1)
         # Press and release the base key.
-        self.update_keys(plover_convert(keycode), 1)
-        self.send_keys()
+        self.update_keys(normkey_hid, 1)
+        state_sublist.append(self.state)
         sleep(TIME_SLEEP)
-        self.update_keys(plover_convert(keycode), 0)
-        self.send_keys()
+        self.update_keys(normkey_hid, 0)
+        state_sublist.append(self.state)
         # Release modifiers
         if modifiers > 0:
-            self.update_mod_keys(plover_modkey(modifiers), 0)
+            self.update_mod_keys(modkey_hid, 0)
+            state_sublist.append(self.state)
+        
+        return state_sublist
         #for mod_keycode in reversed(modifiers_list):
         #    self.update_mod_keys(plover_modkey(mod_keycode), 0)
+        
     
     def send_string(self, s):
-        special_cases = ['<', '(', ')']
+        state_list = []
         for char in s:
-            if char in special_cases:
-                if char == '<':
-                    self.send_plover_keycode(59,1) # shift(,)
-                elif char == '(':
-                    self.send_plover_keycode(18,1) # shift(9)
-                elif char == ')':
-                    self.send_plover_keycode(19,1) # shift(0)
             keysym = uchr_to_keysym(char)
             mapping = self.ke._get_mapping(keysym)
+            #plover.log.debug(f"[stenogotchi_link] mapping : '{mapping}' mapping.keycode : '{mapping.keycode}' and mapping.modifier : '{mapping.modifiers}' (for keysym : '{keysym}' given char : '{char}')")
             if mapping is None:
                 continue
-            self.send_plover_keycode(mapping.keycode,
-                            mapping.modifiers)
+            sublist = self.map_hid_events(mapping.keycode, mapping.modifiers)
+            if sublist:
+                state_list.extend(sublist)
+        if len(state_list) > 0:
+            self.send_keys(state_list)
         
-    def send_key_combination(self, combination: str):
+    def send_key_combination(self, combo_string: str):
         """
-        TODO: handle properly all combinations, like Control_L(BackSpace)
+        Custom implementation of Plover send_key_combination function
+        since we do not work with emulated key events or need to fight
+        with a KeyboardCapture instance. 
+        
+        Arguments:
+
+        combo_string -- A string representing a sequence of key
+        combinations. Keys are represented by their names in the
+        Xlib.XK module, without the 'XK_' prefix. For example, the
+        left Alt key is represented by 'Alt_L'. Keys are either
+        separated by a space or a left or right parenthesis.
+        Parentheses must be properly formed in pairs and may be
+        nested. A key immediately followed by a parenthetical
+        indicates that the key is pressed down while all keys enclosed
+        in the parenthetical are pressed and released in turn. For
+        example, Alt_L(Tab) means to hold the left Alt key down, press
+        and release the Tab key, and then release the left Alt key.
         """
-        if combination == 'Return':
-            self.send_plover_keycode(36)
-        else:
-            print(f"Received unknown key_combination from Plover: {combination}")
+        self.clear_keys()
+        self.clear_mod_keys()
+        state_list = []
+
+        # Parse and validate combo.
+        key_events = [
+            (keycode, 1 if pressed else 0) for keycode, pressed
+            in plover_key_combo.parse_key_combo(combo_string, self.ke._get_keycode_from_keystring)
+        ]
+       
+        # Send key events to emulate combination.
+        for keycode, event_type in key_events:
+            # Convert to HID
+            normkey_hid = plover_convert(keycode)
+            if normkey_hid == -1:
+                modkey_hid = plover_modkey(keycode)
+            else:
+                modkey_hid = -1
+
+            # Update and send keycode if mapped, otherwise log
+            if modkey_hid > -1:
+                self.update_mod_keys(modkey_hid, event_type)
+                state_list.append(self.state)
+            elif normkey_hid > -1:
+                self.update_keys(normkey_hid, event_type)
+                state_list.append(self.state)
+            else:
+                plover.log.debug(f"[stenogotchi_link]Received key_combination from Plover: {combo_string}, resulting in key_events: {key_events}")
+                plover.log.error(f"Unable to map keycode: {keycode}, in keymap.py (event_type: {event_type})")
+        self.send_keys(state_list)

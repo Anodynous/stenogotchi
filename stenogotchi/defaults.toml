@@ -24,7 +24,7 @@ fs.memory.mounts.data.zram = false
 fs.memory.mounts.data.rsync = true
 
 # UI
-# The lifespan of an eINK display depends on the cumulative amount of refreshes. To preserve your display
+# The lifespan of an eINK display depends on the cumulative number of refreshes. To preserve your display
 # over time it is recommended to keep ui.fps value 0.0 so that refreshes only take place upon major updates.
 # Uptime, battery status, the blinking cursor and similar will not trigger a refresh
 
@@ -54,18 +54,10 @@ ui.faces.angry = "(-_-')"
 ui.faces.friend = "(♥‿‿♥)"
 ui.faces.broken = "(☓‿‿☓)"
 ui.faces.debug = "(#__#)"
-ui.faces.process_1 = '(1__0)'
-ui.faces.process_2 = '(1__1)'
-ui.faces.process_3 = '(0__1)'
-ui.faces.process_4 = '(0__0)'
-
-ui.web.enabled = false
-ui.web.address = "192.168.1.111"
-ui.web.username = "changeme"
-ui.web.password = "changeme"
-ui.web.origin = ""
-ui.web.port = 8080
-ui.web.on_frame = ""
+ui.faces.process_1 = "(1__0)"
+ui.faces.process_2 = "(1__1)"
+ui.faces.process_3 = "(0__1)"
+ui.faces.process_4 = "(0__0)"
 
 ui.display.enabled = true
 ui.display.rotation = 0
@@ -73,62 +65,46 @@ ui.display.type = "waveshare_2"
 ui.display.color = "black"
 ui.display.clear_at_shutdown = true
 
+# The web UI provides an alternative way of interacting with the device to an eINK display and ButtonSHIM module. Enabling the web UI will also load the buttonshim plugin.
+ui.web.enabled = false
+ui.web.address = "192.168.1.100"
+ui.web.username = "changeme"
+ui.web.password = "changeme"
+ui.web.origin = ""
+ui.web.port = 80
+ui.web.on_frame = ""
+
 # Plugins
+
+# Populate bt_autoconnect_mac with the MAC addresses of devices to attempt auto connecting to at boot. Multiple comma-separated devices in order of priority can be given.
+# After exhausting the options, the device will fall back to listening for incoming connection and pairing attempts.
+## Example:
+##  main.plugins.plover_link.bt_autoconnect_mac = "00:DE:AD:BE:EF:00, 11:DE:AD:BE:EF:11"
 main.plugins.plover_link.enabled = true
-main.plugins.plover_link.bt_autoconnect_mac = ''
-main.plugins.plover_link.bt_device_name = 'Stenogotchi'
+main.plugins.plover_link.bt_autoconnect_mac = ""
+main.plugins.plover_link.bt_device_name = "Stenogotchi"
 
 # For WPM readings a word is defined in one of three ways:
 ##    NCRA: The National Court Reporters Association defines a “word” as 1.4 syllables. This is the measure used for official NCRA testing material.
 ##    Traditional: The traditional metric for “word” in the context of keyboarding is defined to be 5 characters per word, including spaces. This is compatible with the notion of “word” in many typing speed utilities.
 ##    Spaces: A word is a whitespace-separated sequence of characters. This metric of course doesn’t take into account the fact that some words are longer than others, both in length and syllables.
-### specify either 'ncra', 'traditional' or 'spaces' as preferred method using main.plugins.plover_link.wpm_method
-### specify in seconds moving time window for which wpm is calculated and updated using main.plugins.plover_link.wpm_timeout
+# Specify either "ncra", "traditional" or "spaces" as preferred method using main.plugins.plover_link.wpm_method
+# Specify in seconds moving time window for which wpm is calculated and updated using main.plugins.plover_link.wpm_timeout
+main.plugins.plover_link.wpm_method = "traditional"
+main.plugins.plover_link.wpm_timeout = "60"
 
-main.plugins.plover_link.wpm_method = 'traditional'
-main.plugins.plover_link.wpm_timeout = '60'
-
+# Plugin evdevkb is responsible for direct keyboard capturing, bypassing Plover. Input mode toggleable when enabled.
 main.plugins.evdevkb.enabled = true
 
+# Plugin dict_lookup handles dictionary lookup from all enabled Plover dictionaries.
+main.plugins.dict_lookup.enabled = true
+
+# Plugin upslite provides battery level, charging indicator (+) and auto-shutdown at specified battery level when a UPS-Lite v1.2 module is connected. 
 main.plugins.upslite.enabled = false
 main.plugins.upslite.shutdown_level = 5
 
-main.plugins.memtemp.enabled = false
-main.plugins.memtemp.scale = "celsius"
-main.plugins.memtemp.orientation = "horizontal"
-
-main.plugins.led.enabled = false
-main.plugins.led.led = 0
-main.plugins.led.delay = 200
-main.plugins.led.patterns.loaded = ""
-main.plugins.led.patterns.updating = ""
-main.plugins.led.patterns.ready = ""
-main.plugins.led.patterns.grateful = ""
-main.plugins.led.patterns.lonely = ""
-main.plugins.led.patterns.bored = ""
-main.plugins.led.patterns.sad = ""
-main.plugins.led.patterns.angry = ""
-main.plugins.led.patterns.excited = ""
-main.plugins.led.patterns.rebooting = "oo  oo  oo  oo  oo"
-main.plugins.led.patterns.wait = ""
-main.plugins.led.patterns.sleep = ""
-main.plugins.led.patterns.epoch = ""
-main.plugins.led.patterns.bt_connected = "oo  oo  oo  oo  oo"
-main.plugins.led.patterns.bt_disconnected = "oo  oo  oo  oo  oo"
-main.plugins.led.patterns.plover_boot = ""
-main.plugins.led.patterns.plover_ready = "oo  oo  oo  oo  oo"
-main.plugins.led.patterns.plover_quit = "oo  oo  oo  oo  oo"
-main.plugins.led.patterns.wifi_connected = "oo  oo  oo  oo  oo"
-main.plugins.led.patterns.wifi_disconnected = "oo  oo  oo  oo  oo"
-main.plugins.led.patterns.wpm_set = ""
-main.plugins.led.patterns.strokes_set = ""
-
-main.plugins.logtail.enabled = false
-main.plugins.logtail.max-lines = 10000
-
-main.plugins.session-stats.enabled = false
-main.plugins.session-stats.save_directory = "/var/tmp/stenogotchi/sessions/"
-
+# Plugin buttonshim enables a way to interact with the device using the five physical buttons on the ButtonSHIM hardware module or through the web UI. Enabling the web UI will automatically load the buttonshim plugin.
+# Each button has a predefined long-press (1s) action. The short-press action can be freely configured to any terminal command.
 main.plugins.buttonshim.enabled = false
 main.plugins.buttonshim.buttons.A.command = ""
 main.plugins.buttonshim.buttons.A.blink.enabled = false
@@ -170,6 +146,45 @@ main.plugins.buttonshim.buttons.E.blink.blue = 0
 main.plugins.buttonshim.buttons.E.blink.on_time = 0
 main.plugins.buttonshim.buttons.E.blink.off_time = 0
 main.plugins.buttonshim.buttons.E.blink.blink_times = 0
+
+# Plugin led provides an alternative way to be alerted to events through the built-in LED on the rpi0w without the need of a display.
+main.plugins.led.enabled = false
+main.plugins.led.led = 0
+main.plugins.led.delay = 200
+main.plugins.led.patterns.loaded = ""
+main.plugins.led.patterns.updating = ""
+main.plugins.led.patterns.ready = ""
+main.plugins.led.patterns.grateful = ""
+main.plugins.led.patterns.lonely = ""
+main.plugins.led.patterns.bored = ""
+main.plugins.led.patterns.sad = ""
+main.plugins.led.patterns.angry = ""
+main.plugins.led.patterns.excited = ""
+main.plugins.led.patterns.rebooting = "oo  oo  oo  oo  oo"
+main.plugins.led.patterns.wait = ""
+main.plugins.led.patterns.sleep = ""
+main.plugins.led.patterns.epoch = ""
+main.plugins.led.patterns.bt_connected = "oo  oo  oo  oo  oo"
+main.plugins.led.patterns.bt_disconnected = "oo  oo  oo  oo  oo"
+main.plugins.led.patterns.plover_boot = ""
+main.plugins.led.patterns.plover_ready = "oo  oo  oo  oo  oo"
+main.plugins.led.patterns.plover_quit = "oo  oo  oo  oo  oo"
+main.plugins.led.patterns.wifi_connected = "oo  oo  oo  oo  oo"
+main.plugins.led.patterns.wifi_disconnected = "oo  oo  oo  oo  oo"
+main.plugins.led.patterns.wpm_set = ""
+main.plugins.led.patterns.strokes_set = ""
+
+# Plugin memtemp displays CPU temperature and RAM/CPU usage.
+main.plugins.memtemp.enabled = false
+main.plugins.memtemp.scale = "celsius"
+main.plugins.memtemp.orientation = "horizontal"
+
+# Plugin logtail gives access to the Stenogotchi log through the web UI.
+main.plugins.logtail.enabled = false
+main.plugins.logtail.max-lines = 10000
+
+main.plugins.session-stats.enabled = false
+main.plugins.session-stats.save_directory = "/var/tmp/stenogotchi/sessions/"
 
 # Log
 main.log.path = "/var/log/stenogotchi.log"

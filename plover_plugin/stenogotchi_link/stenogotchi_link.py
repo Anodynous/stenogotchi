@@ -2,7 +2,7 @@
 # This is a Plover plugin acting as link between Plover and Stenogotchi
 # Based on: https://github.com/nsmarkop/plover_websocket_server
 
-import logging
+import plover.log
 import json
 import jsonpickle
 from typing import Optional, List
@@ -33,12 +33,13 @@ class EngineServer():
         self._btclient = BTClient()
         self._wpm_meter = None
         self._strokes_meter = None
+        self._output_to_stenogotchi = False
 
     # Started when user enables extension
     def start(self):
         """ Starts the server. """
         self._connect_hooks()
-        logging.info("[stenogotchi_link] Plover_link started")
+        plover.log.info("[stenogotchi_link] Plover_link started")
         self._stenogotchiclient.plover_is_running(True)
 
     # Called when Plover exits or user disables the extension
@@ -70,7 +71,38 @@ class EngineServer():
     def _on_wpm_meter_update_wpm(self, stats):
         """ Sends wpm stats to stenogotchi as a string """
         self._stenogotchiclient.plover_wpm_stats(stats['wpm_user'])
+
+    def _on_plover_translation(self, results, type):
+        """ Sends translation results from Plover to stenogotchi as list of strings"""
+        if type == 'word':  # Result from Plover will be in format List[Tuple[str]], examine: {('EBGS', 'APL', '*EUPB'), ('KP*PL',), ('KPAPL', 'PHEUPB'), ('KPAPL', '-PB'), ('KP-PB',), ('EBGS', 'APL', '-PB'), ('KP',), ('EBGS', 'APL', 'PHEUPB'), ('EBGS', 'APL', 'EUPB')}
+            results_list = []
+            chords = None
+            for touple in results:
+                if chords:
+                    results_list.append(chords)
+                    chords = None
+                for result in touple:
+                    if chords:
+                        chords = chords + '/' + result
+                    else:
+                        chords = result
+            if chords:
+                results_list.append(chords)
+                chords = None
+        elif type == 'stroke':  # Result from Plover will be in format str
+            # TODO: implement functionality for stroke-lookup
+            plover.log.debug(f"Lookup_stroke results: {results}")
+            results_list = [results]
+        self._stenogotchiclient.send_lookup_results(results_list)
     
+    def lookup_word(self, word):
+        matches = self._engine.reverse_lookup(word)
+        self._on_plover_translation(matches, 'word')
+
+    def lookup_stroke(self, stroke):
+        matches = self._engine.lookup(stroke)
+        self._on_plover_translation(matches, 'stroke')
+
     def get_server_status(self):
         """Gets the status of the server.
         Returns: 
@@ -82,7 +114,7 @@ class EngineServer():
         """Creates hooks into all of Plover's events."""
 
         if not self._engine:
-            logging.error(f'[stenogotchi_link] {ERROR_MISSING_ENGINE}')
+            plover.log.error(f'[stenogotchi_link] {ERROR_MISSING_ENGINE}')
             raise AssertionError(ERROR_MISSING_ENGINE)
             
         for hook in self._engine.HOOKS:
@@ -138,7 +170,7 @@ class EngineServer():
         """
 
         data = {'output_changed': enabled}
-        logging.debug(f'[stenogotchi_link] _on_output_changed data: {data}')
+        plover.log.debug(f'[stenogotchi_link] _on_output_changed data: {data}')
         self._stenogotchiclient.plover_output_enabled(enabled)
         
 
@@ -152,7 +184,7 @@ class EngineServer():
         config_json = jsonpickle.encode(config_update, unpicklable=False)
 
         data = {'config_changed': json.loads(config_json)}
-        logging.debug(f'[stenogotchi_link] _on_config_changed data: {data}')
+        plover.log.debug(f'[stenogotchi_link] _on_config_changed data: {data}')
 
     def _on_dictionaries_loaded(self, dictionaries: StenoDictionaryCollection):
         """Broadcasts when all of the dictionaries get loaded.
@@ -167,16 +199,20 @@ class EngineServer():
         Args:
             text: The string that was output.
         """
-
-        self._btclient.send_string(text)
+        if self._output_to_stenogotchi:
+            self._stenogotchiclient.send_string(text)
+        else:
+            self._btclient.send_string(text)
 
     def _on_send_backspaces(self, count: int):
         """Broadcasts when backspaces are output.
         Args:
             count: The number of backspaces that were output.
         """
-
-        self._btclient.send_backspaces(count)
+        if self._output_to_stenogotchi:
+            self._stenogotchiclient.send_backspaces(count)
+        else:
+            self._btclient.send_backspaces(count)
 
     def _on_send_key_combination(self, combination: str):
         """Broadcasts when a key combination is output.
@@ -185,31 +221,40 @@ class EngineServer():
                 Keys are represented by their names based on the OS-specific
                 keyboard implementations in plover.oslayer.
         """
-        self._btclient.send_key_combination(combination)
+        if self._output_to_stenogotchi:
+            self._stenogotchiclient.send_key_combination(combination)
+        else:
+            self._btclient.send_key_combination(combination)
 
     def _on_add_translation(self):
         """Broadcasts when the add translation tool is opened via a command."""
 
         data = {'add_translation': True}
-        logging.debug(f'[stenogotchi_link] _on_add_translation data: {data}')
+        plover.log.debug(f'[stenogotchi_link] _on_add_translation data: {data}')
         
     def _on_focus(self):
         """Broadcasts when the main window is focused via a command."""
 
         data = {'focus': True}
-        logging.debug(f'[stenogotchi_link] _on_focus data: {data}')
+        plover.log.debug(f'[stenogotchi_link] _on_focus data: {data}')
 
     def _on_configure(self):
         """Broadcasts when the configuration tool is opened via a command."""
 
         data = {'configure': True}
-        logging.debug(f'[stenogotchi_link] _on_configure data: {data}')
+        plover.log.debug(f'[stenogotchi_link] _on_configure data: {data}')
 
     def _on_lookup(self):
         """Broadcasts when the lookup tool is opened via a command."""
 
         data = {'lookup': True}
-        logging.debug(f'[stenogotchi_link] _on_lookup data: {data}')
+        plover.log.debug(f'[stenogotchi_link] _on_lookup data: {data}')
+
+    def _on_suggestions(self):
+        """Broadcasts when the lookup tool is opened via a command."""
+
+        data = {'suggestions': True}
+        plover.log.debug(f'[stenogotchi_link] _on_lookup data: {data}')
 
     def _on_quit(self):
         """Broadcasts when the application is terminated.
@@ -217,7 +262,7 @@ class EngineServer():
         """
 
         data = {'quit': True}
-        logging.debug(f'[stenogotchi_link] _on_quit data: {data}')
+        plover.log.debug(f'[stenogotchi_link] _on_quit data: {data}')
         self._stenogotchiclient.plover_is_running(False)
 
 

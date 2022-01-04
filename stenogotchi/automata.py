@@ -86,11 +86,20 @@ class Automata(object):
         self._view.on_wifi_disconnected()
         plugins.on('wifi_disconnected', self)
 
-    def set_wpm_stats(self, stats):
-        self._view.on_set_wpm(stats)
+    def set_wpm(self, wpm, wpm_top):
+        stats = '{:3s} {:5s}'.format(str(wpm), f'({wpm_top})')
+        self._view.on_wpm(stats)
         plugins.on('wpm_set', self)
 
-    def set_strokes_stats(self, stats):
-        self._view.on_set_strokes(stats)
+    def set_strokes(self, stats):
+        self._view.on_strokes(stats)
         plugins.on('strokes_set', self)
 
+    def set_wpm_record(self, wpm_top):
+        self._view.on_wpm_record(wpm_top)
+        plugins.on('wpm_record', self)
+        self.set_wpm(wpm_top, wpm_top)  # Since we set a new record wpm and wpm_top will be equal
+
+    def set_on_dict_lookup_done(self):
+        self._view.on_dict_lookup_done()
+        plugins.on('dict_lookup_done', self)

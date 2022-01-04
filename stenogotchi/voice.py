@@ -37,11 +37,18 @@ class Voice:
 
     def on_normal(self):
         return random.choice([
+            self._('Wonder what we\'ll type next'),
+            self._('Sure is cosy in here'),
+            self._('We better not be writing any spam mail ...'),
+            self._('I bet I\'m a great swimmer.'),
+            self._('Used to know this Tama guy. Real piece of work.'),
+            self._('Did you know I\'m barely literate?'),
+            self._('Hi buddy'),
+            self._('You\'re looking sharp today!'),
+            self._('We\'re friends right? Best friends!'),
+            self._('I like hanging out with you'),
             '',
             '...'])
-
-    def on_free_channel(self, channel):
-        return self._('Hey, channel {channel} is free! Your AP will say thanks.').format(channel=channel)
 
     def on_reading_logs(self, lines_so_far=0):
         if lines_so_far == 0:
@@ -60,7 +67,9 @@ class Voice:
 
     def on_demotivated(self, reward):
         return random.choice([
-            self._('This sucks...'),
+            self._('This sucks ...'),
+            self._('Meh ...'),
+            self._('What\'s even the point ...'),
             self._('Shitty day :/')])
 
 
@@ -81,7 +90,7 @@ class Voice:
     def on_excited(self):
         return random.choice([
             self._('I\'m living the life!'),
-            self._('I type before you think.'),
+            self._('I type before you think'),
             self._('So many words!!!'),
             self._('I\'m having so much fun!'),
             self._('My crime is that of curiosity ...')])
@@ -120,9 +129,10 @@ class Voice:
 
     def on_napping(self, secs):
         return random.choice([
-            self._('Napping for {secs}s ...').format(secs=secs),
+            #self._('Napping for {secs}s ...').format(secs=secs),
+            self._('Napping for a bit ...'),
             self._('Zzzzz'),
-            self._('ZzzZzzz ({secs}s)').format(secs=secs)])
+            self._('ZzzZzzz')])
 
     def on_shutdown(self):
         return random.choice([
@@ -130,7 +140,9 @@ class Voice:
             self._('Zzz')])
 
     def on_awakening(self):
-        return random.choice(['...', '!'])
+        return random.choice([
+        '!',
+        ''])
 
     def on_waiting(self, secs):
         return random.choice([
@@ -158,7 +170,7 @@ class Voice:
     def on_bt_disconnected(self):
         return random.choice([
             self._('Lost connection to bluetooth host'),
-            self._('Maybe it was a milk- and not bluetooth as it fell out...'),
+            self._('Maybe it was a milk tooth and not bluetooth since it fell out ...'),
             self._('Need a new bluetooth connection buddy')])
 
     def on_wifi_connected(self, ssid, ip):
@@ -173,12 +185,12 @@ class Voice:
         return random.choice([
             self._('I... I just lost WiFi'),
             self._('I\'m feeling disconnected'),
-            self._('Dude! I was in the middle of a Netflix show!')])
+            self._('Bruh, I was watching Netflix!')])
 
     def on_plover_boot(self):
         return random.choice([
-            self._('Just waiting for Plover to pick up the phone now...'),
-            self._('Plover is loading dictionaries...'),
+            self._('Just waiting for Plover to pick up the phone now ...'),
+            self._('Plover is loading dictionaries ...'),
             self._('Waiting for Plover to wake up')])
 
     def on_plover_ready(self):
@@ -188,7 +200,41 @@ class Voice:
             self._('Plover is ready'),
             self._('Plover is finally dressed and ready to go'),
             self._('We are ready to go')])
+    
+    def on_wpm_record(self, wpm_top):
+        if wpm_top < 100:
+            return random.choice([
+                self._('Keep up the good work!'),
+                self._('You are getting quick!')])
+        if wpm_top < 150:
+            return random.choice([
+                self._('Impressive!'),
+                self._('You have left most qwerty users in the dust!')])
+        elif wpm_top < 200:
+            return random.choice([
+                self._('Your fingers were a blur'),
+                self._('Wow, I barely managed to keep up'),
+                self._('Amazing!')])
+        elif wpm_top < 250:
+            return random.choice([
+                self._('I can\'t keep up with you anymore'),
+                self._('I can barely think that fast'),
+                self._('Warp drive engaged!')])
+        elif wpm_top < 300:
+            return random.choice([
+                self._('I\'m starting to think you\'re cheating!'),
+                self._('Keep that up and your fingers will fly off')])
+        else:
+            return self._('Mark Kislingbury ... Is that you?!')
 
+    def on_dict_lookup_done(self):
+        return random.choice([
+            self._('I can never remember that one either'),
+            self._('Welp ... I already forgot it again'),
+            self._('Oh ... I totally knew that one'),
+            self._('How often do you need that word anyway?'),
+            self._('Last time we\'ll need to look that one up. Right?')])
+        
     def hhmmss(self, count, fmt):
         if count > 1:
             # plural

@@ -19,7 +19,7 @@ def init(config):
     global STATUS_FONT_NAME, SIZE_OFFSET
     STATUS_FONT_NAME = config['ui']['font']['name']
     SIZE_OFFSET = config['ui']['font']['size_offset']
-    setup(10, 8, 10, 25, 25, 9)
+    setup(10, 9, 10, 35, 25, 9)
 
 
 def status_font(old_font):

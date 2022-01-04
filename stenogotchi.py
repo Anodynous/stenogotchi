@@ -42,8 +42,8 @@ def do_auto_mode(agent):
         try:
             # This is the main loop. But we don't have any main duty outside interacting with plover and acting as ui.
             # Need to come up with some more dynamic way of triggering UI updates based on Plover/etc events
-            time.sleep(30)
-            #agent._view.update()
+            time.sleep(600)
+            agent._view.on_normal()
         except Exception as e:
             logging.exception("main loop exception (%s)", e)
 
