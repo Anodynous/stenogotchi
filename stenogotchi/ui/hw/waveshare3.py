@@ -85,9 +85,8 @@ class WaveshareV3(DisplayImpl):
         logging.info("initializing waveshare v3 display")
         from stenogotchi.ui.hw.libs.waveshare.v3.epd2in13_V3 import EPD
         self._display = EPD()
-        self._display.init(self._display.FULL_UPDATE)
+        self._display.init()
         self._display.Clear(0xff)
-        self._display.init(self._display.PART_UPDATE)
 
     def render(self, canvas):
         buf = self._display.getbuffer(canvas)
