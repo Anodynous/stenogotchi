@@ -63,7 +63,7 @@ class RaspberryPi:
 
     def spi_writebyte2(self, data):
         self.SPI.writebytes2(data)
-        
+
     def module_init(self):
         self.GPIO.setmode(self.GPIO.BCM)
         self.GPIO.setwarnings(False)
@@ -85,5 +85,10 @@ class RaspberryPi:
 
         self.GPIO.cleanup([self.RST_PIN, self.DC_PIN, self.CS_PIN, self.BUSY_PIN])
 
+if os.path.exists('/sys/bus/platform/drivers/gpiomem-bcm2835'):
+    implementation = RaspberryPi()
+
+for func in [x for x in dir(implementation) if not x.startswith('_')]:
+    setattr(sys.modules[__name__], func, getattr(implementation, func))
 
 ### END OF FILE ###
