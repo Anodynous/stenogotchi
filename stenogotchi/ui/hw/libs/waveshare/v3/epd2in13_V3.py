@@ -128,10 +128,10 @@ class EPD:
     parameter:
     '''
     def ReadBusy(self):
-        logging.debug("e-Paper busy")
+        #logging.debug("e-Paper busy")
         while(epdconfig.digital_read(self.busy_pin) == 1):      # 0: idle, 1: busy
             epdconfig.delay_ms(10)  
-        logging.debug("e-Paper busy release")
+        #logging.debug("e-Paper busy release")
 
     '''
     function : Turn On Display
