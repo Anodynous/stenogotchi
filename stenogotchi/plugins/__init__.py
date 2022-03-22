@@ -137,10 +137,8 @@ def load(config):
                'enabled' in options and options['enabled']]
     
     # force enable buttonshim plugin when web ui is enabled
-    logging.debug(f"REMOVEME pre status : '{enabled}'")
     if config['ui']['web']['enabled'] and 'buttonshim' not in enabled:
         enabled.append('buttonshim')
-    logging.debug(f"REMOVEME post status : '{enabled}'")
 
     # load default plugins
     load_from_path(default_path, enabled=enabled)
