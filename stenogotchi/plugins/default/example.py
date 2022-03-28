@@ -18,7 +18,7 @@ class Example(plugins.Plugin):
     __author__ = 'evilsocket@gmail.com, Anodynous'
     __version__ = '1.0.0'
     __license__ = 'GPL3'
-    __description__ = 'An example plugin for pwnagotchi that implements all the available callbacks.'
+    __description__ = 'An example plugin for stenogotchi that implements all the available callbacks.'
 
     def __init__(self):
         logging.debug("[example] example plugin created")
