@@ -28,6 +28,9 @@ class Display(View):
     def is_waveshare_v2(self):
         return self._implementation.name == 'waveshare_2'
 
+    def is_waveshare_v3(self):
+        return self._implementation.name == 'waveshare_3'
+
     def init_display(self):
         if self._enabled:
             self._implementation.initialize()

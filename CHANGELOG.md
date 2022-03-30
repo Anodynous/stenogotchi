@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+
+## [Unreleased]
+### Added
+- Support for Waveshare 2.13 inch V3 eINK display
+
+### Changed
+### Fixed
+### Removed
+
 ## [0.1.0] - 2022-01-02
 ### Added
 - Modifier, function and navigation-key support, both individually and in combination (unsupported inputs logged in plover.log).
@@ -25,12 +34,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Significantly reduced input latency in STENO mode.
 - Improved Bluetooth pairing and connection management.
 - Web UI now starts only once a wifi connection has been established.
-
-## [Unreleased]
-### Added
-### Changed
-### Fixed
-### Removed
 
 ## [0.0.5] - 2021-03-24
 ### Added
