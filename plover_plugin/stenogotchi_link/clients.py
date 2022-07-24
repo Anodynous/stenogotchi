@@ -9,9 +9,13 @@ from threading import Thread
 from gi.repository import GLib
 
 from Xlib import X, XK
-from plover.oslayer.xkeyboardcontrol import KeyboardEmulation, uchr_to_keysym
 from plover import key_combo as plover_key_combo
 from stenogotchi_link.keymap import plover_convert, plover_modkey
+try:
+    from plover.oslayer.linux.keyboardcontrol_x11 import KeyboardEmulation, uchr_to_keysym    # valid from plover v4.0.0.dev11
+except ModuleNotFoundError:
+    from plover.oslayer.xkeyboardcontrol import KeyboardEmulation, uchr_to_keysym    # valid until plover v4.0.0.dev10
+
 
 SERVER_DBUS = 'com.github.stenogotchi'
 SERVER_SRVC = '/com/github/stenogotchi'
