@@ -64,6 +64,9 @@ class StenogotchiClient:
 
     def plover_is_ready(self, b):
         self.stenogotchi_service.plover_is_ready(b)
+    
+    def plover_dict_lookup(self, b):
+        self.stenogotchi_service.plover_dict_lookup(b)
 
     def plover_machine_state(self, s):
         self.stenogotchi_service.plover_machine_state(s)

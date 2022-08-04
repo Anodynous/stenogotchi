@@ -49,8 +49,7 @@ class EngineServer():
         self._stenogotchiclient.plover_is_running(False)
 
     def start_wpm_meter(self, enable_wpm=False, enable_strokes=False, wpm_method='ncra', wpm_timeout=60):
-        """ Starts WPM and/or Strokes meters
-        """
+        """ Starts WPM and/or Strokes meters """
         if enable_wpm:
             self._wpm_meter = PloverWpmMeter(stenogotchi_link=self, wpm_method=wpm_method, timeout=wpm_timeout)
         if enable_strokes:
@@ -107,12 +106,11 @@ class EngineServer():
         """Gets the status of the server.
         Returns: 
             The status of the server.
-        """
+        """       
         pass
 
     def _connect_hooks(self):
         """Creates hooks into all of Plover's events."""
-
         if not self._engine:
             plover.log.error(f'[stenogotchi_link] {ERROR_MISSING_ENGINE}')
             raise AssertionError(ERROR_MISSING_ENGINE)
@@ -123,7 +121,6 @@ class EngineServer():
 
     def _disconnect_hooks(self):
         """Removes hooks from all of Plover's events."""
-        
         if not self._engine:
             raise AssertionError(ERROR_MISSING_ENGINE)
 
@@ -133,7 +130,6 @@ class EngineServer():
     
     def _on_stroked(self, stroke: Stroke):
         """ Broadcasts when a new stroke is performed. """
-        
         pass
 
     def _on_translated(self, old: List[_Action], new: List[_Action]):
@@ -142,16 +138,12 @@ class EngineServer():
             old: A list of the previous actions for the current translation.
             new: A list of the new actions for the current translation.
         """
-        
         # Send to WPM meter if we have one
         if self._wpm_meter:
             self._wpm_meter.on_translation(old, new)
         # Send to Strokes meter if we have one
         if self._strokes_meter:
             self._strokes_meter.on_translation(old, new)
-
-        # print(self._wpm_meter.get_stats())
-        # print(self._strokes_meter.get_stats())
 
     def _on_machine_state_changed(self, machine_type: str, machine_state: str):
         """Broadcasts when the active machine state changes.
@@ -160,7 +152,6 @@ class EngineServer():
             machine_state: The new machine state. This should be one of the
                 state constants listed in plover.machine.base.
         """
-        
         self._stenogotchiclient.plover_machine_state("machine_type: " + machine_type + " machine_state: " + machine_state)
 
     def _on_output_changed(self, enabled: bool):
@@ -168,7 +159,6 @@ class EngineServer():
         Args:
             enabled: If the output is now enabled or not.
         """
-
         data = {'output_changed': enabled}
         plover.log.debug(f'[stenogotchi_link] _on_output_changed data: {data}')
         self._stenogotchiclient.plover_output_enabled(enabled)
@@ -180,7 +170,6 @@ class EngineServer():
             config_update: An object containing the full configuration or a
                 part of the configuration that was updated.
         """
-
         config_json = jsonpickle.encode(config_update, unpicklable=False)
 
         data = {'config_changed': json.loads(config_json)}
@@ -191,14 +180,13 @@ class EngineServer():
         Args:
             dictionaries: A collection of the dictionaries that loaded.
         """
-
         self._stenogotchiclient.plover_is_ready(True)
 
     def _on_send_string(self, text: str):
         """Broadcasts when a new string is output.
         Args:
             text: The string that was output.
-        """
+        """      
         if self._output_to_stenogotchi:
             self._stenogotchiclient.send_string(text)
         else:
@@ -228,31 +216,26 @@ class EngineServer():
 
     def _on_add_translation(self):
         """Broadcasts when the add translation tool is opened via a command."""
-
         data = {'add_translation': True}
         plover.log.debug(f'[stenogotchi_link] _on_add_translation data: {data}')
         
     def _on_focus(self):
         """Broadcasts when the main window is focused via a command."""
-
         data = {'focus': True}
         plover.log.debug(f'[stenogotchi_link] _on_focus data: {data}')
 
     def _on_configure(self):
         """Broadcasts when the configuration tool is opened via a command."""
-
         data = {'configure': True}
         plover.log.debug(f'[stenogotchi_link] _on_configure data: {data}')
 
     def _on_lookup(self):
         """Broadcasts when the lookup tool is opened via a command."""
-
-        data = {'lookup': True}
-        plover.log.debug(f'[stenogotchi_link] _on_lookup data: {data}')
+        self._stenogotchiclient.plover_dict_lookup(True)
+        #plover.log.debug('[stenogotchi_link] lookup tool triggered')
 
     def _on_suggestions(self):
-        """Broadcasts when the lookup tool is opened via a command."""
-
+        """Broadcasts when the suggestion tool is opened via a command."""
         data = {'suggestions': True}
         plover.log.debug(f'[stenogotchi_link] _on_lookup data: {data}')
 
@@ -260,7 +243,6 @@ class EngineServer():
         """Broadcasts when the application is terminated.
         Can be either a full quit or a restart.
         """
-
         data = {'quit': True}
         plover.log.debug(f'[stenogotchi_link] _on_quit data: {data}')
         self._stenogotchiclient.plover_is_running(False)

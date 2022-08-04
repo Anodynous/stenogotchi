@@ -569,6 +569,17 @@ class StenogotchiService(dbus.service.Object):
         # logging.debug(f"[plover_link] plover_strokes_stats = '{s}'")
         self._agent.set_strokes(s)
 
+    @dbus.service.method('com.github.stenogotchi', in_signature='b')    # boolean
+    def plover_dict_lookup(self, b):
+        #logging.debug('[plover_link] plover_dict_lookup = ' + str(b))
+        if plugins.loaded['dict_lookup'].get_running():
+            if not plugins.loaded['dict_lookup'].get_input_mode():  # If not currently enabled, enable input mode
+                plugins.loaded['dict_lookup'].enable_input_mode()
+                #logging.debug("[plover_link] dictionary lookup mode enabled by Plover")
+            else:                                                   # If currently enabled, revert to normal view
+                plugins.loaded['dict_lookup'].disable_input_mode()
+                #logging.debug("[plover_link] dictionary lookup mode disabled by Plover")
+
     @dbus.service.method('com.github.stenogotchi', in_signature='s')    # string
     def send_string_stenogotchi(self, s):
         plugins.loaded['dict_lookup'].input_handler._on_send_string(s)
