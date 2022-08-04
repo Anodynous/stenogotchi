@@ -34,7 +34,7 @@ class Handler:
         
         self._app.add_url_rule('/toggle_input', 'toggle_input', self.with_auth(self.toggle_input), methods=['POST'])
         self._app.add_url_rule('/toggle_wpm', 'toggle_wpm', self.with_auth(self.toggle_wpm), methods=['POST'])
-        self._app.add_url_rule('/toggle_lookup', 'toggle_lookup', self.with_auth(self.toggle_lookup), methods=['POST'])
+        self._app.add_url_rule('/reset_plover', 'reset_plover', self.with_auth(self.reset_plover), methods=['POST'])
         self._app.add_url_rule('/buttonshim/<button>', 'buttonshim', self.with_auth(self.buttonshim), methods=['GET'])
 
         self._app.add_url_rule('/reboot', 'reboot', self.with_auth(self.reboot), methods=['POST'])
@@ -111,18 +111,12 @@ class Handler:
             return render_template('status.html', title=stenogotchi.name(), go_back_after=10,
                                 message='Please enable the buttonshim plugin first.')
     
-    # toggle dictionary lookup mode
-    def toggle_lookup(self):
-        if 'buttonshim' and 'dict_lookup' in plugins.loaded:
-            if plugins.loaded['dict_lookup'].get_running():
-                _thread.start_new_thread(plugins.loaded['buttonshim'].toggle_dictionary_lookup, ())
-                return redirect("/")
-            else:
-                return render_template('status.html', title=stenogotchi.name(), go_back_after=5,
-                                    message='Dict_lookup is not ready yet. Check that Plover is running.')    
-        else:
-            return render_template('status.html', title=stenogotchi.name(), go_back_after=5,
-                                    message='Please enable both the buttonshim and dict_lookup plugins first.')
+    # reset plover
+    def reset_plover(self):
+        command = {'reset_plover': True}
+        _thread.start_new_thread(plugins.loaded['plover_link'].send_signal_to_plover, (command,))
+        logging.info("[WEBUI] Sent machine reset command to Plover")
+        return redirect("/")
     
     # buttonshim custom action (emulating buttonshim short press)
     def buttonshim(self, button):

@@ -447,6 +447,11 @@ class Buttonshim(plugins.Plugin):
         """ On press reset button held status """
         self._button_was_held = False
 
+    def reset_plover(self):
+        command = {'reset_plover': True}
+        plugins.loaded['plover_link'].send_signal_to_plover(command)
+        logging.info(f"[buttonshim] Sent machine reset command to Plover")
+
     def toggle_qwerty_steno(self):
         try:
             cap_state = plugins.loaded['evdevkb'].get_capture_state()
@@ -490,15 +495,6 @@ class Buttonshim(plugins.Plugin):
         self._plover_wpm_meters_enabled = not self._plover_wpm_meters_enabled
         plugins.loaded['plover_link'].send_signal_to_plover(command)
     
-    def toggle_dictionary_lookup(self):
-        if plugins.loaded['dict_lookup'].get_running():
-            if not plugins.loaded['dict_lookup'].get_input_mode():  # If not currently enabled, enable input mode
-                plugins.loaded['dict_lookup'].enable_input_mode()
-            else:                                                   # If currently enabled, revert to normal view
-                plugins.loaded['dict_lookup'].disable_input_mode()
-        else: 
-            logging.debug(f"[buttonshim] dict_lookup is not ready yet. Check that Plover is running.")
-
     def hold_handler(self, button):
         """ On long press run built in internal Stenogotchi commands """
         # Set button held status to prevent release_handler from triggering on release
@@ -523,8 +519,8 @@ class Buttonshim(plugins.Plugin):
             self.toggle_wpm_meters()
 
         elif NAMES[button] == 'C':
-            # Toggle dictionary lookup mode
-            self.toggle_dictionary_lookup()
+            # Triggers Plover machine reset
+            self.reset_plover()
 
         elif NAMES[button] == 'D':
             # Toggle wifi on/off

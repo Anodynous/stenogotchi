@@ -8,12 +8,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Added
 - Support for Waveshare 2.13 inch V3 eINK display.
-- Toggle dictionary lookup on/off on eINK display using the regular plover command {PLOVER:LOOKUP}. Can also be exited with Escape.
+- Enable/disable dictionary lookup mode using default Plover chord {PLOVER:LOOKUP}. Can also be exited with Escape.
+- Trigger reset of Plover machine state with buttonshim 'C' or web UI. Reloads dictionaries and reconnects keyboard.
 
 ### Changed
 - Stenogotchi_link version upgrade to v0.5.0
+- Buttonshim 'C' long-press re-assigned from dictionary lookup to Plover reset.
+
 ### Fixed
-- Stenogotchi_link compatibility with Plover v4.0.0.dev11.
+- Compatibility with Plover v4.0.0.dev11.
 
 ### Removed
 

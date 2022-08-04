@@ -94,13 +94,15 @@ class StenogotchiClient:
 
     def stenogotchi_signal_handler(self, dict):
         # Enable and disable wpm/strokes meters
-        if 'lookup_word' in dict:
+        if 'reset_plover' in dict:
+            self._engineserver.reset_plover()
+        elif 'lookup_word' in dict:
             self._engineserver.lookup_word(dict['lookup_word'])
-        if 'lookup_stroke' in dict:
+        elif 'lookup_stroke' in dict:
             self._engineserver.lookup_stroke(dict['lookup_stroke'])
-        if 'output_to_stenogotchi' in dict:
+        elif 'output_to_stenogotchi' in dict:
             self._engineserver._output_to_stenogotchi = dict['output_to_stenogotchi']
-        if 'start_wpm_meter' in dict:
+        elif 'start_wpm_meter' in dict:
             wpm_method = dict['wpm_method']
             wpm_timeout = int(dict['wpm_timeout'])
             plover.log.info('[stenogotchi_link] Starting WPM meter')
@@ -110,7 +112,7 @@ class StenogotchiClient:
                 self._engineserver.start_wpm_meter(enable_wpm=True, enable_strokes=False, wpm_method=wpm_method, wpm_timeout=wpm_timeout)
             elif dict['start_wpm_meter'] == 'strokes':
                 self._engineserver.start_wpm_meter(enable_wpm=False, enable_strokes=True, wpm_method=wpm_method, wpm_timeout=wpm_timeout)
-        if 'stop_wpm_meter' in dict:
+        elif 'stop_wpm_meter' in dict:
             plover.log.info('[stenogotchi_link] Stopping WPM meter')
             if dict['stop_wpm_meter'] == 'wpm and strokes':
                 self._engineserver.stop_wpm_meter(disable_wpm=True, disable_strokes=True)

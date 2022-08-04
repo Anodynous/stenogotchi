@@ -48,6 +48,10 @@ class EngineServer():
         self._disconnect_hooks()
         self._stenogotchiclient.plover_is_running(False)
 
+    def reset_plover(self):
+        """ Resets Plover, triggering same actions as 'Reconnect' in Plover GUI """
+        self._engine.reset_machine()
+
     def start_wpm_meter(self, enable_wpm=False, enable_strokes=False, wpm_method='ncra', wpm_timeout=60):
         """ Starts WPM and/or Strokes meters """
         if enable_wpm:

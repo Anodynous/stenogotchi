@@ -145,7 +145,7 @@ Below long-press (1s) actions are pre-defined. Short-press triggers user configu
  
 * Button A - toggle QWERTY / STENO mode
 * Button B - toggle wpm & strokes readings
-* Button C - toggle dictionary lookup mode
+* Button C - trigger reset of Plover machine state (equivalent to reconnect button in Plover GUI)
 * Button D - toggle wifi (reboot persistent)
 * Button E - shutdown
 
