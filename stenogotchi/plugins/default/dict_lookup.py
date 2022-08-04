@@ -86,7 +86,7 @@ class UiHandler():
         self.input_mode = True
         # Used instead of self.update_view() to indicate input position from the start
         self.display_input("")
-        logging.info("[dict_lookup] Enabled dictionary lookup mode")
+        logging.debug("[dict_lookup] Enabled dictionary lookup mode")
 
     def disable_input_mode(self):
         # Add some variety to the exit
@@ -112,7 +112,7 @@ class UiHandler():
         self._agent.set_on_dict_lookup_done()
         
         self.input_mode = False
-        logging.info("[dict_lookup] Disabled dictionary lookup mode")
+        logging.debug("[dict_lookup] Disabled dictionary lookup mode")
 
     def get_input_mode(self):
         return self.input_mode
@@ -172,6 +172,8 @@ class InputHandler():
     def _on_send_key_combination(self, combination: str):
         if combination == 'Control_L(BackSpace)':
             self.clear_input()
+        elif combination == 'Escape':
+            plugins.loaded['dict_lookup'].disable_input_mode()            
         else:
             logging.warning(f"[dict_lookup] Key-combinations not supported. Input '{combination}' ignored")
     
@@ -201,7 +203,7 @@ class InputHandler():
 
 class DictLookup(plugins.Plugin):
     __autohor__ = 'Anodynous'
-    __version__ = '0.3'
+    __version__ = '0.4'
     __license__ = 'GPL3'
     __description__ = 'This plugin enables looking up words and strokes in enabled plover dictionaries'
 

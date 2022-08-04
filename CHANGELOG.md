@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Added
 - Support for Waveshare 2.13 inch V3 eINK display.
-- Toggle dictionary lookup on eINK display using the regular plover command {PLOVER:LOOKUP}. 
+- Toggle dictionary lookup on/off on eINK display using the regular plover command {PLOVER:LOOKUP}. Can also be exited with Escape.
 
 ### Changed
 - Stenogotchi_link version upgrade to v0.5.0
