@@ -170,9 +170,9 @@ class InputHandler():
             self.push_input()
 
     def _on_send_key_combination(self, combination: str):
-        if combination == 'Control_L(BackSpace)':
+        if combination.lower() in ('control(backspace)', 'control_r(backspace)', 'control_l(backspace)'):
             self.clear_input()
-        elif combination == 'Escape':
+        elif combination.lower() == 'escape':
             plugins.loaded['dict_lookup'].disable_input_mode()            
         else:
             logging.warning(f"[dict_lookup] Key-combinations not supported. Input '{combination}' ignored")

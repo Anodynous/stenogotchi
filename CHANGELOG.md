@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Added
 - Support for Waveshare 2.13 inch V3 eINK display.
-- Enable/disable dictionary lookup mode using default Plover chord {PLOVER:LOOKUP}. Can also be exited with Escape.
+- Enable/disable dictionary lookup mode using default Plover chord {PLOVER:LOOKUP}. Mode can also be exited with Escape and Control(BackSpace) clears input field.
 - Trigger reset of Plover machine state with buttonshim 'C' or web UI. Reloads dictionaries and reconnects keyboard.
 
 ### Changed
