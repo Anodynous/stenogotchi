@@ -160,6 +160,7 @@ class InputHandler():
                 plugins.loaded['dict_lookup'].lookup_word(self._input)
         else:
             self._input += text
+            plugins.loaded['dict_lookup'].lookup_word(self._input)
             self.push_input()
 
     def _on_send_backspaces(self, count: int):
@@ -167,6 +168,7 @@ class InputHandler():
             self.clear_input()
         else:
             self._input = self._input[:-count]
+            plugins.loaded['dict_lookup'].lookup_word(self._input)
             self.push_input()
 
     def _on_send_key_combination(self, combination: str):

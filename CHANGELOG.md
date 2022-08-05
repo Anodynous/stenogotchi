@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Stenogotchi_link version upgrade to v0.5.0
 - Buttonshim 'C' long-press re-assigned from dictionary lookup to Plover reset.
+- Dictionary lookup mode automatically returns results on input. Removing need for carriage return to trigger word lookup.
 
 ### Fixed
 - Compatibility with Plover v4.0.0.dev11.
