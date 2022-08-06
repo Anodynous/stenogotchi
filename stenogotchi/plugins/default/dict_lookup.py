@@ -175,7 +175,12 @@ class InputHandler():
         if combination.lower() in ('control(backspace)', 'control_r(backspace)', 'control_l(backspace)'):
             self.clear_input()
         elif combination.lower() == 'escape':
-            plugins.loaded['dict_lookup'].disable_input_mode()            
+            plugins.loaded['dict_lookup'].disable_input_mode()
+        elif combination.lower() == 'return':
+            if plugins.loaded['dict_lookup'].get_input_mode():
+                self._input += " "
+                self.push_input(position_indicator="")
+                plugins.loaded['dict_lookup'].lookup_word(self._input)
         else:
             logging.warning(f"[dict_lookup] Key-combinations not supported. Input '{combination}' ignored")
     
